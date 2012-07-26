@@ -1,0 +1,55 @@
+// Configuration file
+{
+    "dirs": {
+        "www": "/var/www/",
+        "store": "/var/www/repositories",
+        "cache": "/home/fred/.moodle"
+    },
+
+    "remotes": {
+        // "stable": "/Users/fmc/code/php/moodle.git",
+        // "integration": "/Users/fmc/code/php/integration.git",
+        "stable": "git://github.com/moodle/moodle.git",
+        "integration": "git://github.com/moodle/integration.git",
+        "mine": "git@github.com/FMCorz/moodle.git"
+    },
+
+    "host": "fred.moodle.local",
+    "login": "admin",
+    "passwd": "test",
+
+    "db": {
+        "mysqli": {
+            "host": "localhost",
+            "port": "3306",
+            "user": "root",
+            "passwd": "root"
+        },
+        "pgsql": {
+            "host": "localhost",
+            "port": "3306",
+            "user": "root",
+            "passwd": "root"
+        }
+    },
+
+    "wording": {
+        "prefixStable": "s",
+        "prefixIntegration": "i",
+        "prefixMaster": "m",
+        "suffixSeparator": "",
+
+        "integration": "Integration",
+        "master": "Master",
+        "stable": "Stable",
+
+        "mysqli": "MySQL",
+        "pgsql": "PostgreSQL"
+    },
+
+    "dataDir": "moodledata",
+    "wwwDir": "moodle",
+    "defaultEngine": "mysqli",
+    "phpEnv": "/usr/bin/php",
+    "useCacheAsRemote": false
+}
