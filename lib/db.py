@@ -16,22 +16,22 @@ class DB():
 		if engine == 'mysqli':
 			import pymysql
 			self.conn = pymysql.connect(
-				host=options['host'],
-				port=int(options['port']),
-				user=options['user'],
-				passwd=options['passwd'],
-				db=None
+				host = options['host'],
+				port = int(options['port']),
+				user = options['user'],
+				passwd = options['passwd'],
+				db = None
 			)
 			self.cur = self.conn.cursor()
 
 		elif engine == 'pgsql':
 			from bpgsql import bpgsql
 			self.conn = bpgsql.connect(
-				host=str(options['host']),
-				port=str(options['port']),
-				username=str(options['user']),
-				password=str(options['passwd']),
-				dbname=''
+				host = str(options['host']),
+				port = str(options['port']),
+				username = str(options['user']),
+				password = str(options['passwd']),
+				dbname = ''
 			)
 			self.cur = self.conn.cursor()
 
