@@ -5,43 +5,74 @@ import os
 import re
 
 from tools import debug
+from db import DB
+from config import Conf
+
+C = Conf().get
 
 class Moodle():
 
-    _path = None
-    _config = None
-    _installed = False
-    _settings = {}
+    path = None
+    installed = False
+    settings = {}
+
+    _dbo = None
+    _loaded = False
 
     def __init__(self, path):
+        self.path = path
+        self._load()
 
-        self._path = path
-        self._config = os.path.join(path, 'config.php')
+    def dbo(self):
+        if self._dbo == None:
+            engine = self.get('dbtype')
+            db = self.get('dbname')
+            if engine != None and db != None:
+                try:
+                    self._dbo = DB(engine, C('db.%s' % engine))
+                except:
+                    pass
+        return self._dbo
 
-        if os.path.isfile(self._config):
-            self.load()
-            self._installed = True
-        else:
-            self._installed = False
+    def get(self, param, default = None):
+        info = self.info()
+        try:
+            return info[param]
+        except:
+            return default
 
-    def installed(self):
-        return self._installed
+    def info(self):
+        self._load()
+        info = self.settings.copy()
+        info['path'] = self.path
+        info['installed'] = self.installed
+        return info
 
-    def load(self):
+    def reload(self):
+        self._loaded = False
+        return self._load()
 
-        if not self.installed():
+    def _load(self):
+
+        if self._loaded:
+            return True
+
+        config = os.path.join(self.path, 'config.php')
+        if not os.path.isfile(config):
             return None
 
         # Extracts parameters from config.php, does not handle params over multiple lines
         prog = re.compile('^\s*\$CFG->([a-z]+)\s*=\s*(?P<brackets>[\'"])(.+)(?P=brackets)\s*;$', re.I)
         try:
-            f = open(self._config, 'r')
+            f = open(config, 'r')
             for line in f:
                 match = prog.search(line)
                 if match == None: continue
-                self._settings[match.group(1)] = match.group(3)
-                setattr(self, match.group(1), match.group(3))
+                self.settings[match.group(1)] = match.group(3)
             f.close()
 
         except Exception as e:
             debug('Error while reading config file')
+
+        self._loaded = True
+        return True
