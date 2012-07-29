@@ -7,11 +7,12 @@ import shutil
 import argparse
 import re
 
-from lib import config, tools, db, moodle
-Moodle = moodle.Moodle
-debug = tools.debug
+from lib import config, db, moodle, workplace
+from lib.tools import debug, process
+
 DB = db.DB
 C = config.Conf().get
+Wp = workplace.Workplace()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Install a Moodle instance')
@@ -31,11 +32,9 @@ cacheIntegration = os.path.join(C('dirs.cache'), 'integration.git')
 
 # Cloning/caching repositories if necessary
 if not os.path.isdir(cacheStable):
-	os.chdir(C('dirs.cache'))
-	os.system('git clone ' + C('remotes.stable') + ' moodle.git')
+	result = process('%s clone %s %s' % (C('git'), C('remotes.stable'), cacheStable))
 if not os.path.isdir(cacheIntegration):
-	os.chdir(C('dirs.cache'))
-	os.system('git clone ' +C('remotes.integration') + ' integration.git')
+	result = process('%s clone %s %s' % (C('git'), C('remotes.integration'), cacheIntegration))
 
 # Wording version
 prefixVersion = version
@@ -65,6 +64,7 @@ dataDir = os.path.join(installDir, C('dataDir'))
 linkDir = os.path.join(C('dirs.www'), name)
 
 # Cloning the repository
+debug('Preparing instance directories...')
 if os.path.isdir(installDir):
 	debug('Installation directory exists (%s)' % installDir)
 	# sys.exit()
@@ -80,12 +80,12 @@ else:
 	os.mkdir(installDir, 0755)
 	os.mkdir(dataDir, 0777)
 	if C('useCacheAsRemote'):
-		os.chdir(installDir)
-		os.system('git clone ' + repository + ' ' + C('wwwDir'))
+		result = process('%s clone %s %s' % (C('git'), repository, wwwDir))
 	else:
 		shutil.copytree(repository, wwwDir)
 
 # Checking database
+debug('Preparing database...')
 dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()[:28]
 db = DB(engine, C('db.%s' % engine))
 if db.dbexists(dbname):
@@ -96,8 +96,6 @@ else:
 db.selectdb(dbname)
 
 # Installing
-debug('Installing %s...' % name)
-os.chdir(wwwDir)
 if os.path.islink(linkDir):
 	os.remove(linkDir)
 if os.path.isfile(linkDir) or os.path.isdir(linkDir):	# No elif!
@@ -106,36 +104,36 @@ else:
 	os.symlink(wwwDir, linkDir)
 
 # Creating, fetch, pulling branches
-os.system('git fetch origin')
+debug('Setting up repository...')
+M = Wp.get(name)
+git = M.git()
+result = git.fetch('origin')
 if version == 'master':
-	branch = 'origin/master'
-	os.system('git checkout master')
+	git.checkout('master')
 else:
-	branch = 'origin/MOODLE_%s_STABLE' % version
-	os.system('git checkout -b MOODLE_%s_STABLE %s' % (version, branch))
-os.system('git pull')
-os.system('git remote add mine %s' % C('remotes.mine'))
-os.system('git config --local moodle.name %s' % name)
-os.system('git config --local moodle.branch %s' % branch)
-os.system('git config --local moodle.version %s' % version)
-os.system('git config --local moodle.engine %s' % engine)
+	track = 'origin/MOODLE_%s_STABLE' % version
+	branch = 'MOODLE_%s_STABLE' % version
+	git.createBranch(branch, track)
+	git.checkout(branch)
+git.pull()
+git.addRemote('mine', C('remotes.mine'))
 
 # Launching installation process
 if not args.noinstall:
 
-	os.chdir(wwwDir)
-	configFile = os.path.join(wwwDir, 'config.php')
-	params = (C('phpEnv'), C('host'), name, dataDir, engine, dbname, C('db.%s.user' % engine), C('db.%s.passwd' % engine), C('db.%s.host' % engine), fullname, name, C('login'), C('passwd'))
-	status = os.system('%s admin/cli/install.php --wwwroot="http://%s/%s/" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params)
-	if status != 0:
+	debug('Installing %s...' % name)
+	cli = 'admin/cli/install.php'
+	params = (C('host'), name, dataDir, engine, dbname, C('db.%s.user' % engine), C('db.%s.passwd' % engine), C('db.%s.host' % engine), fullname, name, C('login'), C('passwd'))
+	args = '--wwwroot="http://%s/%s/" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
+	result = M.cli(cli, args, stdout=None, stderr=None)
+	if result[0] != 0:
 		raise Exception('Error while running the install, please manually fix the problem.')
 
+	configFile = os.path.join(wwwDir, 'config.php')
 	os.chmod(configFile, 0666)
 	try:
-		f = open(configFile, 'a')
-		f.seek(0, os.SEEK_END)
-		f.write("\n$CFG->sessioncookiepath = '/%s/';\n" % name)
-		f.close()
+		M.addConfig('sessioncookiepath', '/%s/' % name)
 	except Exception:
 		debug('Could not append $CFG->sessioncookiepath to config.php')
 
+debug('Process complete!')

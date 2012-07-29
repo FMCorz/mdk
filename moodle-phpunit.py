@@ -4,7 +4,6 @@
 import sys
 import os
 import argparse
-import subprocess
 from lib import moodle, workplace, config
 from lib.tools import debug
 

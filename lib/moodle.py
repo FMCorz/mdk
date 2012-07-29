@@ -3,9 +3,8 @@
 
 import os
 import re
-import subprocess
 
-from tools import debug
+from tools import debug, process
 from db import DB
 from config import Conf
 from git import Git
@@ -14,6 +13,7 @@ C = Conf().get
 
 class Moodle():
 
+    identifier = None
     path = None
     installed = False
     version = {}
@@ -23,8 +23,9 @@ class Moodle():
     _git = None
     _loaded = False
 
-    def __init__(self, path):
+    def __init__(self, path, identifier = None):
         self.path = path
+        self.identifier = identifier
         self._load()
 
     def addConfig(self, name, value):
@@ -45,13 +46,14 @@ class Moodle():
     def branch(self):
         return self._git().currentBranch()
 
-    def cli(self, cli):
+    def cli(self, cli, args = ''):
         cli = os.path.join(self.get('path'), cli.lstrip('/'))
         if not os.path.isfile(cli):
             raise Exception('Could not find script to call')
-        proc = subprocess.Popen([C('php'), cli], cwd=self.get('path'), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (stdout, stderr) = proc.communicate()
-        return (proc.returncode, stdout, stderr)
+        if type(args) == 'list':
+            args = ' '.join(args)
+        cmd = '%s %s %s' % (C('php'), cli, args)
+        return process(cmd, cwd=self.get('path'))
 
     def dbo(self):
         if self._dbo == None:
@@ -95,6 +97,7 @@ class Moodle():
     def info(self):
         self._load()
         info = {}
+        info['identifier'] = self.identifier
         info['path'] = self.path
         info['installed'] = self.installed
         for (k, v) in self.config.items():

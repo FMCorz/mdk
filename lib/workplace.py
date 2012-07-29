@@ -24,7 +24,7 @@ class Workplace():
         if not os.path.isdir(path):
             raise Exception('Directory %s not found' % path)
 
-        self.path = path
+        self.path = os.path.abspath(os.path.realpath(path))
         self.wwwDir = wwwDir
         self.dataDir = dataDir
 
@@ -46,13 +46,21 @@ class Workplace():
                 pass
 
         # Delete db
-        if DB:
+        if DB and dbname:
             DB.dropdb(dbname)
 
     def get(self, name):
+
+        # Extracts name from path
+        if os.sep in name:
+            path = os.path.abspath(os.path.realpath(name))
+            if not path.startswith(self.path):
+                raise Exception('Could not find Moodle instance at %s' % name)
+            (head, name) = os.path.split(path)
+
         if not self.isMoodle(name):
             raise Exception('Could not find Moodle instance %s' % name)
-        return moodle.Moodle(os.path.join(self.path, name, self.wwwDir))
+        return moodle.Moodle(os.path.join(self.path, name, self.wwwDir), identifier = name)
 
     def isMoodle(self, name):
         d = os.path.join(self.path, name)

@@ -4,8 +4,6 @@
 import os
 import argparse
 import re
-import subprocess
-import shlex
 
 from lib import config, git, tools, moodle, workplace
 from lib.tools import debug
@@ -57,5 +55,3 @@ if not repo.checkout(branch):
 	exit()
 
 debug('Branch %s checked out' % branch)
-
-
