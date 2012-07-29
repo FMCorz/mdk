@@ -48,9 +48,24 @@ class Moodle():
         info['installed'] = self.installed
         return info
 
-    def reload(self):
-        self._loaded = False
-        return self._load()
+    @staticmethod
+    def isInstance(path):
+        version = os.path.join(path, 'version.php')
+        try:
+            f = open(version, 'r')
+            lines = f.readlines()
+            f.close()
+        except:
+            return False
+        found = False
+        for line in lines:
+            if line.find('MOODLE VERSION INFORMATION') > -1:
+                found = True
+                break
+        if not found:
+            return False
+
+        return True
 
     def _load(self):
 
@@ -76,3 +91,8 @@ class Moodle():
 
         self._loaded = True
         return True
+
+    def reload(self):
+        self._loaded = False
+        return self._load()
+

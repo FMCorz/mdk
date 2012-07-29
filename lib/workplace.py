@@ -57,26 +57,14 @@ class Workplace():
     def isMoodle(self, name):
         d = os.path.join(self.path, name)
         if not os.path.isdir(d):
-            raise Exception('Directory %s not found' % d)
+            return False
 
         wwwDir = os.path.join(d, self.wwwDir)
         dataDir = os.path.join(d, self.dataDir)
         if not os.path.isdir(wwwDir) or not os.path.isdir(dataDir):
             return False
 
-        version = os.path.join(wwwDir, 'version.php')
-        try:
-            f = open(version, 'r')
-            lines = f.readlines()
-            f.close()
-        except:
-            return False
-        found = False
-        for line in lines:
-            if line.find('MOODLE VERSION INFORMATION') > -1:
-                found = True
-                break
-        if not found:
+        if not moodle.Moodle.isInstance(wwwDir):
             return False
 
         return True
