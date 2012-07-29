@@ -39,6 +39,9 @@
         "prefixMaster": "m",
         "suffixSeparator": "",
 
+        "branchFormat": "MDL-%s-%s",
+        "branchSuffixSeparator": "-",
+
         "integration": "Integration",
         "master": "Master",
         "stable": "Stable",
@@ -50,6 +53,8 @@
     "dataDir": "moodledata",
     "wwwDir": "moodle",
     "defaultEngine": "mysqli",
-    "phpEnv": "/usr/bin/php",
-    "useCacheAsRemote": false
+    "git": "/usr/bin/git",
+    "php": "/usr/bin/php",
+    "useCacheAsRemote": false,
+    "masterBranch": 24
 }
