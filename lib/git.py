@@ -14,6 +14,11 @@ class Git():
 		self.setPath(path)
 		self.setBin(bin)
 
+	def addRemote(self, name, remote):
+		cmd = 'remote add %s %s' % (name, remote)
+		result = self.execute(cmd)
+		return result[0] == 0
+
 	def checkout(self, branch):
 		cmd = 'checkout %s' % branch
 		result = self.execute(cmd)
@@ -55,6 +60,10 @@ class Git():
 		(stdout, stderr) = proc.communicate()
 		return (proc.returncode, stdout, stderr)
 
+	def fetch(self, remote = '', ref = ''):
+		cmd = 'fetch %s %s' % (remote, ref)
+		return self.execute(cmd)
+
 	def hasBranch(self, branch):
 		cmd = 'show-ref --verify --quiet "refs/heads/%s"' % branch
 		(returncode, stdout, stderr) = self.execute(cmd)
@@ -73,6 +82,10 @@ class Git():
 		proc.wait()
 		return proc.returncode == 0
 
+	def pull(self, remote = '', ref = ''):
+		cmd = 'pull %s %s' % (remote, ref)
+		return self.execute(cmd)
+
 	def status(self):
 		return self.execute('status')
 
@@ -80,11 +93,11 @@ class Git():
 		return self._bin
 
 	def setBin(self, bin):
-		self._bin = bin
+		self._bin = str(bin)
 
 	def getPath(self):
 		return self._path
 
 	def setPath(self, path):
-		self._path = path
+		self._path = str(path)
 
