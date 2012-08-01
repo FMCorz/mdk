@@ -46,14 +46,14 @@ class Moodle():
     def branch(self):
         return self._git().currentBranch()
 
-    def cli(self, cli, args = ''):
+    def cli(self, cli, args = '', **kwargs):
         cli = os.path.join(self.get('path'), cli.lstrip('/'))
         if not os.path.isfile(cli):
             raise Exception('Could not find script to call')
         if type(args) == 'list':
             args = ' '.join(args)
         cmd = '%s %s %s' % (C('php'), cli, args)
-        return process(cmd, cwd=self.get('path'))
+        return process(cmd, cwd=self.get('path'), **kwargs)
 
     def dbo(self):
         if self._dbo == None:

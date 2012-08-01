@@ -4,6 +4,15 @@
 import shlex
 import subprocess
 
+def yesOrNo(q):
+	answers = ['y', 'n']
+	while True:
+		i = raw_input('%s (y/n) ' % (q)).strip().lower()
+		if i == 'y':
+			return True
+		elif i == 'n':
+			return False
+
 def debug(str):
 	print str
 

@@ -8,7 +8,7 @@ import argparse
 import re
 
 from lib import config, db, moodle, workplace
-from lib.tools import debug, process
+from lib.tools import debug, process, yesOrNo
 
 DB = db.DB
 C = config.Conf().get
@@ -17,9 +17,9 @@ Wp = workplace.Workplace()
 # Arguments
 parser = argparse.ArgumentParser(description='Install a Moodle instance')
 parser.add_argument('-i', '--integration', action='store_true', help='create an instance from integration')
+parser.add_argument('-v', '--version', action='store', choices=[ str(x) for x in range(13, C('masterBranch')) ] + ['master'], default='master', help='version of Moodle', metavar='version')
 parser.add_argument('-e', '--engine', action='store', choices=['mysqli', 'pgsql'], default=C('defaultEngine'), help='database engine to use', metavar='engine')
 parser.add_argument('-s', '--suffix', action='store', help='suffix for the instance name', metavar='suffix')
-parser.add_argument('-v', '--version', action='store', choices=['19', '20', '21', '22', '23', 'master'], default='master', help='version of Moodle', metavar='version')
 parser.add_argument('--interactive', action='store_true', help='interactive mode')
 parser.add_argument('--no-install', action='store_true', help='disable the installation', dest='noinstall')
 args = parser.parse_args()
@@ -33,8 +33,10 @@ cacheIntegration = os.path.join(C('dirs.cache'), 'integration.git')
 # Cloning/caching repositories if necessary
 if not os.path.isdir(cacheStable):
 	result = process('%s clone %s %s' % (C('git'), C('remotes.stable'), cacheStable))
+	result = process('%s fetch -a' % C('git'), cacheStable)
 if not os.path.isdir(cacheIntegration):
 	result = process('%s clone %s %s' % (C('git'), C('remotes.integration'), cacheIntegration))
+	result = process('%s fetch -a' % C('git'), cacheIntegration)
 
 # Wording version
 prefixVersion = version
@@ -64,19 +66,24 @@ dataDir = os.path.join(installDir, C('dataDir'))
 linkDir = os.path.join(C('dirs.www'), name)
 
 # Cloning the repository
+skipClone = False
 debug('Preparing instance directories...')
 if os.path.isdir(installDir):
 	debug('Installation directory exists (%s)' % installDir)
-	# sys.exit()
+	if Wp.isMoodle(name):
+		if not args.interactive or yesOrNo('This is a Moodle instance, do you want to completely remove it?'):
+			debug('Deleting instance %s' % name)
+			Wp.delete(name)
+		else:
+			skipClone = True
+	elif not args.interactive or yesOrNo('Do you want to remove it?'):
+		debug('Removing directory %s' % installDir)
+		shutil.rmtree(installDir)
+	else:
+		debug('We cannot install an instance if the directory exists. Exiting...')
+		sys.exit(1)
 
-	# if args.interactive:
-	# 	pass
-	# else:
-	# 	if args.force:
-	# 		pass
-	# 	else:
-	# 		pass
-else:
+if not skipClone:
 	os.mkdir(installDir, 0755)
 	os.mkdir(dataDir, 0777)
 	if C('useCacheAsRemote'):
@@ -89,9 +96,16 @@ debug('Preparing database...')
 dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()[:28]
 db = DB(engine, C('db.%s' % engine))
 if db.dbexists(dbname):
-	db.dropdb(dbname)
-	db.createdb(dbname)
+	debug('Database already exists (%s)' % dbname)
+	if not args.interactive or yesOrNo('Do you want to remove it?'):
+		db.dropdb(dbname)
+		debug('Creating database %s' % dbname)
+		db.createdb(dbname)
+	else:
+		debug('We cannot install an instance on an existing database. Exiting...')
+		sys.exit(1)
 else:
+	debug('Creating database %s' % dbname)
 	db.createdb(dbname)
 db.selectdb(dbname)
 
@@ -100,6 +114,7 @@ if os.path.islink(linkDir):
 	os.remove(linkDir)
 if os.path.isfile(linkDir) or os.path.isdir(linkDir):	# No elif!
 	debug('Could not create symbolic link')
+	debug('Please manually create: ls -s %s %s' (wwwDir, linkDir))
 else:
 	os.symlink(wwwDir, linkDir)
 
@@ -113,7 +128,8 @@ if version == 'master':
 else:
 	track = 'origin/MOODLE_%s_STABLE' % version
 	branch = 'MOODLE_%s_STABLE' % version
-	git.createBranch(branch, track)
+	if not git.createBranch(branch, track):
+		raise Exception('Could not create branch %s tracking %s' % (branch, track))
 	git.checkout(branch)
 git.pull()
 git.addRemote('mine', C('remotes.mine'))
