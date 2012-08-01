@@ -1,0 +1,13 @@
+#!/bin/sh
+
+COMMAND="moodle-$1.py"
+BIN=`which $COMMAND`
+
+if [ -z "$BIN" ]
+then
+	echo "Unknown Moodle command..."
+	exit 1
+fi
+
+$BIN ${@:2}
+exit $?
