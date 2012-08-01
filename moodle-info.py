@@ -7,25 +7,40 @@ from lib import config, workplace, moodle, tools
 from lib.tools import debug
 
 C = config.Conf().get
+Wp = workplace.Workplace()
 
 # Arguments
-parser = argparse.ArgumentParser(description='Shows information about a Moodle instance')
+parser = argparse.ArgumentParser(description='Display information about a Moodle instance')
+parser.add_argument('-l', '--list', action='store_true', help='list the instances', dest='list')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
+parser.add_argument('var', metavar='var', default=None, nargs='?', help='variable to output')
 args = parser.parse_args()
 
-# Loading instance
-try:
-	if args.name != None:
-		Wp = workplace.Workplace()
-		M = Wp.get(args.name)
-	else:
-		M = moodle.Moodle(os.getcwd())
-		if not M:
-			raise Exception()
-except Exception:
-	debug('This is not a Moodle instance')
-	sys.exit(1)
+# List the instances
+if args.list:
+	l = Wp.list()
+	for i in l:
+		M = Wp.get(i)
+		print '{0:<25}'.format(i), M.get('release')
 
-# Printing info
-for key, info in M.info().items():
-	print '%s: %s' % (key, info)
+# Loading instance
+else:
+	try:
+		if args.name != None:
+			M = Wp.get(args.name)
+		else:
+			M = moodle.Moodle(os.getcwd())
+			if not M:
+				raise Exception()
+	except Exception:
+		debug('This is not a Moodle instance')
+		sys.exit(1)
+
+	# Printing variable
+	if args.var != None:
+		print M.get(args.var)
+
+	# Printing info
+	else:
+		for key, info in M.info().items():
+			print '{0:<20}: {1}'.format(key, info)
