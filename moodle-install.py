@@ -114,7 +114,7 @@ if os.path.islink(linkDir):
 	os.remove(linkDir)
 if os.path.isfile(linkDir) or os.path.isdir(linkDir):	# No elif!
 	debug('Could not create symbolic link')
-	debug('Please manually create: ls -s %s %s' (wwwDir, linkDir))
+	debug('Please manually create: ln -s %s %s' (wwwDir, linkDir))
 else:
 	os.symlink(wwwDir, linkDir)
 
