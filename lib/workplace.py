@@ -4,7 +4,7 @@
 import os
 import shutil
 
-from tools import debug
+from tools import debug, process
 import config
 import db
 import moodle
@@ -24,15 +24,96 @@ class Workplace():
         if not os.path.isdir(path):
             raise Exception('Directory %s not found' % path)
 
+        # Directory paths
         self.path = os.path.abspath(os.path.realpath(path))
+        self.cache = os.path.abspath(os.path.realpath(C('dirs.cache')))
+        self.www = os.path.abspath(os.path.realpath(C('dirs.www')))
+
+        # Directory names
         self.wwwDir = wwwDir
         self.dataDir = dataDir
 
+    def checkCachedClones(self, stable = True, integration = True):
+        """Clone the official repository in a local cache"""
+        cacheStable = os.path.join(self.cache, 'moodle.git')
+        cacheIntegration = os.path.join(self.cache, 'integration.git')
+        if not os.path.isdir(cacheStable) and stable:
+            debug('Cloning stable repository into cache...')
+            result = process('%s clone %s %s' % (C('git'), C('remotes.stable'), cacheStable))
+            result = process('%s fetch -a' % C('git'), cacheStable)
+        if not os.path.isdir(cacheIntegration) and integration:
+            debug('Cloning integration repository into cache...')
+            result = process('%s clone %s %s' % (C('git'), C('remotes.integration'), cacheIntegration))
+            result = process('%s fetch -a' % C('git'), cacheIntegration)
+
+    def create(self, name = None, version = 'master', integration = False, useCacheAsRemote = False):
+        """Creates a new instance of Moodle"""
+        if name == None:
+            if integration:
+                name = C('wording.prefixIntegration') + prefixVersion
+            else:
+                name = C('wording.prefixStable') + prefixVersion
+
+        installDir = os.path.join(self.path, name)
+        wwwDir = os.path.join(installDir, self.wwwDir)
+        dataDir = os.path.join(installDir, self.dataDir)
+        linkDir = os.path.join(self.www, name)
+
+        if self.isMoodle(name):
+            raise Exception('This Moodle instance %s already exists' % name)
+        elif os.path.isdir(installDir):
+            raise Exception('Installation path exists: %s' % installDir)
+
+        self.checkCachedClones(not integration, integration)
+        os.mkdir(installDir, 0755)
+        os.mkdir(wwwDir, 0755)
+        os.mkdir(dataDir, 0777)
+
+        if integration:
+            repository = os.path.join(C('dirs.cache'), 'integration.git')
+        else:
+            repository = os.path.join(C('dirs.cache'), 'moodle.git')
+
+        # Clone the instances
+        debug('Cloning repository...')
+        if useCacheAsRemote:
+            result = process('%s clone %s %s' % (C('git'), repository, wwwDir))
+        else:
+            shutil.copytree(repository, wwwDir)
+
+        # Symbolic link
+        if os.path.islink(linkDir):
+            os.remove(linkDir)
+        if os.path.isfile(linkDir) or os.path.isdir(linkDir): # No elif!
+            debug('Could not create symbolic link')
+            debug('Please manually create: ln -s %s %s' (wwwDir, linkDir))
+        else:
+            os.symlink(wwwDir, linkDir)
+
+        # Creating, fetch, pulling branches
+        debug('Checking out branch...')
+        M = self.get(name)
+        git = M.git()
+        result = git.fetch('origin')
+        if version == 'master':
+            git.checkout('master')
+        else:
+            track = 'origin/MOODLE_%s_STABLE' % version
+            branch = 'MOODLE_%s_STABLE' % version
+            if not git.createBranch(branch, track):
+                debug('Could not create branch %s tracking %s' % (branch, track))
+            else:
+                git.checkout(branch)
+        git.pull()
+        git.addRemote('mine', C('remotes.mine'))
+
+        return M
+
     def delete(self, name):
+        """Completely remove an instance, database included"""
+
         # Instantiating the object also checks if it exists
         M = self.get(name)
-        DB = M.dbo()
-        dbname = M.get('dbname')
 
         # Deleting the whole thing
         shutil.rmtree(os.path.join(self.path, name))
@@ -46,11 +127,13 @@ class Workplace():
                 pass
 
         # Delete db
+        DB = M.dbo()
+        dbname = M.get('dbname')
         if DB and dbname:
             DB.dropdb(dbname)
 
     def get(self, name):
-
+        """Returns an instance defined by its name, or by path"""
         # Extracts name from path
         if os.sep in name:
             path = os.path.abspath(os.path.realpath(name))
@@ -62,7 +145,18 @@ class Workplace():
             raise Exception('Could not find Moodle instance %s' % name)
         return moodle.Moodle(os.path.join(self.path, name, self.wwwDir), identifier = name)
 
+    def getPath(self, name, mode = None):
+        """Returns the path of an instance base on its name"""
+        base = os.path.join(self.path, name)
+        if mode == 'www':
+            return os.path.join(base, self.wwwDir)
+        elif mode == 'data':
+            return os.path.join(base, self.dataDir)
+        else:
+            return base
+
     def isMoodle(self, name):
+        """Checks whether a Moodle instance exist under this name"""
         d = os.path.join(self.path, name)
         if not os.path.isdir(d):
             return False
@@ -78,6 +172,7 @@ class Workplace():
         return True
 
     def list(self):
+        """Return the list of Moodle instances"""
         dirs = os.listdir(self.path)
         names = []
         for d in dirs:
@@ -87,3 +182,7 @@ class Workplace():
             names.append(d)
         return names
 
+
+    def updateCachedClones(self, integration = True, stable = True):
+        """Update the cached clone of the repositories"""
+        pass

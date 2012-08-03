@@ -29,7 +29,9 @@ class Moodle():
         self._load()
 
     def addConfig(self, name, value):
-        if not self.get('installed'):
+        """Add a parameter to the config file"""
+        configFile = os.path.join(self.path, 'config.php')
+        if not os.path.isfile(configFile):
             return None
 
         if type(value) != 'int':
@@ -37,16 +39,18 @@ class Moodle():
         value = str(value)
 
         try:
-            f = open(os.path.join(self.path, 'config.php'), 'a+')
+            f = open(configFile, 'a')
             f.write('\n$CFG->%s = %s;' % (name, value))
             f.close()
         except:
             raise Exception('Error while writing to config file')
 
     def branch(self):
+        """Returns the current branch on the git repository"""
         return self._git().currentBranch()
 
     def cli(self, cli, args = '', **kwargs):
+        """Executes a command line tool script"""
         cli = os.path.join(self.get('path'), cli.lstrip('/'))
         if not os.path.isfile(cli):
             raise Exception('Could not find script to call')
@@ -56,6 +60,7 @@ class Moodle():
         return process(cmd, cwd=self.get('path'), **kwargs)
 
     def dbo(self):
+        """Returns a Database object"""
         if self._dbo == None:
             engine = self.get('dbtype')
             db = self.get('dbname')
@@ -67,6 +72,7 @@ class Moodle():
         return self._dbo
 
     def get(self, param, default = None):
+        """Returns a property of this instance"""
         info = self.info()
         try:
             return info[param]
@@ -74,11 +80,13 @@ class Moodle():
             return default
 
     def git(self):
+        """Returns a Git object"""
         if self._git == None:
             self._git = Git(self.path, C('git'))
         return self._git
 
     def initPHPUnit(self):
+        """Initialise the PHP Unit environment"""
         result = (None, None, None)
         exception = False
         try:
@@ -95,19 +103,69 @@ class Moodle():
                 raise Exception('Error while calling PHP Unit init script')
 
     def info(self):
+        """Returns a dictionary of information about this instance"""
         self._load()
-        info = {}
-        info['identifier'] = self.identifier
-        info['path'] = self.path
-        info['installed'] = self.installed
+        info = {
+            'path': self.path,
+            'installed': self.installed,
+            'identifier': self.identifier
+        }
         for (k, v) in self.config.items():
             info[k] = v
         for (k, v) in self.version.items():
             info[k] = v
         return info
 
+    def install(self, dbname = None, engine = None, dataDir = None, fullname = None, dropDb = False):
+        """Launch the install script of an Instance"""
+
+        if self.installed:
+            raise Exception('Instance already installed!')
+
+        if dataDir == None or not os.path.isdir(dataDir):
+            raise Exception('Cannot install instance without knowing where the data directory is')
+        if dbname == None:
+            dbname = self.identifier
+        if engine == None:
+            engine = C('defaultEngine')
+        if fullname == None:
+            fullname = self.identifier.replace('-', ' ').replace('_', ' ').title()
+
+        debug('Creating database...')
+        if dbname == None:
+            dbname = re.sub(r'[^a-zA-Z0-9]', '', self.identifier).lower()[:28]
+        db = DB(engine, C('db.%s' % engine))
+        if db.dbexists(dbname):
+            if dropDb:
+                db.dropdb(dbname)
+                db.createdb(dbname)
+            else:
+                raise Exception('Cannot install an instance on an existing database (%s)' % dbname)
+        else:
+            db.createdb(dbname)
+        db.selectdb(dbname)
+
+        debug('Installing %s...' % self.identifier)
+        cli = 'admin/cli/install.php'
+        params = (C('host'), self.identifier, dataDir, engine, dbname, C('db.%s.user' % engine), C('db.%s.passwd' % engine), C('db.%s.host' % engine), fullname, self.identifier, C('login'), C('passwd'))
+        args = '--wwwroot="http://%s/%s/" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
+        result = self.cli(cli, args, stdout=None, stderr=None)
+        if result[0] != 0:
+            raise Exception('Error while running the install, please manually fix the problem.')
+
+        configFile = os.path.join(self.path, 'config.php')
+        os.chmod(configFile, 0666)
+        try:
+            self.addConfig('sessioncookiepath', '/%s/' % self.identifier)
+        except Exception as e:
+            print e
+            debug('Could not append $CFG->sessioncookiepath to config.php')
+
+        self.reload()
+
     @staticmethod
     def isInstance(path):
+        """Check whether the path is a Moodle web directory"""
         version = os.path.join(path, 'version.php')
         try:
             f = open(version, 'r')
@@ -126,7 +184,7 @@ class Moodle():
         return True
 
     def _load(self):
-
+        """Loads the information"""
         if not self.isInstance(self.path):
             return False
 
@@ -196,6 +254,6 @@ class Moodle():
         return True
 
     def reload(self):
+        """Reloads the information"""
         self._loaded = False
         return self._load()
-
