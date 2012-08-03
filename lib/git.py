@@ -20,6 +20,8 @@ class Git():
 		return result[0] == 0
 
 	def checkout(self, branch):
+		if self.currentBranch == branch:
+			return True
 		cmd = 'checkout %s' % branch
 		result = self.execute(cmd)
 		return result[0] == 0
