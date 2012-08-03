@@ -7,8 +7,6 @@
     },
 
     "remotes": {
-        // "stable": "/Users/fmc/code/php/moodle.git",
-        // "integration": "/Users/fmc/code/php/integration.git",
         "stable": "git://github.com/moodle/moodle.git",
         "integration": "git://github.com/moodle/integration.git",
         "mine": "git@github.com/FMCorz/moodle.git"
