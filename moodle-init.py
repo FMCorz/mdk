@@ -4,6 +4,7 @@
 import sys
 import os
 import argparse
+import re
 
 from lib import config, db, moodle, workplace
 from lib.tools import debug, yesOrNo
