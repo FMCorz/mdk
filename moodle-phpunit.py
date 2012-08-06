@@ -9,7 +9,7 @@ from lib.tools import debug
 
 # Arguments
 parser = argparse.ArgumentParser(description='Initialize PHP Unit')
-parser.add_argument('-n', '--name', metavar='name', default=None, help='name of the instance')
+parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
 args = parser.parse_args()
 
 C = config.Conf().get
@@ -32,29 +32,10 @@ if not M.get('installed'):
     debug('This instance needs to be installed first')
     sys.exit(1)
 
-# Set PHP Unit data root
-phpunit_dataroot = M.get('dataroot') + '_phpu'
-if M.get('phpunit_dataroot') == None:
-    M.addConfig('phpunit_dataroot', phpunit_dataroot)
-elif M.get('phpunit_dataroot') != phpunit_dataroot:
-    debug('Excepted value for phpunit_dataroot is \'%s\'. Please manually fix.' % phpunit_dataroot)
-    sys.exit(1)
-if not os.path.isdir(phpunit_dataroot):
-    os.mkdir(phpunit_dataroot, 0777)
-
-# Set PHP Unit prefix
-phpunit_prefix = 'php_u'
-if M.get('phpunit_prefix') == None:
-    M.addConfig('phpunit_prefix', phpunit_prefix)
-elif M.get('phpunit_prefix') != phpunit_prefix:
-    debug('Excepted value for phpunit_prefix is \'%s\'. Please manually fix.' % phpunit_prefix)
-    sys.exit(1)
-
 # Run cli
 try:
     M.initPHPUnit()
+    debug('PHP Unit ready!')
 except Exception as e:
     debug(e)
     sys.exit(1)
-
-debug('PHP Unit ready!')

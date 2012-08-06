@@ -47,7 +47,7 @@ class Moodle():
 
     def branch(self):
         """Returns the current branch on the git repository"""
-        return self._git().currentBranch()
+        return self.git().currentBranch()
 
     def cli(self, cli, args = '', **kwargs):
         """Executes a command line tool script"""
@@ -87,10 +87,30 @@ class Moodle():
 
     def initPHPUnit(self):
         """Initialise the PHP Unit environment"""
+
+        if self.get('branch') != 'master' and int(self.get('branch')) < 23:
+            raise Exception('PHP Unit is only available from Moodle 2.3')
+
+        # Set PHP Unit data root
+        phpunit_dataroot = self.get('dataroot') + '_phpu'
+        if self.get('phpunit_dataroot') == None:
+            self.addConfig('phpunit_dataroot', phpunit_dataroot)
+        elif self.get('phpunit_dataroot') != phpunit_dataroot:
+            raise Exception('Excepted value for phpunit_dataroot is \'%s\'' % phpunit_dataroot)
+        if not os.path.isdir(phpunit_dataroot):
+            os.mkdir(phpunit_dataroot, 0777)
+
+        # Set PHP Unit prefix
+        phpunit_prefix = 'php_u'
+        if self.get('phpunit_prefix') == None:
+            self.addConfig('phpunit_prefix', phpunit_prefix)
+        elif self.get('phpunit_prefix') != phpunit_prefix:
+            raise Exception('Excepted value for phpunit_prefix is \'%s\'' % phpunit_prefix)
+
         result = (None, None, None)
         exception = False
         try:
-            result = self.cli('/admin/tool/phpunit/cli/init.php')
+            result = self.cli('/admin/tool/phpunit/cli/init.php', stdout = None, stderr = None)
         except Exception as e:
             exception = True
 
