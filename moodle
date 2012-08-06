@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 COMMAND="moodle-$1.py"
 BIN=`which $COMMAND`
