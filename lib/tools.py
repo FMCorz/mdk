@@ -3,6 +3,7 @@
 
 import shlex
 import subprocess
+import sys
 
 def yesOrNo(q):
 	answers = ['y', 'n']
@@ -15,6 +16,7 @@ def yesOrNo(q):
 
 def debug(str):
 	print str
+	sys.stdout.flush()
 
 def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
 	if type(cmd) != 'list':
