@@ -2,8 +2,8 @@
 {
     "dirs": {
         "www": "/var/www/",
-        "store": "/var/www/repositories",
-        "cache": "/home/fred/.moodle"
+        "storage": "/var/www/repositories",
+        "moodle": "/home/fred/.moodle"
     },
 
     "remotes": {

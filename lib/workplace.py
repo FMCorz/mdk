@@ -15,7 +15,7 @@ class Workplace():
 
     def __init__(self, path = None, wwwDir = None, dataDir = None):
         if path == None:
-            path = C('dirs.store')
+            path = C('dirs.storage')
         if wwwDir == None:
             wwwDir = C('wwwDir')
         if dataDir == None:
@@ -26,7 +26,7 @@ class Workplace():
 
         # Directory paths
         self.path = os.path.abspath(os.path.realpath(path))
-        self.cache = os.path.abspath(os.path.realpath(C('dirs.cache')))
+        self.cache = os.path.abspath(os.path.realpath(C('dirs.moodle')))
         self.www = os.path.abspath(os.path.realpath(C('dirs.www')))
 
         # Directory names
@@ -70,9 +70,9 @@ class Workplace():
         os.mkdir(dataDir, 0777)
 
         if integration:
-            repository = os.path.join(C('dirs.cache'), 'integration.git')
+            repository = os.path.join(self.cache, 'integration.git')
         else:
-            repository = os.path.join(C('dirs.cache'), 'moodle.git')
+            repository = os.path.join(self.cache, 'moodle.git')
 
         # Clone the instances
         debug('Cloning repository...')
