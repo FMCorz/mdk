@@ -95,6 +95,8 @@ class Moodle(object):
         """Returns a Git object"""
         if self._git == None:
             self._git = Git(self.path, C('git'))
+            if not self._git.isRepository():
+                raise Exception('Could not find the Git repository')
         return self._git
 
     def initPHPUnit(self):
