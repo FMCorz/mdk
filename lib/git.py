@@ -41,7 +41,7 @@ class Git():
 		if result[0] != 0:
 			return 'HEAD'
 		else:
-			return result[1].replace('refs/heads/', '')
+			return result[1].replace('refs/heads/', '').strip()
 
 	def execute(self, cmd, path = None):
 		if path == None:
@@ -86,6 +86,10 @@ class Git():
 
 	def pull(self, remote = '', ref = ''):
 		cmd = 'pull %s %s' % (remote, ref)
+		return self.execute(cmd)
+
+	def push(self, toremote = '', tobranch = ''):
+		cmd = 'push %s %s' % (toremote, tobranch)
 		return self.execute(cmd)
 
 	def status(self):
