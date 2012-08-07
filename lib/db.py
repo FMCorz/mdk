@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-class DB():
+class DB(object):
 
 	conn = None
 	cur = None

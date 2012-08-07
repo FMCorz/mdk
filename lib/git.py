@@ -5,7 +5,7 @@ import os
 import shlex
 import subprocess
 
-class Git():
+class Git(object):
 
 	_path = None
 	_bin = None

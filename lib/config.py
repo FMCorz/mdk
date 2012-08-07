@@ -3,7 +3,7 @@
 
 import json, re, os
 
-class Conf():
+class Conf(object):
 
 	data = None
 

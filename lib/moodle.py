@@ -11,7 +11,7 @@ from git import Git
 
 C = Conf().get
 
-class Moodle():
+class Moodle(object):
 
     identifier = None
     path = None

@@ -11,7 +11,7 @@ import moodle
 
 C = config.Conf().get
 
-class Workplace():
+class Workplace(object):
 
     def __init__(self, path = None, wwwDir = None, dataDir = None):
         if path == None:
