@@ -5,8 +5,31 @@ BIN=`which $COMMAND`
 
 if [ -z "$BIN" ]
 then
+    if [ -n "${BASH_SOURCE[0]}" ]
+    then
+        SOURCE="${BASH_SOURCE[0]}"
+        DIR="$( dirname "$SOURCE" )"
+        while [ -h "$SOURCE" ]
+        do
+            SOURCE="$(readlink "$SOURCE")"
+            [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+            DIR="$( cd -P "$( dirname "$SOURCE"  )" && pwd )"
+        done
+        DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+        BIN="$DIR/$COMMAND"
+    fi
+fi
+
+if [ -z "$BIN" ] || [ ! -f "$BIN" ]
+then
 	echo "Unknown Moodle command..."
 	exit 1
+fi
+
+if [ ! -x "$BIN" ]
+then
+    echo "Permission denied. $BIN is not executable."
+    exit 1
 fi
 
 $BIN ${@:2}
