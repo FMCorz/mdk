@@ -79,7 +79,7 @@ for M in instances:
 	# Stash pop
 	if not stash[1].startswith('No local changes'):
 		pop = M.git().stash(command='pop')
-		if pop == False:
+		if pop =! 0:
 			debug('An error ocured while unstashing your changes')
 		else:
 			debug('Popped the stash')
