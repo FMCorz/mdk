@@ -54,5 +54,6 @@
     "git": "/usr/bin/git",
     "php": "/usr/bin/php",
     "useCacheAsRemote": false,
-    "masterBranch": 24
+    "masterBranch": 24,
+    "mineRepo": "mine"
 }

@@ -24,7 +24,7 @@ if not M:
 
 # Setting remote
 if args.remote == None:
-	remote = 'mine'
+	remote = C('mineRepo')
 else:
 	remote = args.remote
 
@@ -48,7 +48,7 @@ if result[0] != 0:
 if args.includestable:
 	branch = M.get('stablebranch')
 	debug('Pushing branch %s to remote %s...' % (branch, remote))
-	result = M.git().push('mine', branch)
+	result = M.git().push(remote, branch)
 	if result[0] != 0:
 		debug(result[2])
 		sys.exit(1)
