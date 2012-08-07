@@ -184,8 +184,11 @@ class Workplace():
 
     def resolve(self, name = None, path = None):
         """Try to find a Moodle instance based on its name, a path or the working directory"""
-        if name != None and self.isMoodle(name):
-            return self.get(name)
+
+        if name != None:
+            if self.isMoodle(name):
+                return self.get(name)
+            return None
 
         if path == None:
             path = os.getcwd()
