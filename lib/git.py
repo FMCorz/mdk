@@ -95,12 +95,18 @@ class Git(object):
 		cmd = 'pull %s %s' % (remote, ref)
 		return self.execute(cmd)
 
-	def push(self, toremote = '', tobranch = '', force = None):
+	def push(self, remote = '', branch = '', force = None):
 		if force:
 			force = '--force '
 		else:
 			force = ''
-		cmd = 'push %s%s %s' % (force, toremote, tobranch)
+		cmd = 'push %s%s %s' % (force, remote, branch)
+		return self.execute(cmd)
+
+	def rebase(self, branch, onto = ''):
+		if onto != '':
+			onto = '--onto %s ' % (onto)
+		cmd = 'rebase %s%s' % (onto, branch)
 		return self.execute(cmd)
 
 	def reset(self, to, hard = False):
@@ -110,6 +116,12 @@ class Git(object):
 		cmd = 'reset --hard %s' % (to)
 		result = self.execute(cmd)
 		return result[0] == 0
+
+	def stash(self, command = 'save', untracked = False):
+		cmd = 'stash %s' % command
+		if untracked:
+			cmd += ' --include-untracked'
+		return self.execute(cmd)
 
 	def status(self):
 		return self.execute('status')
