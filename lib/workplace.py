@@ -215,10 +215,6 @@ class Workplace(object):
             path = os.getcwd()
         path = os.path.realpath(os.path.abspath(path))
 
-        # This path points right to a Moodle instance
-        if moodle.Moodle.isInstance(path):
-            return moodle.Moodle(path)
-
         # Is this path in a Moodle instance?
         if path.startswith(self.path):
             (head, tail) = os.path.split(path)
