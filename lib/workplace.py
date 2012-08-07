@@ -132,6 +132,27 @@ class Workplace():
         if DB and dbname:
             DB.dropdb(dbname)
 
+    def generateInstanceName(self, version, integration=False, suffix=''):
+        """Creates a name (identifier) from arguments"""
+
+        # Wording version
+        if version == 'master':
+            prefixVersion = C('wording.prefixMaster')
+        else:
+            prefixVersion = version
+
+        # Generating name
+        if integration:
+            name = C('wording.prefixIntegration') + prefixVersion
+        else:
+            name = C('wording.prefixStable') + prefixVersion
+
+        # Append the suffix
+        if suffix != None and suffix != '':
+            name += C('wording.suffixSeparator') + suffix
+
+        return name
+
     def get(self, name):
         """Returns an instance defined by its name, or by path"""
         # Extracts name from path

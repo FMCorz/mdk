@@ -16,8 +16,8 @@ class Moodle():
     identifier = None
     path = None
     installed = False
-    version = {}
-    config = {}
+    version = None
+    config = None
 
     _dbo = None
     _git = None
@@ -26,6 +26,8 @@ class Moodle():
     def __init__(self, path, identifier = None):
         self.path = path
         self.identifier = identifier
+        self.version = {}
+        self.config = {}
         self._load()
 
     def addConfig(self, name, value):
@@ -70,6 +72,16 @@ class Moodle():
                 except:
                     pass
         return self._dbo
+
+    def generateBranchName(self, issue, suffix='', version=''):
+        """Generates a branch name"""
+        mdl = re.sub(r'MDL(-|_)?', '', issue, flags=re.I)
+        if version == '':
+            version = self.get('branch')
+        branch = C('wording.branchFormat') % (mdl, version)
+        if suffix != None and suffix != '':
+            branch += C('wording.branchSuffixSeparator') + suffix
+        return branch
 
     def get(self, param, default = None):
         """Returns a property of this instance"""

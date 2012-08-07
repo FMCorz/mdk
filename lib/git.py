@@ -66,8 +66,11 @@ class Git():
 		cmd = 'fetch %s %s' % (remote, ref)
 		return self.execute(cmd)
 
-	def hasBranch(self, branch):
-		cmd = 'show-ref --verify --quiet "refs/heads/%s"' % branch
+	def hasBranch(self, branch, remote = ''):
+		if remote != '':
+			cmd = 'show-ref --verify --quiet "refs/remotes/%s/%s"' % (remote, branch)
+		else:
+			cmd = 'show-ref --verify --quiet "refs/heads/%s"' % branch
 		(returncode, stdout, stderr) = self.execute(cmd)
 		return returncode == 0
 
@@ -84,6 +87,10 @@ class Git():
 		proc.wait()
 		return proc.returncode == 0
 
+	def pick(self, refs):
+		cmd = 'cherry-pick %s' % refs
+		return self.execute(cmd)
+
 	def pull(self, remote = '', ref = ''):
 		cmd = 'pull %s %s' % (remote, ref)
 		return self.execute(cmd)
@@ -95,6 +102,14 @@ class Git():
 			force = ''
 		cmd = 'push %s%s %s' % (force, toremote, tobranch)
 		return self.execute(cmd)
+
+	def reset(self, to, hard = False):
+		mode = ''
+		if hard:
+			mode == '--hard'
+		cmd = 'reset --hard %s' % (to)
+		result = self.execute(cmd)
+		return result[0] == 0
 
 	def status(self):
 		return self.execute('status')
