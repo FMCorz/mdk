@@ -88,8 +88,12 @@ class Git():
 		cmd = 'pull %s %s' % (remote, ref)
 		return self.execute(cmd)
 
-	def push(self, toremote = '', tobranch = ''):
-		cmd = 'push %s %s' % (toremote, tobranch)
+	def push(self, toremote = '', tobranch = '', force = None):
+		if force:
+			force = '--force '
+		else:
+			force = ''
+		cmd = 'push %s%s %s' % (force, toremote, tobranch)
 		return self.execute(cmd)
 
 	def status(self):

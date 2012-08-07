@@ -45,10 +45,6 @@ class Moodle():
         except:
             raise Exception('Error while writing to config file')
 
-    def branch(self):
-        """Returns the current branch on the git repository"""
-        return self.git().currentBranch()
-
     def cli(self, cli, args = '', **kwargs):
         """Executes a command line tool script"""
         cli = os.path.join(self.get('path'), cli.lstrip('/'))
@@ -58,6 +54,10 @@ class Moodle():
             args = ' '.join(args)
         cmd = '%s %s %s' % (C('php'), cli, args)
         return process(cmd, cwd=self.get('path'), **kwargs)
+
+    def currentBranch(self):
+        """Returns the current branch on the git repository"""
+        return self.git().currentBranch()
 
     def dbo(self):
         """Returns a Database object"""
