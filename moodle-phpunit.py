@@ -13,17 +13,11 @@ parser.add_argument('name', metavar='name', default=None, nargs='?', help='name 
 args = parser.parse_args()
 
 C = config.Conf().get
+Wp = workplace.Workplace(C('dirs.storage'))
 
 # Loading instance
-try:
-    if args.name != None:
-        Wp = workplace.Workplace()
-        M = Wp.get(args.name)
-    else:
-        M = moodle.Moodle(os.getcwd())
-        if not M:
-            raise Exception()
-except Exception:
+M = Wp.resolve(args.name)
+if not M:
     debug('This is not a Moodle instance')
     sys.exit(1)
 

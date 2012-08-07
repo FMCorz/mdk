@@ -25,16 +25,10 @@ if args.list:
 
 # Loading instance
 else:
-	try:
-		if args.name != None:
-			M = Wp.get(args.name)
-		else:
-			M = moodle.Moodle(os.getcwd())
-			if not M:
-				raise Exception()
-	except Exception:
-		debug('This is not a Moodle instance')
-		sys.exit(1)
+	M = Wp.resolve(args.name)
+	if not M:
+	    debug('This is not a Moodle instance')
+	    sys.exit(1)
 
 	# Printing variable
 	if args.var != None:

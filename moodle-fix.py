@@ -19,19 +19,11 @@ args = parser.parse_args()
 
 Wp = workplace.Workplace()
 
-# Loading Moodle instance
-M = None
-if args.name != None:
-	try:
-		M = Wp.get(args.name)
-	except:
-		M = None
-else:
-	M = moodle.Moodle(os.getcwd())
-
-if M == None or not M.isInstance(M.get('path')):
-	debug('This is not a Moodle instance')
-	sys.exit(1)
+# Loading instance
+M = Wp.resolve(args.name)
+if not M:
+    debug('This is not a Moodle instance')
+    sys.exit(1)
 
 # Branch name
 mdl = re.sub(r'MDL(-|_)?', '', args.issue, flags=re.I)

@@ -24,17 +24,12 @@ name = args.name
 engine = args.engine
 fullname = args.fullname
 
-try:
-    if name != None:
-        M = Wp.get(name)
-    else:
-        M = moodle.Moodle(os.getcwd())
-        if not M:
-            raise Exception()
-except Exception:
+M = Wp.resolve(name)
+if not M:
     debug('This is not a Moodle instance')
     sys.exit(1)
 
+name = M.get('identifier')
 dataDir = Wp.getPath(name, 'data')
 if not os.path.isdir(dataDir):
 	os.mkdir(dataDir, 0777)

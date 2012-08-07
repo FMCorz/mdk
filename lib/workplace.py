@@ -182,6 +182,28 @@ class Workplace():
             names.append(d)
         return names
 
+    def resolve(self, name = None, path = None):
+        """Try to find a Moodle instance based on its name, a path or the working directory"""
+        if name != None and self.isMoodle(name):
+            return self.get(name)
+
+        if path == None:
+            path = os.getcwd()
+        path = os.path.realpath(os.path.abspath(path))
+
+        # This path points right to a Moodle instance
+        if moodle.Moodle.isInstance(path):
+            return moodle.Moodle(path)
+
+        # Is this path in a Moodle instance?
+        if path.startswith(self.path):
+            (head, tail) = os.path.split(path)
+            while head.startswith(self.path):
+                if self.isMoodle(tail):
+                    return self.get(tail)
+                (head, tail) = os.path.split(head)
+
+        return False
 
     def updateCachedClones(self, integration = True, stable = True):
         """Update the cached clone of the repositories"""
