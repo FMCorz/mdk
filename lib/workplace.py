@@ -7,6 +7,7 @@ import shutil
 from tools import debug, process
 import config
 import db
+import git
 import moodle
 
 C = config.Conf().get
@@ -255,6 +256,41 @@ class Workplace(object):
                 debug('Could not find instance called %s' % name)
         return result
 
-    def updateCachedClones(self, integration = True, stable = True):
+    def updateCachedClones(self, integration = True, stable = True, verbose = True):
         """Update the cached clone of the repositories"""
-        pass
+
+        caches = []
+        remote = 'origin'
+
+        if integration:
+            caches.append(os.path.join(self.cache, 'integration.git'))
+        if stable:
+            caches.append(os.path.join(self.cache, 'moodle.git'))
+
+        for cache in caches:
+            if not os.path.isdir(cache):
+                continue
+
+            repo = git.Git(cache, C('git'))
+
+            verbose and debug('Working on %s...' % cache)
+            verbose and debug('Fetching %s' % remote)
+            if not repo.fetch(remote):
+                raise Exception('Could not fetch %s in repository %s' % (remote, cache))
+
+            remotebranches = repo.remoteBranches(remote)
+            for hash, branch in remotebranches:
+                verbose and debug('Updating branch %s' % branch)
+                track = '%s/%s' % (remote, branch)
+                if not repo.hasBranch(branch) and not repo.createBranch(branch, track = track):
+                    raise Exception('Could not create branch %s tracking %s in repository %s' % (branch, track, cache))
+
+                if not repo.checkout(branch):
+                    raise exception('error while checking out branch %s in repository %s' % (branch, cache))
+
+                if not repo.reset(to = track, hard = True):
+                    raise Exception('Could not hard reset to %s in repository %s' % (branch, cache))
+
+            verbose and debug('')
+
+        return True

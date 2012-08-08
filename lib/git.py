@@ -117,11 +117,33 @@ class Git(object):
 		cmd = 'rebase %s%s' % (onto, branch)
 		return self.execute(cmd)
 
+	def remoteBranches(self, remote):
+		pattern = 'refs/remotes/%s' % remote
+		cmd = 'show-ref'
+
+		result = self.execute(cmd)
+		if result[0] != 0:
+			return []
+
+		refs = []
+		for ref in result[1].split('\n'):
+			try:
+				(hash, ref) = ref.split(' ', 1)
+			except ValueError:
+				continue
+			if not ref.startswith(pattern):
+				continue
+			ref = ref.replace(pattern, '').strip('/')
+			if ref == 'HEAD':
+				continue
+			refs.append([hash, ref])
+		return refs
+
 	def reset(self, to, hard = False):
 		mode = ''
 		if hard:
-			mode == '--hard'
-		cmd = 'reset --hard %s' % (to)
+			mode = '--hard'
+		cmd = 'reset %s %s' % (mode, to)
 		result = self.execute(cmd)
 		return result[0] == 0
 
@@ -145,4 +167,3 @@ class Git(object):
 
 	def setPath(self, path):
 		self._path = str(path)
-

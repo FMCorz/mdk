@@ -305,9 +305,44 @@ class Moodle(object):
         self._loaded = False
         return self._load()
 
-    def update(self):
+    def update(self, remote = 'origin'):
         """Update the instance from the remote"""
-        pass
+
+        originalbranch = self.currentBranch()
+        stablebranch = self.get('stablebranch')
+
+        # Fetch
+        if not self.git().fetch(remote):
+            raise Exception('Could not fetch remote %s' % remote)
+
+        # Stash
+        hasStash = True
+        stash = self.git().stash(untracked=True)
+        if stash[0] != 0:
+            raise Exception('Error while stashing your changes')
+        if stash[1].startswith('No local changes'):
+            hasStash = False
+
+        # Checkout STABLE
+        if not self.git().checkout(stablebranch):
+            raise Exception('Could not checkout %s' % stablebranch)
+
+        # Reset HARD
+        upstream = '%s/%s' % (remote, stablebranch)
+        if not self.git().reset(to = upstream, hard = True):
+            raise Exception('Error while executing git reset')
+
+        # Unstash
+        if hasStash:
+            pop = self.git().stash('pop')
+            if pop[0] != 0:
+                raise Exception('Error while popping the stash. Probably got conflicts.')
+
+        # Checkout original branch
+        if not self.git().checkout(originalbranch):
+            raise Exception('Could not checkout working branch %s' % originalbranch)
+
+        return True
 
     def upgrade(self):
         """Calls the upgrade script"""
