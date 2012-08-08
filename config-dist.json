@@ -7,8 +7,9 @@
     },
 
     "remotes": {
-        "stable": "git://github.com/moodle/moodle.git",
-        "integration": "git://github.com/moodle/integration.git",
+        // In any case, the integration branch MUST end with integration.git
+        "stable": "git://git.moodle.org/moodle.git",
+        "integration": "git://git.moodle.org/integration.git",
         "mine": "git@github.com/FMCorz/moodle.git"
     },
 

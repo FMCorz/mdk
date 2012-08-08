@@ -192,7 +192,7 @@ class Workplace(object):
 
         return True
 
-    def list(self):
+    def list(self, integration = None, stable = None):
         """Return the list of Moodle instances"""
         dirs = os.listdir(self.path)
         names = []
@@ -200,6 +200,10 @@ class Workplace(object):
             if d == '.' or d == '..': continue
             if not os.path.isdir(os.path.join(self.path, d)): continue
             if not self.isMoodle(d): continue
+            if integration != None or stable != None:
+                M = self.get(d)
+                if integration == False and M.isIntegration(): continue
+                if stable == False and M.isStable(): continue
             names.append(d)
         return names
 
@@ -224,6 +228,32 @@ class Workplace(object):
                 (head, tail) = os.path.split(head)
 
         return False
+
+    def resolveMultiple(self, names = []):
+        """Return multiple instances"""
+        if type(names) != list:
+            if type(names) == str:
+                names = list(names)
+            else:
+                raise Exception('Unexpected variable type')
+
+        # Nothing has been passed, we use resolve()
+        if len(names) < 1:
+            M = self.resolve()
+            if M:
+                return [ M ]
+            else:
+                return [ ]
+
+        # Try to resolve each instance
+        result = []
+        for name in names:
+            M = self.resolve(name = name)
+            if M:
+                result.append(M)
+            else:
+                debug('Could not find instance called %s' % name)
+        return result
 
     def updateCachedClones(self, integration = True, stable = True):
         """Update the cached clone of the repositories"""

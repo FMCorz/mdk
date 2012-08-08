@@ -66,6 +66,14 @@ class Git(object):
 		cmd = 'fetch %s %s' % (remote, ref)
 		return self.execute(cmd)
 
+	def getConfig(self, name):
+		cmd = 'config --get %s' % name
+		result = self.execute(cmd)
+		if result[0] == 0:
+			return result[1].strip()
+		else:
+			return None
+
 	def hasBranch(self, branch, remote = ''):
 		if remote != '':
 			cmd = 'show-ref --verify --quiet "refs/remotes/%s/%s"' % (remote, branch)

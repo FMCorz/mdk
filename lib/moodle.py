@@ -192,7 +192,6 @@ class Moodle(object):
         try:
             self.addConfig('sessioncookiepath', '/%s/' % self.identifier)
         except Exception as e:
-            print e
             debug('Could not append $CFG->sessioncookiepath to config.php')
 
         self.reload()
@@ -216,6 +215,17 @@ class Moodle(object):
             return False
 
         return True
+
+    def isIntegration(self):
+        """Returns whether an instance is an integration one or not"""
+        remote = self.git().getConfig('remote.origin.url')
+        if remote != None and remote.endswith('integration.git'):
+            return True
+        return False
+
+    def isStable(self):
+        """Assume an instance is stable if not integration"""
+        return not self.isIntegration()
 
     def _load(self):
         """Loads the information"""
@@ -261,6 +271,9 @@ class Moodle(object):
             else:
                 self.version['stablebranch'] = 'MOODLE_%s_STABLE' % self.version['branch']
 
+            # Integration or stable?
+            self.version['integration'] = self.isIntegration()
+
             f.close()
         else:
             # Should never happen
@@ -291,3 +304,14 @@ class Moodle(object):
         """Reloads the information"""
         self._loaded = False
         return self._load()
+
+    def update(self):
+        """Update the instance from the remote"""
+        pass
+
+    def upgrade(self):
+        """Calls the upgrade script"""
+        cli = '/admin/cli/upgrade.php'
+        args = '--non-interactive --allow-unstable'
+        result = self.cli(cli, args, stdout = None, stderr = None)
+        return result[0] == 0
