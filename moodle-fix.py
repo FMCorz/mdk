@@ -26,24 +26,21 @@ if not M:
     sys.exit(1)
 
 # Branch name
-mdl = re.sub(r'MDL(-|_)?', '', args.issue, flags=re.I)
-branch = C('wording.branchFormat') % (mdl, M.get('branch'))
-if len(args.suffix) > 0:
-	branch += C('wording.branchSuffixSeparator') + args.suffix
+branch = M.generateBranchName(args.issue, suffix=args.suffix)
 
 # Track
 track = 'origin/%s' % M.get('stablebranch')
 
 # Git repo
-repo = git.Git(M.get('path'))
+repo = M.git()
 
 # Creating and checking out the new branch
 if not repo.hasBranch(branch):
 	if not repo.createBranch(branch, track):
 		debug('Could not create branch %s' % branch)
-		exit()
+		sys.exit(1)
 if not repo.checkout(branch):
 	debug('Error while checkout out branch %s' % branch)
-	exit()
+	sys.exit(1)
 
 debug('Branch %s checked out' % branch)

@@ -78,7 +78,11 @@ class Moodle(object):
         mdl = re.sub(r'MDL(-|_)?', '', issue, flags=re.I)
         if version == '':
             version = self.get('branch')
-        branch = C('wording.branchFormat') % (mdl, version)
+        args = {
+            'issue': mdl,
+            'version': version
+        }
+        branch = C('wording.branchFormat') % args
         if suffix != None and suffix != '':
             branch += C('wording.branchSuffixSeparator') + suffix
         return branch

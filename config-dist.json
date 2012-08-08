@@ -38,7 +38,7 @@
         "prefixMaster": "m",
         "suffixSeparator": "",
 
-        "branchFormat": "MDL-%s-%s",
+        "branchFormat": "MDL-%(issue)s-%(version)s",
         "branchSuffixSeparator": "-",
 
         "integration": "Integration",
