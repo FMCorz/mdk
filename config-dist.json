@@ -40,6 +40,7 @@
 
         "branchFormat": "MDL-%(issue)s-%(version)s",
         "branchSuffixSeparator": "-",
+        "branchRegex": "^MDL-(?P<issue>[0-9]+)-(?P<version>[0-9a-z]+)(-(?P<suffix>[a-z0-9_-]+))?",
 
         "integration": "Integration",
         "master": "Master",

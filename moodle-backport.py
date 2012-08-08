@@ -12,39 +12,63 @@ Wp = workplace.Workplace()
 
 # Arguments
 parser = argparse.ArgumentParser(description="Backports a branch")
-parser.add_argument('-i', '--issue', metavar='issue', required=True, help='the issue to backport')
-parser.add_argument('-s', '--suffix', metavar='suffix', help='the suffix of the branch of this issue')
+parser.add_argument('-b', '--branch', metavar='branch', help='the branch to backport if not the current one. If omitted, guessed from instance name.')
 parser.add_argument('-r', '--remote', metavar='remote', help='the remote to fetch from. Default is %s.' % C('mineRepo'))
-parser.add_argument('-v', '--versions', metavar='version', required=True, nargs='+', choices=[ str(x) for x in range(13, C('masterBranch')) ] + ['master'], help='versions to backport to')
+parser.add_argument('-i', '--integration', action='store_true', help='backport to integration instances.', dest='integration')
+parser.add_argument('-d', '--dont-push', action='store_true', help='if name is specified, the branch is pushed to the remote (-p) before backporting. This disables this behaviour.', dest='dontpush')
 parser.add_argument('-p', '--push', action='store_true', help='push the branch after successful backport')
 parser.add_argument('-t', '--push-to', metavar='remote', help='the remote to push the branch to. Default is %s.' % C('mineRepo'), dest='pushremote')
 parser.add_argument('-f', '--force-push', action='store_true', help='Force the push', dest='forcepush')
-parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance to work on')
+parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance to backport from. Can be omitted if branch is specified.')
+parser.add_argument('-v', '--versions', metavar='version', required=True, nargs='+', choices=[ str(x) for x in range(13, C('masterBranch')) ] + ['master'], help='versions to backport to')
 args = parser.parse_args()
 
-M = Wp.resolve(args.name)
-if not M:
-    debug('This is not a Moodle instance')
-    sys.exit(1)
-
+M = None
+branch = args.branch
+versions = args.versions
 remote = args.remote
+integration = args.integration
 if remote == None:
 	remote = C('mineRepo')
 
-branch = M.generateBranchName(args.issue, suffix=args.suffix)
-originaltrack = M.get('stablebranch')
-if not M.git().hasBranch(branch):
-	debug('Could not find original branch %s.' % (branch))
+# If we don't have a branch, we need an instance
+M = Wp.resolve(args.name)
+if not M and not branch:
+    debug('This is not a Moodle instance')
+    sys.exit(1)
+
+# Getting issue number
+if M and not branch:
+	branch = M.currentBranch()
+
+# Parsing the branch
+parsedbranch = tools.parseBranch(branch, C('wording.branchRegex'))
+if not parsedbranch:
+	debug('Could not extract issue number from %s' % branch)
 	sys.exit(1)
-if not M.git().hasBranch(branch):
-	debug('Could not find original branch %s.' % (branch))
-	sys.exit(1)
+issue = parsedbranch['issue']
+suffix = parsedbranch['suffix']
+version = parsedbranch['version']
+
+# Original track
+originaltrack = tools.stableBranch(version)
+
+# Pushes the branch to the remote first
+if M and not args.dontpush:
+	debug('Pushing %s to %s' % (branch, remote))
+	if not M.git().push(remote, branch):
+		debug('Could not push %s to %s' % (branch, remote))
+		sys.exit(1)
+
+# Integration?
+if M:
+	integration = M.isIntegration()
 
 # Begin backport
-for v in args.versions:
+for v in versions:
 
 	# Gets the instance to cherry-pick to
-	name = Wp.generateInstanceName(v, integration=M.get('integration'))
+	name = Wp.generateInstanceName(v, integration=integration)
 	if not Wp.isMoodle(name):
 		debug('Could not find instance %s for version %s' % (name, v))
 		continue
@@ -66,7 +90,7 @@ for v in args.versions:
 	M2.git().fetch(remote)
 
 	# Creates a new branch if necessary
-	newbranch = M2.generateBranchName(args.issue, suffix=args.suffix)
+	newbranch = M2.generateBranchName(issue, suffix=suffix)
 	track = 'origin/%s' % M2.get('stablebranch')
 	if not M2.git().hasBranch(newbranch):
 		debug('Creating branch %s' % newbranch)
