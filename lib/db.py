@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import pymysql
+from bpgsql import bpgsql
+
 class DB(object):
 
 	conn = None
@@ -14,7 +17,6 @@ class DB(object):
 		self.options = options
 
 		if engine == 'mysqli':
-			import pymysql
 			self.conn = pymysql.connect(
 				host = options['host'],
 				port = int(options['port']),
@@ -25,7 +27,6 @@ class DB(object):
 			self.cur = self.conn.cursor()
 
 		elif engine == 'pgsql':
-			from bpgsql import bpgsql
 			self.conn = bpgsql.connect(
 				host = str(options['host']),
 				port = str(options['port']),
@@ -71,13 +72,13 @@ class DB(object):
 			if self.cur:
 				self.cur.close()
 			if self.conn:
-				self.close()
+				self.conn.close()
 
 			self.conn = bpgsql.connect(
-				host=self.options['host'],
-				port=int(self.options['port']),
-				username=self.options['user'],
-				password=self.options['passwd'],
-				dbname=db
+				host=str(self.options['host']),
+				port=str(self.options['port']),
+				username=str(self.options['user']),
+				password=str(self.options['passwd']),
+				dbname=str(db)
 			)
 			self.cur = self.conn.cursor()
