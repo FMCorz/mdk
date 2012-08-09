@@ -39,16 +39,23 @@ class DB(object):
 		else:
 			raise Exception('DB engine %s not supported' % engine)
 
+	def columns(self, table):
+
+		columns = []
+
+		if self.engine == 'mysqli':
+			self.cur.execute('DESCRIBE %s' % table)
+			for column in self.cur.fetchall():
+				columns.append(column[0])
+
+		return columns
+
 	def createdb(self, db):
 
 		if self.engine == 'mysqli':
 			self.cur.execute('CREATE DATABASE %s DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci' % db)
 		elif self.engine == 'pgsql':
 			self.cur.execute('CREATE DATABASE %s WITH ENCODING \'UNICODE\'' % db)
-
-	def dropdb(self, db):
-
-		self.cur.execute('DROP DATABASE %s' % db)
 
 	def dbexists(self, db):
 
@@ -62,6 +69,44 @@ class DB(object):
 			count = self.cur.fetchone()[0]
 
 		return count > 0
+
+	def dropdb(self, db):
+
+		self.cur.execute('DROP DATABASE %s' % db)
+
+	def dump(self, fd, prefix = ''):
+		"""Dump a database to the file descriptor passed"""
+
+		if self.engine != 'mysqli':
+			raise Exception('Function dump not supported by %s' % self.engine)
+		if not type(fd) == file:
+			raise Exception('Passed parameter is not a file object')
+
+		# Looping over selected tables
+		tables = self.tables()
+		for table in tables:
+			if prefix != '' and not table.startswith(prefix):
+				continue
+
+			self.cur.execute('SHOW CREATE TABLE %s' % table)
+			schema = self.cur.fetchone()[1]
+			fd.write(schema + ';\n')
+
+			# Get the columns
+			columns = self.columns(table)
+
+			# Get the field values
+			self.cur.execute('SELECT %s FROM %s' % (','.join(columns), table))
+			for row in self.cur.fetchall():
+				values = []
+				for value in row:
+					if value == None:
+						value = 'null'
+					else:
+						value = str(self.conn.escape(value))
+					values.append(value)
+				insert = 'INSERT INTO %s (%s) VALUES(%s)' % (table, ','.join(columns), ','.join(values))
+				fd.write(insert + ';\n')
 
 	def selectdb(self, db):
 
@@ -82,3 +127,14 @@ class DB(object):
 				dbname=str(db)
 			)
 			self.cur = self.conn.cursor()
+
+	def tables(self):
+
+		tables = []
+
+		if self.engine == 'mysqli':
+			self.cur.execute('SHOW TABLES')
+			for row in self.cur.fetchall():
+				tables.append(row[0])
+
+		return tables
