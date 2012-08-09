@@ -26,7 +26,7 @@ if not M:
 
 # Setting remote
 if args.remote == None:
-	remote = C('mineRepo')
+	remote = C('myRemote')
 else:
 	remote = args.remote
 

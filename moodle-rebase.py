@@ -16,7 +16,7 @@ parser.add_argument('-i', '--issues', metavar='issues', required=True, nargs='+'
 parser.add_argument('-s', '--suffix', metavar='suffix', help='the suffix of the branch of those issues')
 parser.add_argument('-v', '--versions', metavar='version', nargs='+', choices=[ str(x) for x in range(13, C('masterBranch')) ] + ['master'], help='versions to rebase the issues on. Ignored if names is set.')
 parser.add_argument('-p', '--push', action='store_true', help='push the branch after successful rebase')
-parser.add_argument('-r', '--remote', metavar='remote', help='the remote to push the branch to. Default is %s.' % C('mineRepo'))
+parser.add_argument('-r', '--remote', metavar='remote', help='the remote to push the branch to. Default is %s.' % C('myRemote'))
 parser.add_argument('-f', '--force-push', action='store_true', help='Force the push', dest='forcepush')
 parser.add_argument('names', metavar='names', default=None, nargs='*', help='name of the instances to rebase')
 args = parser.parse_args()
@@ -73,7 +73,7 @@ for M in Mlist:
 		if args.push:
 			remote = args.remote
 			if remote == None:
-				remote = C('mineRepo')
+				remote = C('myRemote')
 			debug('Pushing %s to %s' % (branch, remote))
 			result = M.git().push(remote=remote, branch=branch, force=args.forcepush)
 			if result[0] != 0:

@@ -13,11 +13,11 @@ Wp = workplace.Workplace()
 # Arguments
 parser = argparse.ArgumentParser(description="Backports a branch")
 parser.add_argument('-b', '--branch', metavar='branch', help='the branch to backport if not the current one. If omitted, guessed from instance name.')
-parser.add_argument('-r', '--remote', metavar='remote', help='the remote to fetch from. Default is %s.' % C('mineRepo'))
+parser.add_argument('-r', '--remote', metavar='remote', help='the remote to fetch from. Default is %s.' % C('myRemote'))
 parser.add_argument('-i', '--integration', action='store_true', help='backport to integration instances.', dest='integration')
 parser.add_argument('-d', '--dont-push', action='store_true', help='if name is specified, the branch is pushed to the remote (-p) before backporting. This disables this behaviour.', dest='dontpush')
 parser.add_argument('-p', '--push', action='store_true', help='push the branch after successful backport')
-parser.add_argument('-t', '--push-to', metavar='remote', help='the remote to push the branch to. Default is %s.' % C('mineRepo'), dest='pushremote')
+parser.add_argument('-t', '--push-to', metavar='remote', help='the remote to push the branch to. Default is %s.' % C('myRemote'), dest='pushremote')
 parser.add_argument('-f', '--force-push', action='store_true', help='Force the push', dest='forcepush')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance to backport from. Can be omitted if branch is specified.')
 parser.add_argument('-v', '--versions', metavar='version', required=True, nargs='+', choices=[ str(x) for x in range(13, C('masterBranch')) ] + ['master'], help='versions to backport to')
@@ -29,7 +29,7 @@ versions = args.versions
 remote = args.remote
 integration = args.integration
 if remote == None:
-	remote = C('mineRepo')
+	remote = C('myRemote')
 
 # If we don't have a branch, we need an instance
 M = Wp.resolve(args.name)
@@ -116,7 +116,7 @@ for v in versions:
 	if args.push:
 		pushremote = args.pushremote
 		if pushremote == None:
-			pushremote = C('mineRepo')
+			pushremote = C('myRemote')
 		debug('Pushing %s to %s' % (newbranch, pushremote))
 		result = M2.git().push(remote=pushremote, branch=newbranch, force=args.forcepush)
 		if result[0] != 0:

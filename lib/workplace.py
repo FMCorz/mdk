@@ -106,7 +106,7 @@ class Workplace(object):
             else:
                 git.checkout(branch)
         git.pull()
-        git.addRemote(C('mineRepo'), C('remotes.mine'))
+        git.addRemote(C('myRemote'), C('remotes.mine'))
 
         return M
 
