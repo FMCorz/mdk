@@ -61,7 +61,7 @@ class Workplace(object):
         linkDir = os.path.join(self.www, name)
 
         if self.isMoodle(name):
-            raise Exception('This Moodle instance %s already exists' % name)
+            raise Exception('The Moodle instance %s already exists' % name)
         elif os.path.isdir(installDir):
             raise Exception('Installation path exists: %s' % installDir)
 

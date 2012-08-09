@@ -24,25 +24,21 @@ args = parser.parse_args()
 
 engine = args.engine
 version = args.version
+name = Wp.generateInstanceName(version, integration = args.integration, suffix = args.suffix)
 
 # Wording version
-prefixVersion = version
 versionNice = version
 if version == 'master':
-	prefixVersion = C('wording.prefixMaster')
 	versionNice = C('wording.master')
 
 # Generating names
 if args.integration:
-	name = C('wording.prefixIntegration') + prefixVersion
 	fullname = C('wording.integration') + ' ' + versionNice + ' ' + C('wording.%s' % engine)
 else:
-	name = C('wording.prefixStable') + prefixVersion
 	fullname = C('wording.stable') + ' ' + versionNice + ' ' + C('wording.%s' % engine)
 
 # Append the suffix
 if args.suffix:
-	name += C('wording.suffixSeparator') + args.suffix
 	fullname += ' ' + args.suffix.replace('-', ' ').replace('_', ' ').title()
 
 # Create the instance
@@ -53,7 +49,11 @@ kwargs = {
 	'integration': args.integration,
 	'useCacheAsRemote': C('useCacheAsRemote')
 }
-M = Wp.create(**kwargs)
+try:
+	M = Wp.create(**kwargs)
+except Exception as e:
+	debug(e)
+	sys.exit(1)
 
 # Run the install script
 if args.install:
