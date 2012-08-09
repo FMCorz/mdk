@@ -119,7 +119,7 @@ class Moodle(object):
             os.mkdir(phpunit_dataroot, 0777)
 
         # Set PHP Unit prefix
-        phpunit_prefix = 'php_u'
+        phpunit_prefix = 'phpu_'
         if self.get('phpunit_prefix') == None:
             self.addConfig('phpunit_prefix', phpunit_prefix)
         elif self.get('phpunit_prefix') != phpunit_prefix:
@@ -145,7 +145,7 @@ class Moodle(object):
         self._load()
         info = {
             'path': self.path,
-            'installed': self.installed,
+            'installed': self.isInstalled(),
             'identifier': self.identifier
         }
         for (k, v) in self.config.items():
@@ -157,7 +157,7 @@ class Moodle(object):
     def install(self, dbname = None, engine = None, dataDir = None, fullname = None, dropDb = False):
         """Launch the install script of an Instance"""
 
-        if self.installed:
+        if not self.isInstalled():
             raise Exception('Instance already installed!')
 
         if dataDir == None or not os.path.isdir(dataDir):
@@ -199,6 +199,10 @@ class Moodle(object):
             debug('Could not append $CFG->sessioncookiepath to config.php')
 
         self.reload()
+
+    def isInstalled(self):
+        """Returns whether this instance is installed or not"""
+        return self.installed == True
 
     @staticmethod
     def isInstance(path):

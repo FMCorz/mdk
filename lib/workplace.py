@@ -3,6 +3,7 @@
 
 import os
 import shutil
+from distutils.dir_util import copy_tree
 
 from tools import debug, process
 import config
@@ -80,7 +81,7 @@ class Workplace(object):
         if useCacheAsRemote:
             result = process('%s clone %s %s' % (C('git'), repository, wwwDir))
         else:
-            shutil.copytree(repository, wwwDir)
+            copy_tree(repository, wwwDir)
 
         # Symbolic link
         if os.path.islink(linkDir):
