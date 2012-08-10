@@ -7,7 +7,9 @@ import argparse
 import json
 import time
 from distutils.dir_util import copy_tree
-from lib import config, workplace, moodle, tools
+from distutils.errors import DistutilsFileError
+from lib import config, workplace, moodle, tools, backup
+from lib.exceptions import *
 from lib.tools import debug
 
 C = config.Conf().get
@@ -16,72 +18,87 @@ Wp = workplace.Workplace()
 # Arguments
 parser = argparse.ArgumentParser(description='Backup a Moodle instance')
 parser.add_argument('-l', '--list', action='store_true', help='list the backups', dest='list')
+parser.add_argument('-i', '--info', metavar='backup', help='lists all the information about a backup', dest='info')
+parser.add_argument('-r', '--restore', help='restore a backup', metavar='backup', dest='restore')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
 args = parser.parse_args()
 
 name = args.name
-backupdir = os.path.join(C('dirs.moodle'), 'backup')
+BackupManager = backup.BackupManager()
 
 # List the backups
 if args.list:
-    dirs = os.listdir(backupdir)
-    backups = {}
+    backups = BackupManager.list()
+    for key in sorted(backups.keys()):
+        B = backups[key]
+        backuptime = time.ctime(B.get('backup_time'))
+        print '{0:<25}: {1:<30} {2}'.format(key, B.get('release'), backuptime)
 
-    for d in dirs:
-    	path = os.path.join(backupdir, d)
-    	jsonfile = os.path.join(path, 'info.json')
-        if d == '.' or d == '..': continue
-        if not os.path.isdir(path): continue
-        if not os.path.isfile(jsonfile): continue
-        infos = json.load(open(jsonfile, 'r'))
-        backups[d] = infos
+# Displays backup information
+elif args.info:
+    name = args.info
 
-    for name, info in backups.iteritems():
-    	backuptime = time.ctime(info['backup_time'])
-    	print '{0:<25}: {1:<30} {2}'.format(name, info['release'], backuptime)
+    # Resolve the backup
+    if not name or not BackupManager.exists(name):
+        debug('This is not a valid backup')
+        sys.exit(1)
 
-    sys.exit(0)
+    # Restore process
+    B = BackupManager.get(name)
+    infos = B.infos
+    debug('Displaying information about %s' % name)
+    for key in sorted(infos.keys()):
+        debug('{0:<20}: {1}'.format(key, infos[key]))
 
-# Resolve the instance
-M = Wp.resolve(name)
-if not M:
-    debug('This is not a Moodle instance')
-    sys.exit(1)
+# Restore
+elif args.restore:
+    name = args.restore
 
-if M.get('dbtype') != 'mysqli':
-	debug('Does not support backup for this DB engine %s yet, sorry!' % M.get('dbtype'))
+    # Resolve the backup
+    if not name or not BackupManager.exists(name):
+        debug('This is not a valid backup')
+        sys.exit(1)
 
-debug('Backuping %s' % name)
-now = int(time.time())
-backup_identifier = '%s_%s' % (name, now)
+    # Restore process
+    B = BackupManager.get(name)
 
-# Copy whole directory, shutil will create topath
-topath = os.path.join(backupdir, backup_identifier)
-path = Wp.getPath(name)
-try:
-	debug('Copying instance directory')
-	copy_tree(path, topath, preserve_symlinks = 1)
-except Exception as e:
-	debug('Error while backuping directory %s to %s' % (path, topath))
-	debug(e)
-	sys.exit(1)
+    try:
+        M = B.restore()
+    except BackupDirectoryExistsException as e:
+        debug('Cannot restore an instance on an existing directory. Please remove %s first.' % B.get('identifier'))
+        debug('Run: moodle remove %s' % B.get('identifier'))
+        sys.exit(1)
+    except BackupDBExistsException as e:
+        debug('The database %s already exists. Please remove it first.' % B.get('dbname'))
+        debug('This command could help: moodle remove %s' % B.get('identifier'))
+        sys.exit(1)
 
-# Dump the whole database
-if M.isInstalled():
-    debug('Dumping database')
-    dumpto = os.path.join(topath, 'dump.sql')
-    fd = open(dumpto, 'w')
-    M.dbo().selectdb(M.get('dbname'))
-    M.dbo().dump(fd)
+    # Loads M object and display information
+    debug('')
+    debug('Restored instance information')
+    debug('')
+    infos = M.info()
+    for key in sorted(infos.keys()):
+        print '{0:<20}: {1}'.format(key, infos[key])
+    debug('')
+
+    debug('Done.')
+
+# Backup the instance
 else:
-    debug('Instance not installed. Do not dump database.')
+    M = Wp.resolve(name)
+    if not M:
+        debug('This is not a Moodle instance')
+        sys.exit(1)
 
-# Create a JSON file containing all known information
-debug('Saving instance information')
-jsonto = os.path.join(topath, 'info.json')
-info = M.info()
-info['backup_identifier'] = backup_identifier
-info['backup_time'] = now
-json.dump(info, open(jsonto, 'w'), sort_keys = True, indent = 4)
+    try:
+        BackupManager.create(M)
+    except BackupDBEngineNotSupported as e:
+        debug('Does not support backup for the DB engine %s yet, sorry!' % M.get('dbtype'))
+        sys.exit(1)
+    except DistutilsFileError as e:
+        debug('Error while copying files. Check the permissions on the data directory.')
+        debug('Or run: sudo chmod -R 0777 %s' % M.get('dataroot'))
+        sys.exit(1)
 
-debug('Done.')
+    debug('Done.')
