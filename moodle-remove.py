@@ -30,5 +30,12 @@ if not args.do:
 		sys.exit(0)
 
 debug('Removing %s...' % args.name)
-Wp.delete(args.name)
+try:
+    Wp.delete(args.name)
+except OSError:
+    debug('Error while deleting the instance.')
+    debug('This is probably a permission issue.')
+    debug('Run: sudo chmod -R 0777 %s' % Wp.getPath(args.name))
+    sys.exit(1)
+
 debug('Instance removed')
