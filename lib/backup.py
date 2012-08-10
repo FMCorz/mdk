@@ -33,7 +33,7 @@ class BackupManager(object):
             raise Exception('Cannot backup instance without identifier!')
 
         now = int(time.time())
-        backup_identifier = '%s_%s' % (name, now)
+        backup_identifier = self.createIdentifier(name)
         Wp = Workplace()
 
         # Copy whole directory, shutil will create topath
@@ -63,16 +63,30 @@ class BackupManager(object):
 
         return True
 
+    def createIdentifier(self, name):
+        """Creates an identifier"""
+        for i in range(1, 100):
+            identifier = '{0}_{1:0>2}'.format(name, i)
+            if not self.exists(identifier):
+                break
+            identifier = None
+        if not identifier:
+            raise Exception('Could not generate a backup identifier! How many backup did you do?!')
+        return identifier
+
+    def exists(self, name):
+        """Checks whether a backup exists under this name or not"""
+        d = os.path.join(self.path, name)
+        f = os.path.join(d, jason)
+        if not os.path.isdir(d):
+            return False
+        return os.path.isfile(f)
+
     def get(self, name):
         return Backup(self.getPath(name))
 
     def getPath(self, name):
         return os.path.join(self.path, name)
-
-    def exists(self, name):
-        """Checks whether a backup exists under this name or not"""
-        f = os.path.join(self.path, name, jason)
-        return os.path.isfile(f)
 
     def list(self):
         """Returns a list of backups with their information"""
