@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import subprocess, shlex
 import re
 
@@ -13,6 +14,16 @@ def yesOrNo(q):
 			return True
 		elif i == 'n':
 			return False
+
+def chmodRecursive(path, chmod):
+	os.chmod(path, chmod)
+	for (dirpath, dirnames, filenames) in os.walk(path):
+		for d in dirnames:
+			dir = os.path.join(dirpath, d)
+			os.chmod(dir, chmod)
+		for f in filenames:
+			file = os.path.join(dirpath, f)
+			os.chmod(file, chmod)
 
 def debug(str):
 	print str
