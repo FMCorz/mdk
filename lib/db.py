@@ -108,6 +108,9 @@ class DB(object):
 				insert = 'INSERT INTO %s (%s) VALUES(%s)' % (table, ','.join(columns), ','.join(values))
 				fd.write(insert + ';\n')
 
+	def execute(self, query):
+		self.cur.execute(query)
+
 	def selectdb(self, db):
 
 		if self.engine == 'mysqli':
