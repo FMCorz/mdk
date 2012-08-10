@@ -131,7 +131,7 @@ class Workplace(object):
         # Delete db
         DB = M.dbo()
         dbname = M.get('dbname')
-        if DB and dbname:
+        if DB and dbname and DB.dbexists(dbname):
             DB.dropdb(dbname)
 
     def generateInstanceName(self, version, integration=False, suffix=''):
