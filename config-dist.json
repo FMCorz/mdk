@@ -1,22 +1,29 @@
-// Configuration file
+// Moodle Development Kit configuration file
+//
+// A comment in this file MUST be preceded by white spaces or nothing
+//
 {
+    // Directories to work with. 
+    // All 3 of them must exist.
+    // www and storage CANNOT point to the same directory
     "dirs": {
-        "www": "/var/www/",
-        "storage": "/var/www/repositories",
+        // The web directory you are going to access Moodle from. A symlink will be created here.
+        "www": "/var/www",
+        // The directory where the instances will be stored
+        "storage": "/var/www/moodles",
+        // A directory used by MDK to store different kind of things such as backups and cached repositories
         "moodle": "/home/fred/.moodle"
     },
 
+    // List of remotes to work with
+    // The integration branch MUST end with integration.git
     "remotes": {
-        // In any case, the integration branch MUST end with integration.git
         "stable": "git://git.moodle.org/moodle.git",
         "integration": "git://git.moodle.org/integration.git",
-        "mine": "git@github.com/FMCorz/moodle.git"
+        "mine": "git@github.com/YourGitHub/moodle.git"
     },
 
-    "host": "fred.moodle.local",
-    "login": "admin",
-    "passwd": "test",
-
+    // Database access
     "db": {
         "mysqli": {
             "host": "localhost",
@@ -32,30 +39,57 @@
         }
     },
 
+    // Define the way your want things to be called
     "wording": {
-        "prefixStable": "s",
-        "prefixIntegration": "i",
-        "prefixMaster": "m",
-        "suffixSeparator": "",
 
+        // How to name your instances
+        "prefixStable": "stable",
+        "prefixIntegration": "integration",
+        "prefixMaster": "master",
+        "suffixSeparator": "_",
+
+        // How to name your branches
+        // Read the doc about Python regular expressions if you need to modify them
+        // http://docs.python.org/library/re.html
         "branchFormat": "MDL-%(issue)s-%(version)s",
         "branchSuffixSeparator": "-",
         "branchRegex": "^MDL-(?P<issue>[0-9]+)-(?P<version>[0-9a-z]+)(-(?P<suffix>[a-z0-9_-]+))?",
 
+        // How to name your Moodle installation
         "integration": "Integration",
         "master": "Master",
         "stable": "Stable",
-
         "mysqli": "MySQL",
         "pgsql": "PostgreSQL"
     },
 
+
+    // The host name to set during an install
+    "host": "localhost",
+    // Moodle admin login
+    "login": "admin",
+    // Moodle admin password
+    "passwd": "test",
+    // What to call your remote, do not call that origin!
+    "myRemote": "github",
+
+    // The name of the data directory
     "dataDir": "moodledata",
+    // The name of the www directory
     "wwwDir": "moodle",
+
+    // The default engine to use when not specified
     "defaultEngine": "mysqli",
+
+    // Path to Git
     "git": "/usr/bin/git",
+    // Path to PHP
     "php": "/usr/bin/php",
+
+    // Experimental setting to use a local cache as your origin remotes.
+    // Can be useful to prevent fetch from a slow remote.
     "useCacheAsRemote": false,
-    "masterBranch": 24,
-    "myRemote": "github"
+
+    // You should not edit this, this is the branch that is considered as master by developers.
+    "masterBranch": 24
 }
