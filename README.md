@@ -10,6 +10,16 @@ A collection of tools meant to make developers' lives easier.
 
 The tools should work on Moodle 1.9 but have not really been tested yet.
 
+## Usage
+
+The commands are called using that form:
+
+    moodle <command> <arguments>
+
+Get some help on a command using:
+
+    moodle <command>  --help
+
 ## Installation
 
 ### 1. Clone the repository
@@ -38,7 +48,7 @@ Read through the config file to find out what you have to set up.
 
 The most important are the directories (`dirs`), database access (`db`) and your repository (`remotes.mine`).
 
-If you already have instances installed and a way of naming your branches, you will have to update the `wording` part. Use extra care while edit the regular expressions!
+If you already have instances installed and a way of naming your branches, you will have to update the `wording` part. Use extra care with the regular expressions!
 
 ### 5. Done
 
@@ -46,15 +56,7 @@ If you already have instances installed, and your settings are correct, try the 
 
     moodle info --list
 
-## Commands
-
-The commands are called using that form:
-
-    moodle <command> <arguments>
-
-Get some help on a command using:
-
-    moodle <command>  --help
+## Commands list
 
 ### backport
 
@@ -94,9 +96,9 @@ Create a new instance of Moodle. It will be named according to your config file.
 
 __Examples__
 
-Create a new instance using MySQL
+Create a new instance of Moodle 2.1
 
-    moodle create --engine mysqli
+    moodle create --version 21
 
 Create an instance of Moodle 2.2 using PostgreSQL from the integration remote, and run the installation script.
 
@@ -196,10 +198,10 @@ The following runs an upgrade on your stable branches
 
     moodle upgrade --stable
 
-This will run an update an each instance and perform the upgrade process
+This will run an update an each instance before performing the upgrade process
 
-    moodle update --all --update
+    moodle upgrade --all --update
 
-## Licence
+## License
 
 Licensed under the GNU GPL License http://www.gnu.org/copyleft/gpl.html
