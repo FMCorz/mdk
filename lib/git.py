@@ -132,10 +132,8 @@ class Git(object):
 		cmd = 'push %s%s %s' % (force, remote, branch)
 		return self.execute(cmd)
 
-	def rebase(self, branch, onto = ''):
-		if onto != '':
-			onto = '--onto %s ' % (onto)
-		cmd = 'rebase %s%s' % (onto, branch)
+	def rebase(self, base, branch):
+		cmd = 'rebase %s %s' % (base, branch)
 		return self.execute(cmd)
 
 	def remoteBranches(self, remote):

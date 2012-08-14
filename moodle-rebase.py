@@ -83,10 +83,10 @@ for M in Mlist:
 
 		# Rebase
 		debug('> Rebasing %s...' % (branch))
-		onto = 'origin/%s' % M.get('stablebranch')
-		result = M.git().rebase(branch, onto=onto)
+		base = 'origin/%s' % M.get('stablebranch')
+		result = M.git().rebase(branch=branch, base=base)
 		if result[0] != 0:
-			debug('Error while rebasing branch %s onto %s' % (branch, onto))
+			debug('Error while rebasing branch %s on top of %s' % (branch, base))
 			debug(result[2])
 			continue
 
