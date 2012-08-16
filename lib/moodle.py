@@ -178,7 +178,7 @@ class Moodle(object):
     def install(self, dbname = None, engine = None, dataDir = None, fullname = None, dropDb = False):
         """Launch the install script of an Instance"""
 
-        if not self.isInstalled():
+        if self.isInstalled():
             raise Exception('Instance already installed!')
 
         if dataDir == None or not os.path.isdir(dataDir):
