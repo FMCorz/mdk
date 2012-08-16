@@ -63,7 +63,7 @@ for M in Mlist:
 	debug('Updating %s...' % M.get('identifier'))
 	try:
 		M.update()
-		if args.upgrade:
+		if M.isInstalled() and args.upgrade:
 			M.upgrade()
 	except Exception as e:
 		debug('Error during the update of %s' % M.get('identifier'))
