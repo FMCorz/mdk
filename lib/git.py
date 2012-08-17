@@ -132,8 +132,15 @@ class Git(object):
 		cmd = 'push %s%s %s' % (force, remote, branch)
 		return self.execute(cmd)
 
-	def rebase(self, base, branch):
-		cmd = 'rebase %s %s' % (base, branch)
+	def rebase(self, base = None, branch = None, abort = False):
+		cmd = None
+		if abort:
+			cmd = 'rebase --abort'
+		elif base != None and branch != None:
+			# Rebase automatically checks out the branch before rebasing
+			cmd = 'rebase %s %s' % (base, branch)
+		if cmd == None:
+			raise Exception('Missing arguments for calling rebase')
 		return self.execute(cmd)
 
 	def remoteBranches(self, remote):

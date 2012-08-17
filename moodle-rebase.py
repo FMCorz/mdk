@@ -65,6 +65,14 @@ for M in Mlist:
 	debug('Working on %s' % (M.get('identifier')))
 	M.git().fetch('origin')
 
+	# Test if currently in a detached branch
+	if M.git().currentBranch() == 'HEAD':
+		result = M.git().checkout(M.get('stablebranch'))
+		# If we can't checkout the stable branch, that is probably because we are in an unmerged situation
+		if not result:
+			debug('Error. The repository seem to be on a detached branch. Skipping.')
+			continue
+
 	# Stash
 	stash = M.git().stash(untracked=True)
 	if stash[0] != 0:
@@ -87,7 +95,12 @@ for M in Mlist:
 		result = M.git().rebase(branch=branch, base=base)
 		if result[0] != 0:
 			debug('Error while rebasing branch %s on top of %s' % (branch, base))
-			debug(result[2])
+			if result[0] == 1 and result[2].strip() == '':
+				debug('There must be conflicts.')
+				debug('Aborting... Please rebase manually.')
+				M.git().rebase(abort=True)
+			else:
+				debug(result[2])
 			continue
 
 		# Pushing branch
