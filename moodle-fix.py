@@ -23,6 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import os
+import sys
 import argparse
 import re
 
