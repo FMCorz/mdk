@@ -60,8 +60,17 @@ for M in Mlist:
 			debug(e)
 			continue
 	debug('Upgrading %s...' % M.get('identifier'))
-	if M.upgrade():
-		debug('Error during the upgrade of %s' % M.get('identifier'))
+
+	if not M.isInstalled():
+		debug('Instance not installed. Skipping...')
+		debug('')
+		continue
+
+	if M.get('branch') != 'master' and int(M.get('branch')) < 20:
+		debug('Skipping version < 2.0')
+	else:
+		if not M.upgrade():
+			debug('Error during the upgrade of %s' % M.get('identifier'))
 	debug('')
 
 debug('Done.')
