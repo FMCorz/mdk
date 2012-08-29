@@ -142,11 +142,11 @@ class Workplace(object):
         shutil.rmtree(os.path.join(self.path, name))
 
         # Deleting the possible symlink
-        link = os.path.join(C('dirs.www'), name)
-        if os.path.islink(link) and os.path.isdir(link):
+        link = os.path.join(self.www, name)
+        if os.path.islink(link):
             try:
                 os.remove(link)
-            except:
+            except Exception as e:
                 pass
 
         # Delete db
