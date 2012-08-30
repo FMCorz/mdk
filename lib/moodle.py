@@ -24,6 +24,7 @@ http://github.com/FMCorz/mdk
 
 import os
 import re
+import shutil
 
 from tools import debug, process
 from db import DB
@@ -333,6 +334,34 @@ class Moodle(object):
         """Reloads the information"""
         self._loaded = False
         return self._load()
+
+    def runScript(self, scriptname, **kwargs):
+        """Runs a script on the instance"""
+        supported = ['php']
+        path = os.path.join(os.path.dirname(__file__), '..', 'scripts')
+        f = os.path.join(path, scriptname)
+
+        script = None
+        type = None
+        if os.path.isfile(f) and scriptname.rsplit('.', 1) in supported:
+            script = f
+            type = scriptname.rsplit('.', 1)[1]
+        else:
+            for ext in supported:
+                if os.path.isfile(f + '.' + ext):
+                    script = f + '.' + ext
+                    type = ext
+                    break
+
+        if not script:
+            raise Exception('Could not find the script, or format not supported')
+
+        if type == 'php':
+            dest = os.path.join(self.get('path'), 'mdkrun.php')
+            shutil.copyfile(script, dest)
+            result = self.cli('mdkrun.php', **kwargs)
+            os.remove(dest)
+            return result[0]
 
     def update(self, remote = 'origin'):
         """Update the instance from the remote"""
