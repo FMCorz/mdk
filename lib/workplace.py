@@ -113,6 +113,12 @@ class Workplace(object):
         else:
             os.symlink(wwwDir, linkDir)
 
+        # Symlink to dataDir in wwwDir
+        if C('symlinkToData'):
+            linkDataDir = os.path.join(wwwDir, C('symlinkToData'))
+            if not os.path.isfile(linkDataDir) and not os.path.isdir(linkDataDir) and not os.path.islink(linkDataDir):
+                os.symlink(dataDir, linkDataDir)
+
         # Creating, fetch, pulling branches
         debug('Checking out branch...')
         M = self.get(name)
