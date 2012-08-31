@@ -32,19 +32,34 @@ Wp = workplace.Workplace()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Run a script on a Moodle instance')
-parser.add_argument('script', metavar='script', help='the name of the script to run on the instance')
-parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
+parser.add_argument('-a', '--all', action='store_true', help='runs the script on every instances', dest='all')
+parser.add_argument('-i', '--integration', action='store_true', help='runs the script on the integration instances', dest='integration')
+parser.add_argument('-s', '--stable', action='store_true', help='runs the script on the stable instances', dest='stable')
+parser.add_argument('script', metavar='script', help='the name of the script to run')
+parser.add_argument('names', metavar='names', default=None, nargs='*', help='name of the instances')
 args = parser.parse_args()
 
-M = Wp.resolve(args.name)
-if not M:
-    debug('This is not a Moodle instance')
+# Resolving instances
+names = args.names
+if args.all:
+    names = Wp.list()
+elif args.integration or args.stable:
+    names = Wp.list(integration = args.integration, stable = args.stable)
+
+# Doing stuff
+Mlist = Wp.resolveMultiple(names)
+if len(Mlist) < 1:
+    debug('No instances to work on. Exiting...')
     sys.exit(1)
 
-try:
-	debug('Running \'%s\' on \'%s\'' % (args.script, M.get('identifier')))
-	M.runScript(args.script, stderr=None, stdout=None)
-except Exception as e:
-	debug(e)
+for M in Mlist:
+    debug('Running \'%s\' on \'%s\'' % (args.script, M.get('identifier')))
+    try:
+        M.runScript(args.script, stderr=None, stdout=None)
+    except Exception as e:
+        debug('Error while running the script on %s' % M.get('identifier'))
+        debug(e)
+    else:
+        debug('')
 
 debug('Done.')
