@@ -313,7 +313,7 @@ class Moodle(object):
         config = os.path.join(self.path, 'config.php')
         if os.path.isfile(config):
             self.installed = True
-            prog = re.compile(r'^\s*\$CFG->([a-z]+)\s*=\s*(?P<brackets>[\'"])(.+)(?P=brackets)\s*;$', re.I)
+            prog = re.compile(r'^\s*\$CFG->([a-z_]+)\s*=\s*(?P<brackets>[\'"])(.+)(?P=brackets)\s*;$', re.I)
             try:
                 f = open(config, 'r')
                 for line in f:
