@@ -38,6 +38,7 @@ Wp = workplace.Workplace()
 parser = argparse.ArgumentParser(description='Creates a new instance of Moodle')
 parser.add_argument('-t', '--integration', action='store_true', help='create an instance from integration')
 parser.add_argument('-i', '--install', action='store_true', help='launch the installation script after creating the instance', dest='install')
+parser.add_argument('-r', '--run', action='store', nargs='*', help='scripts to run after installation', metavar='run')
 parser.add_argument('-v', '--version', action='store', choices=[ str(x) for x in range(13, C('masterBranch')) ] + ['master'], default='master', help='version of Moodle', metavar='version')
 parser.add_argument('-s', '--suffix', action='store', help='suffix for the instance name', metavar='suffix')
 parser.add_argument('-e', '--engine', action='store', choices=['mysqli', 'pgsql'], default=C('defaultEngine'), help='database engine to use', metavar='engine')
@@ -96,5 +97,14 @@ if args.install:
 		'dataDir': Wp.getPath(name, 'data')
 	}
 	M.install(**kwargs)
+
+	if M.isInstalled():
+	    for script in args.run:
+	        debug('Running script \'%s\'' % (script))
+	        try:
+	            M.runScript(script)
+	        except Exception as e:
+	            debug('Error while running the script')
+	            debug(e)
 
 debug('Process complete!')
