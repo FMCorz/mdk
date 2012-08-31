@@ -53,12 +53,23 @@ if len(Mlist) < 1:
 
 for M in Mlist:
     debug('Purging cache on %s' % (M.get('identifier')))
+
+    if not M.isInstalled():
+        debug('Instance not installed. Skipping...')
+        debug('')
+        continue
+    elif M.get('stablebranch') != 'master' and int(M.get('branch')) < 22:
+        debug('Instance does not support cache purging. Skipping...')
+        debug('')
+        continue
+
     try:
     	M.cli('admin/cli/purge_caches.php', stderr=None, stdout=None)
     except Exception as e:
-        debug('Error while purging cache on %s' % M.get('identifier'))
-    	debug(e)
+        debug('Error while purging cache!')
     else:
-        debug('')
+        debug('Cache purged!')
+
+    debug('')
 
 debug('Done.')
