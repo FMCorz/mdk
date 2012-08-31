@@ -1,8 +1,10 @@
-# Moodle Development Kit
+Moodle Development Kit
+======================
 
 A collection of tools meant to make developers' lives easier.
 
-## Requirements
+Requirements
+------------
 
 - Python 2.7
 - Moodle 2.x
@@ -10,7 +12,8 @@ A collection of tools meant to make developers' lives easier.
 
 The tools should work on Moodle 1.9 but have not really been tested yet.
 
-## Usage
+Usage
+-----
 
 The commands are called using that form:
 
@@ -20,7 +23,8 @@ Get some help on a command using:
 
     moodle <command>  --help
 
-## Installation
+Installation
+------------
 
 ### 1. Clone the repository
 
@@ -56,13 +60,14 @@ If you already have instances installed, and your settings are correct, try the 
 
     moodle info --list
 
-## Commands list
+Command list
+------------
 
-### backport
+### - backport
 
 Backport a branch to another instance of Moodle.
 
-__Examples__
+**Examples**
 
 Assuming we are in a Moodle instance, this backports the current branch to the version 2.2 and 2.3
 
@@ -72,11 +77,12 @@ Backports the branch MDL-12345-23 from the instance stable_23 to the instance st
 
     moodle backport stable_23 --branch MDL-12345-23 --version 22 --push
 
-### backup
+
+### - backup
 
 Backup a whole instance so that it can be restored later.
 
-__Examples__
+**Examples**
 
 Backup the instance named stable_master
 
@@ -90,11 +96,12 @@ Restore the second backup of the instance stable_master
 
     moodle backup --restore stable_master_02
 
-### create
+
+### - create
 
 Create a new instance of Moodle. It will be named according to your config file.
 
-__Examples__
+**Examples**
 
 Create a new instance of Moodle 2.1
 
@@ -104,22 +111,24 @@ Create an instance of Moodle 2.2 using PostgreSQL from the integration remote, a
 
     moodle create --version 22 --engine pgsql --integration --install
 
-### fix
+
+### - fix
 
 Create a branch from an issue number on the tracker (MDL-12345) and sets it to track the right branch.
 
-__Examples__
+**Examples**
 
 In a Moodle 2.2 instance, this will create a branch named MDL-12345-22 which will track origin/MOODLE_22_STABLE.
 
     moodle fix MDL-12345
     moodle fix 12345
 
-### info
+
+### - info
 
 Display information about the instances on the system.
 
-__Examples__
+**Examples**
 
 List the instances
 
@@ -129,23 +138,37 @@ Display the information known about the instance *stable_master*
 
     moodle info stable_master
 
-### install
+
+### - install
 
 Run the command line installation script with all parameters set on an existing instance.
 
-__Examples__
+**Examples**
 
     moodle install --engine mysqli stable_master
 
-### phpunit
+
+### - phpunit
 
 Get the instance ready for PHP Unit tests.
 
-### push
+
+### - purge
+
+Purge the cache.
+
+**Example**
+
+To purge the cache of all the instances
+
+    moodle purge --all
+
+
+### - push
 
 Shortcut to push a branch to your remote.
 
-__Examples__
+**Examples**
 
 Push the current branch to your repository
 
@@ -155,30 +178,44 @@ Force a push of the branch MDL-12345-22 from the instance stable_22 to your remo
 
     moodle push --force --branch MDL-12345-22 stable_22
 
-### rebase
+
+### - rebase
 
 Fetch the latest branches from origin and rebase your local branches.
 
-__Examples__
+**Examples**
 
 This will rebase the branches MDL-12345-xx and MDL-56789-xx on the instances stable_22, stable_23 and stable_master. And push them to your remote if successful.
 
     moodle rebase --issues 12345 56789 --version 22 23 master --push
     moodle rebase --issues MDL-12345 MDL-56789 --push stable_22 stable_23 stable_master
 
-### remove
+
+### - remove
 
 Remove an instance, deleting every thing including the database.
 
-__Examples__
+**Example**
 
     moodle remove stable_master
 
-### update
+
+### - run
+
+Execute a script on an instance. The scripts are stored in the scripts directory.
+
+**Example**
+
+Set the instance stable_master ready for development
+
+    moodle run dev stable_master
+
+
+### - update
 
 Fetch the latest stables branches from the origin and pull the changes into the local stable branch.
 
-__Examples__
+**Examples**
 
 This updates the instances stable_22 and stable_23
 
@@ -188,11 +225,12 @@ This updates all your integration instances and runs the upgrade script of Moodl
 
     moodle update --integration --upgrade
 
-### upgrade
+
+### - upgrade
 
 Run the upgrade script of your instance
 
-__Examples__
+**Examples**
 
 The following runs an upgrade on your stable branches
 
@@ -202,6 +240,20 @@ This will run an update an each instance before performing the upgrade process
 
     moodle upgrade --all --update
 
-## License
+Scripts
+-------
 
-Licensed under the GNU GPL License http://www.gnu.org/copyleft/gpl.html
+You can write custom scripts and execute them on your instances using the command `moodle run`. MDK looks for the scripts in the _scripts_ directory and identifies their type by reading their extension. For example, a script called 'helloworld.php' will be executed as a command line script from the root of an installation.
+
+    # From anywhere on the system
+    $ moodle run helloworld stable_master
+
+    # Is similar to typing the following command in /var/www/stable_master
+    $ php helloworld.php
+
+Scripts are very handy when it comes to performing more complexed tasks.
+
+License
+-------
+
+Licensed under the [GNU GPL License](http://www.gnu.org/copyleft/gpl.html)
