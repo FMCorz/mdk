@@ -121,21 +121,21 @@ class Workplace(object):
 
         # Creating, fetch, pulling branches
         debug('Checking out branch...')
-        M = self.get(name)
-        git = M.git()
-        result = git.fetch('origin')
+        repo = git.Git(wwwDir, C('git'))
+        result = repo.fetch('origin')
         if version == 'master':
-            git.checkout('master')
+            repo.checkout('master')
         else:
             track = 'origin/MOODLE_%s_STABLE' % version
             branch = 'MOODLE_%s_STABLE' % version
-            if not git.createBranch(branch, track):
+            if not repo.createBranch(branch, track):
                 debug('Could not create branch %s tracking %s' % (branch, track))
             else:
-                git.checkout(branch)
-        git.pull()
-        git.addRemote(C('myRemote'), C('remotes.mine'))
+                repo.checkout(branch)
+        repo.pull()
+        repo.addRemote(C('myRemote'), C('remotes.mine'))
 
+        M = self.get(name)
         return M
 
     def delete(self, name):

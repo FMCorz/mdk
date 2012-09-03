@@ -265,6 +265,7 @@ class Moodle(object):
             return True
 
         # Extracts information from version.php
+        self.version = {}
         version = os.path.join(self.path, 'version.php')
         if os.path.isfile(version):
 
@@ -309,6 +310,7 @@ class Moodle(object):
             raise Exception('This does not appear to be a Moodle instance')
 
         # Extracts parameters from config.php, does not handle params over multiple lines
+        self.config = {}
         config = os.path.join(self.path, 'config.php')
         if os.path.isfile(config):
             self.installed = True
