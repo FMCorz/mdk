@@ -20,7 +20,7 @@
     "remotes": {
         "stable": "git://git.moodle.org/moodle.git",
         "integration": "git://git.moodle.org/integration.git",
-        "mine": "git@github.com/YourGitHub/moodle.git"
+        "mine": "git@github.com:YourGitHub/moodle.git"
     },
 
     // Database access
