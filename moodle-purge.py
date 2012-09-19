@@ -58,7 +58,7 @@ for M in Mlist:
         debug('Instance not installed. Skipping...')
         debug('')
         continue
-    elif M.get('stablebranch') != 'master' and int(M.get('branch')) < 22:
+    elif M.branch_compare('22', '<'):
         debug('Instance does not support cache purging. Skipping...')
         debug('')
         continue

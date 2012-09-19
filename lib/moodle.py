@@ -69,6 +69,30 @@ class Moodle(object):
         except:
             raise Exception('Error while writing to config file')
 
+    def branch_compare(self, branch, compare = '>='):
+        """Compare the branch of the current instance with the one passed"""
+        try:
+            branch = int(branch)
+        except:
+            raise Exception('Could not convert branch to int, got %s' % branch)
+        b = self.get('branch')
+        if b == None:
+            raise Exception('Error while reading the branch')
+        elif b == 'master':
+            b = C('masterBranch')
+        b = int(b)
+        if compare == '>=':
+            return b >= branch
+        elif compare == '>':
+            return b > branch
+        elif compare == '=' or compare == '==':
+            return b == branch
+        if compare == '<=':
+            return b <= branch
+        elif compare == '<':
+            return b < branch
+        return False
+
     def cli(self, cli, args = '', **kwargs):
         """Executes a command line tool script"""
         cli = os.path.join(self.get('path'), cli.lstrip('/'))
@@ -128,7 +152,7 @@ class Moodle(object):
     def initPHPUnit(self):
         """Initialise the PHP Unit environment"""
 
-        if self.get('branch') != 'master' and int(self.get('branch')) < 23:
+        if self.branch_compare(23, '<'):
             raise Exception('PHP Unit is only available from Moodle 2.3')
 
         # Set PHP Unit data root

@@ -63,7 +63,7 @@ for M in Mlist:
 	debug('Updating %s...' % M.get('identifier'))
 	try:
 		M.update()
-		if M.isInstalled() and args.upgrade and (M.get('branch') == 'master' or int(M.get('branch')) >= 20):
+		if M.isInstalled() and args.upgrade and M.branch_compare(20):
 			M.upgrade()
 	except Exception as e:
 		debug('Error during the update of %s' % M.get('identifier'))

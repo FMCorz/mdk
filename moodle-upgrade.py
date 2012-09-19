@@ -66,7 +66,7 @@ for M in Mlist:
 		debug('')
 		continue
 
-	if M.get('branch') != 'master' and int(M.get('branch')) < 20:
+	if M.branch_compare(20, '<'):
 		debug('Skipping version < 2.0')
 	else:
 		if not M.upgrade():
