@@ -355,6 +355,18 @@ class Moodle(object):
         self._loaded = True
         return True
 
+    def purge(self):
+        """Purge the cache of an instance"""
+        if not self.isInstalled():
+            raise Exception('Instance not installed, cannot purge.')
+        elif self.branch_compare('22', '<'):
+            raise Exception('Instance does not support cache purging.')
+
+        try:
+            self.cli('admin/cli/purge_caches.php', stderr=None, stdout=None)
+        except Exception as e:
+            raise Exception('Error while purging cache!')
+
     def reload(self):
         """Reloads the information"""
         self._loaded = False
