@@ -441,7 +441,13 @@ class Moodle(object):
 
     def upgrade(self):
         """Calls the upgrade script"""
+        if not self.isInstalled():
+            raise Exception('Cannot upgrade an instance which is not installed.')
+        elif not self.branch_compare(20):
+            raise Exception('Upgrade command line tool not supported by this version.')
+
         cli = '/admin/cli/upgrade.php'
         args = '--non-interactive --allow-unstable'
         result = self.cli(cli, args, stdout = None, stderr = None)
-        return result[0] == 0
+        if result[0] != 0:
+            raise Exception('Error while running the upgrade.')
