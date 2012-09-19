@@ -61,7 +61,8 @@ kwargs = {
 }
 M.install(**kwargs)
 
-if M.isInstalled():
+# Running scripts
+if M.isInstalled() and type(args.run) == list:
     for script in args.run:
         debug('Running script \'%s\'' % (script))
         try:
