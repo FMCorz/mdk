@@ -24,6 +24,12 @@ set_config('debugpageinfo', 1);
 // Allow themes to be changed from the URL.
 set_config('allowthemechangeonurl', 1);
 
+// Do not cache JavaScript.
+set_config('cachejs', 0);
+
+// Do not use YUI combo loading.
+set_config('yuicomboloading', 0);
+
 // Adds FirePHP
 $firephp = "
 // FirePHP
