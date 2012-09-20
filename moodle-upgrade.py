@@ -51,12 +51,15 @@ if len(Mlist) < 1:
     debug('No instances to work on. Exiting...')
     sys.exit(1)
 
+errors = []
+
 for M in Mlist:
 	if args.update:
 		debug('Updating %s...' % M.get('identifier'))
 		try:
 			M.update()
 		except Exception as e:
+			errors.append(M)
 			debug('Error during update. Skipping...')
 			debug(e)
 			continue
@@ -65,8 +68,15 @@ for M in Mlist:
 	try:
 		M.upgrade(args.nocheckout)
 	except Exception as e:
+		errors.append(M)
 		debug('Error during the upgrade of %s' % M.get('identifier'))
 		debug(e)
 	debug('')
-
 debug('Done.')
+
+if errors and len(Mlist) > 1:
+	debug('')
+	debug('/!\ Some errors occurred on the following instances:')
+	for M in errors:
+		debug('- %s' % M.get('identifier'))
+	sys.exit(1)

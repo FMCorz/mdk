@@ -59,11 +59,14 @@ if len(Mlist) < 1:
     debug('No instances to work on. Exiting...')
     sys.exit(1)
 
+errors = []
+
 for M in Mlist:
 	debug('Updating %s...' % M.get('identifier'))
 	try:
 		M.update()
 	except Exception as e:
+		errors.append(M)
 		debug('Error during the update of %s' % M.get('identifier'))
 		debug(e)
 	else:
@@ -71,7 +74,15 @@ for M in Mlist:
 			try:
 				M.upgrade()
 			except Exception as e:
+				errors.append(M)
+				debug('Error during the upgrade of %s' % M.get('identifier'))
 				pass
 	debug('')
-
 debug('Done.')
+
+if errors and len(Mlist) > 1:
+	debug('')
+	debug('/!\ Some errors occurred on the following instances:')
+	for M in errors:
+		debug('- %s' % M.get('identifier'))
+	sys.exit(1)
