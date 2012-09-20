@@ -45,6 +45,9 @@ class Moodle(object):
     _git = None
     _loaded = False
 
+    _cos_hasstash = False
+    _cos_oldbranch = None
+
     def __init__(self, path, identifier = None):
         self.path = path
         self.identifier = identifier
@@ -92,6 +95,42 @@ class Moodle(object):
         elif compare == '<':
             return b < branch
         return False
+
+    def checkout_stable(self, checkout = True):
+        """Checkout the stable branch, do a stash if required. Needs to be called again to pop the stash!"""
+
+        # Checkout the branch
+        if checkout:
+            stablebranch = self.get('stablebranch')
+            if self.currentBranch() == stablebranch:
+                self._cos_oldbranch = None
+                return True
+
+            self._cos_oldbranch = self.currentBranch()
+            self._cos_hasstash = False
+
+            # Stash
+            stash = self.git().stash(untracked=True)
+            if stash[0] != 0:
+                raise Exception('Error while stashing your changes')
+            if not stash[1].startswith('No local changes'):
+                self._cos_hasstash = True
+
+            # Checkout STABLE
+            if not self.git().checkout(stablebranch):
+                raise Exception('Could not checkout %s' % stablebranch)
+
+        # Checkout the previous branch
+        elif self._cos_oldbranch != None:
+            if not self.git().checkout(self._cos_oldbranch):
+                raise Exception('Could not checkout working branch %s' % self._cos_oldbranch)
+
+            # Unstash
+            if self._cos_hasstash:
+                pop = self.git().stash('pop')
+                if pop[0] != 0:
+                    raise Exception('Error while popping the stash. Probably got conflicts.')
+                self._cos_hasstash = False
 
     def cli(self, cli, args = '', **kwargs):
         """Executes a command line tool script"""
@@ -403,51 +442,38 @@ class Moodle(object):
     def update(self, remote = 'origin'):
         """Update the instance from the remote"""
 
-        originalbranch = self.currentBranch()
-        stablebranch = self.get('stablebranch')
-
         # Fetch
         if not self.git().fetch(remote):
             raise Exception('Could not fetch remote %s' % remote)
 
-        # Stash
-        hasStash = True
-        stash = self.git().stash(untracked=True)
-        if stash[0] != 0:
-            raise Exception('Error while stashing your changes')
-        if stash[1].startswith('No local changes'):
-            hasStash = False
-
-        # Checkout STABLE
-        if not self.git().checkout(stablebranch):
-            raise Exception('Could not checkout %s' % stablebranch)
+        # Checkout stable
+        self.checkout_stable(True)
 
         # Reset HARD
-        upstream = '%s/%s' % (remote, stablebranch)
+        upstream = '%s/%s' % (remote, self.get('stablebranch'))
         if not self.git().reset(to = upstream, hard = True):
-            raise Exception('Error while executing git reset')
+            raise Exception('Error while executing git reset.')
 
-        # Unstash
-        if hasStash:
-            pop = self.git().stash('pop')
-            if pop[0] != 0:
-                raise Exception('Error while popping the stash. Probably got conflicts.')
+        # Return to previous branch
+        self.checkout_stable(False)
 
-        # Checkout original branch
-        if not self.git().checkout(originalbranch):
-            raise Exception('Could not checkout working branch %s' % originalbranch)
-
-        return True
-
-    def upgrade(self):
+    def upgrade(self, nocheckout = False):
         """Calls the upgrade script"""
         if not self.isInstalled():
             raise Exception('Cannot upgrade an instance which is not installed.')
         elif not self.branch_compare(20):
             raise Exception('Upgrade command line tool not supported by this version.')
 
+        # Checkout stable
+        if not nocheckout:
+            self.checkout_stable(True)
+
         cli = '/admin/cli/upgrade.php'
         args = '--non-interactive --allow-unstable'
         result = self.cli(cli, args, stdout = None, stderr = None)
         if result[0] != 0:
             raise Exception('Error while running the upgrade.')
+
+        # Return to previous branch
+        if not nocheckout:
+            self.checkout_stable(False)

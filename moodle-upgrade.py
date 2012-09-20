@@ -34,6 +34,7 @@ Wp = workplace.Workplace()
 parser = argparse.ArgumentParser(description='Runs the Moodle upgrade script')
 parser.add_argument('-a', '--all', action='store_true', help='runs the script on every instances', dest='all')
 parser.add_argument('-i', '--integration', action='store_true', help='runs the script on the integration instances', dest='integration')
+parser.add_argument('-n', '--no-checkout', action='store_true', help='do not checkout the stable branch before upgrading', dest='nocheckout')
 parser.add_argument('-s', '--stable', action='store_true', help='runs the script on the stable instances', dest='stable')
 parser.add_argument('-u', '--update', action='store_true', help='update the instance before running the upgrade script', dest='update')
 parser.add_argument('names', metavar='names', default=None, nargs='*', help='name of the instances')
@@ -62,7 +63,7 @@ for M in Mlist:
 	debug('Upgrading %s...' % M.get('identifier'))
 
 	try:
-		M.upgrade()
+		M.upgrade(args.nocheckout)
 	except Exception as e:
 		debug('Error during the upgrade of %s' % M.get('identifier'))
 		debug(e)
