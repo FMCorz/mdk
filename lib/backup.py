@@ -209,6 +209,7 @@ class Backup(object):
                 if done % 500 == 0:
                     debug("%d queries done" % done)
             debug('%d queries done' % done)
+            dbo.close()
 
         # Restoring symbolic link
         linkDir = os.path.join(Wp.www, identifier)

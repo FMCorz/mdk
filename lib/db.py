@@ -39,6 +39,11 @@ class DB(object):
 		else:
 			raise Exception('DB engine %s not supported' % engine)
 
+	def close(self):
+		"""Close the cursor and connection"""
+		self.cur.close()
+		self.conn.close()
+
 	def columns(self, table):
 
 		columns = []
