@@ -34,7 +34,10 @@ class DB(object):
 				password = str(options['passwd']),
 				dbname = ''
 			)
-			self.cur = self.conn.cursor()
+			try:
+				self.cur = self.conn.cursor()
+			except:
+				raise Exception('Connexion failed! Make sure the database \'%s\' exists.' % str(options['user']))
 
 		else:
 			raise Exception('DB engine %s not supported' % engine)
@@ -58,9 +61,9 @@ class DB(object):
 	def createdb(self, db):
 
 		if self.engine == 'mysqli':
-			self.cur.execute('CREATE DATABASE %s DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci' % db)
+			self.cur.execute('CREATE DATABASE `%s` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci' % db)
 		elif self.engine == 'pgsql':
-			self.cur.execute('CREATE DATABASE %s WITH ENCODING \'UNICODE\'' % db)
+			self.cur.execute('CREATE DATABASE "%s" WITH ENCODING \'UNICODE\'' % db)
 
 	def dbexists(self, db):
 
@@ -77,7 +80,10 @@ class DB(object):
 
 	def dropdb(self, db):
 
-		self.cur.execute('DROP DATABASE %s' % db)
+		if self.engine == 'mysqli':
+			self.cur.execute('DROP DATABASE `%s`' % db)
+		elif self.engine == 'pgsql':
+			self.cur.execute('DROP DATABASE "%s"' % db)
 
 	def dump(self, fd, prefix = ''):
 		"""Dump a database to the file descriptor passed"""
