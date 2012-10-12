@@ -54,7 +54,7 @@ ALIAS=`$BIN show $COMMAND`
 if [ -n "$ALIAS" ]
 then
     COMMAND=`echo $ALIAS | cut -d ' ' -f 1`
-    ALIASARGS=`echo $ALIAS | cut -d ' ' -f 2-`
+    ALIASARGS=`echo $ALIAS | cut -d ' ' -s -f 2-`
     ARGS="$ALIASARGS $ARGS"
 fi
 
