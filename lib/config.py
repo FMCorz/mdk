@@ -73,6 +73,26 @@ class Conf(object):
 		except:
 			raise Exception('Could not load config file %s' % fn)
 
+	def remove(self, name):
+		"""Remove a setting"""
+		name = unicode(name).split('.')
+		count = len(name)
+		data = self.data
+		for i in range(count):
+			n = name[i]
+			if i == count -1:
+				try:
+					del data[n]
+				except:
+					pass
+				break
+			else:
+				try:
+					data = data[n]
+				except:
+					break
+		self.save()
+
 	def save(self):
 		"""Save the settings to the config file"""
 		try:
