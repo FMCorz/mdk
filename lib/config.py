@@ -31,8 +31,10 @@ class Conf(object):
 	path = None
 	configfile = None
 
-	def __init__(self, path = None):
+	def __init__(self, path, filename = None):
 		self.path = path
+		if filename != None:
+			self.filename = filename
 		self.configfile = os.path.join(self.path, self.filename)
 		self.load()
 

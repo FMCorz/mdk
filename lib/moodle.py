@@ -308,7 +308,10 @@ class Moodle(object):
 
     def isIntegration(self):
         """Returns whether an instance is an integration one or not"""
-        remote = self.git().getConfig('remote.%s.url' % C.get('upstreamRemote'))
+        r = C.get('upstreamRemote') or 'upstream'
+        if not self.git().getRemote(r):
+            r = 'origin'
+        remote = self.git().getConfig('remote.%s.url' % r)
         if remote != None and remote.endswith('integration.git'):
             return True
         return False

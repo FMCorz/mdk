@@ -105,6 +105,10 @@ Restore the second backup of the instance stable_master
 
     moodle backup --restore stable_master_02
 
+### - check
+
+Perform some checks on the environment to identify possible problems
+
 ### - create
 
 Create a new instance of Moodle. It will be named according to your config file.
