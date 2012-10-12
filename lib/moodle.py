@@ -28,10 +28,8 @@ import shutil
 
 from tools import debug, process
 from db import DB
-from config import Conf
+from config import C
 from git import Git
-
-C = Conf().get
 
 class Moodle(object):
 
@@ -82,7 +80,7 @@ class Moodle(object):
         if b == None:
             raise Exception('Error while reading the branch')
         elif b == 'master':
-            b = C('masterBranch')
+            b = C.get('masterBranch')
         b = int(b)
         if compare == '>=':
             return b >= branch
@@ -139,7 +137,7 @@ class Moodle(object):
             raise Exception('Could not find script to call')
         if type(args) == 'list':
             args = ' '.join(args)
-        cmd = '%s %s %s' % (C('php'), cli, args)
+        cmd = '%s %s %s' % (C.get('php'), cli, args)
         return process(cmd, cwd=self.get('path'), **kwargs)
 
     def currentBranch(self):
@@ -153,7 +151,7 @@ class Moodle(object):
             db = self.get('dbname')
             if engine != None and db != None:
                 try:
-                    self._dbo = DB(engine, C('db.%s' % engine))
+                    self._dbo = DB(engine, C.get('db.%s' % engine))
                 except:
                     pass
         return self._dbo
@@ -167,9 +165,9 @@ class Moodle(object):
             'issue': mdl,
             'version': version
         }
-        branch = C('wording.branchFormat') % args
+        branch = C.get('wording.branchFormat') % args
         if suffix != None and suffix != '':
-            branch += C('wording.branchSuffixSeparator') + suffix
+            branch += C.get('wording.branchSuffixSeparator') + suffix
         return branch
 
     def get(self, param, default = None):
@@ -183,7 +181,7 @@ class Moodle(object):
     def git(self):
         """Returns a Git object"""
         if self._git == None:
-            self._git = Git(self.path, C('git'))
+            self._git = Git(self.path, C.get('git'))
             if not self._git.isRepository():
                 raise Exception('Could not find the Git repository')
         return self._git
@@ -250,13 +248,13 @@ class Moodle(object):
         if dbname == None:
             dbname = re.sub(r'[^a-zA-Z0-9]', '', self.identifier).lower()[:28]
         if engine == None:
-            engine = C('defaultEngine')
+            engine = C.get('defaultEngine')
         if fullname == None:
             fullname = self.identifier.replace('-', ' ').replace('_', ' ').title()
-            fullname = fullname + ' ' + C('wording.%s' % engine)
+            fullname = fullname + ' ' + C.get('wording.%s' % engine)
 
         debug('Creating database...')
-        db = DB(engine, C('db.%s' % engine))
+        db = DB(engine, C.get('db.%s' % engine))
         if db.dbexists(dbname):
             if dropDb:
                 db.dropdb(dbname)
@@ -269,7 +267,7 @@ class Moodle(object):
 
         debug('Installing %s...' % self.identifier)
         cli = 'admin/cli/install.php'
-        params = (C('host'), self.identifier, dataDir, engine, dbname, C('db.%s.user' % engine), C('db.%s.passwd' % engine), C('db.%s.host' % engine), fullname, self.identifier, C('login'), C('passwd'))
+        params = (C.get('host'), self.identifier, dataDir, engine, dbname, C.get('db.%s.user' % engine), C.get('db.%s.passwd' % engine), C.get('db.%s.host' % engine), fullname, self.identifier, C.get('login'), C.get('passwd'))
         args = '--wwwroot="http://%s/%s/" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
         result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
@@ -355,7 +353,7 @@ class Moodle(object):
             except:
                 self.version['branch'] = self.version['release'].replace('.', '')[0:2]
                 branch = self.version['branch']
-            if int(branch) >= int(C('masterBranch')):
+            if int(branch) >= int(C.get('masterBranch')):
                 self.version['branch'] = 'master'
 
             # Stable branch

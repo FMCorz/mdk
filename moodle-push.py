@@ -24,10 +24,10 @@ http://github.com/FMCorz/mdk
 
 import sys
 import argparse
-from lib import config, workplace, moodle, tools
+from lib import workplace, moodle, tools
 from lib.tools import debug
+from lib.config import C
 
-C = config.Conf().get
 Wp = workplace.Workplace()
 
 # Arguments
@@ -47,7 +47,7 @@ if not M:
 
 # Setting remote
 if args.remote == None:
-	remote = C('myRemote')
+	remote = C.get('myRemote')
 else:
 	remote = args.remote
 

@@ -29,11 +29,11 @@ import json
 import time
 from distutils.dir_util import copy_tree
 from distutils.errors import DistutilsFileError
-from lib import config, workplace, moodle, tools, backup
+from lib import workplace, moodle, tools, backup
 from lib.exceptions import *
 from lib.tools import debug
+from lib.config import C
 
-C = config.Conf().get
 Wp = workplace.Workplace()
 
 # Arguments

@@ -29,11 +29,9 @@ from distutils.dir_util import copy_tree
 
 from tools import debug, chmodRecursive
 from db import DB
-from config import Conf
+from config import C
 from workplace import Workplace
 from exceptions import *
-
-C = Conf().get
 
 jason = 'info.json'
 sqlfile = 'dump.sql'
@@ -41,7 +39,7 @@ sqlfile = 'dump.sql'
 class BackupManager(object):
 
     def __init__(self):
-        self.path = os.path.join(C('dirs.moodle'), 'backup')
+        self.path = os.path.join(C.get('dirs.moodle'), 'backup')
 
     def create(self, M):
         """Creates a new backup of M"""
@@ -171,7 +169,7 @@ class Backup(object):
         # Restoring database
         if self.get('installed') and os.path.isfile(self.sqlfile):
             dbname = self.get('dbname')
-            dbo = DB(self.get('dbtype'), C('db.%s' % self.get('dbtype')))
+            dbo = DB(self.get('dbtype'), C.get('db.%s' % self.get('dbtype')))
             if dbo.dbexists(dbname):
                 raise BackupDBExistsException('Database already exists!')
 

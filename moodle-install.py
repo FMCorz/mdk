@@ -25,16 +25,16 @@ import sys
 import os
 import argparse
 
-from lib import config, db, moodle, workplace
+from lib import db, moodle, workplace
 from lib.tools import debug
+from lib.config import C
 
 DB = db.DB
-C = config.Conf().get
 Wp = workplace.Workplace()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Install a Moodle instance')
-parser.add_argument('-e', '--engine', action='store', choices=['mysqli', 'pgsql'], default=C('defaultEngine'), help='database engine to use', metavar='engine')
+parser.add_argument('-e', '--engine', action='store', choices=['mysqli', 'pgsql'], default=C.get('defaultEngine'), help='database engine to use', metavar='engine')
 parser.add_argument('-f', '--fullname', action='store', help='full name of the instance', metavar='fullname')
 parser.add_argument('-r', '--run', action='store', nargs='*', help='scripts to run after installation', metavar='run')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')

@@ -25,19 +25,19 @@ http://github.com/FMCorz/mdk
 import sys
 import argparse
 import re
-from lib import config, workplace, moodle, tools
+from lib import workplace, moodle, tools
 from lib.tools import debug
+from lib.config import C
 
-C = config.Conf().get
 Wp = workplace.Workplace()
 
 # Arguments
 parser = argparse.ArgumentParser(description="Rebases branches")
 parser.add_argument('-i', '--issues', metavar='issues', required=True, nargs='+', help='issues to be rebased')
 parser.add_argument('-s', '--suffix', metavar='suffix', help='the suffix of the branch of those issues')
-parser.add_argument('-v', '--versions', metavar='version', nargs='+', choices=[ str(x) for x in range(13, C('masterBranch')) ] + ['master'], help='versions to rebase the issues on. Ignored if names is set.')
+parser.add_argument('-v', '--versions', metavar='version', nargs='+', choices=[ str(x) for x in range(13, int(C.get('masterBranch'))) ] + ['master'], help='versions to rebase the issues on. Ignored if names is set.')
 parser.add_argument('-p', '--push', action='store_true', help='push the branch after successful rebase')
-parser.add_argument('-r', '--remote', metavar='remote', help='the remote to push the branch to. Default is %s.' % C('myRemote'))
+parser.add_argument('-r', '--remote', metavar='remote', help='the remote to push the branch to. Default is %s.' % C.get('myRemote'))
 parser.add_argument('-f', '--force-push', action='store_true', help='Force the push', dest='forcepush')
 parser.add_argument('names', metavar='names', default=None, nargs='*', help='name of the instances to rebase')
 args = parser.parse_args()
@@ -107,7 +107,7 @@ for M in Mlist:
 		if args.push:
 			remote = args.remote
 			if remote == None:
-				remote = C('myRemote')
+				remote = C.get('myRemote')
 			debug('Pushing %s to %s' % (branch, remote))
 			result = M.git().push(remote=remote, branch=branch, force=args.forcepush)
 			if result[0] != 0:

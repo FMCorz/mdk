@@ -27,10 +27,9 @@ import sys
 import argparse
 import re
 
-from lib import config, git, tools, moodle, workplace
+from lib import git, tools, moodle, workplace
 from lib.tools import debug
-
-C = config.Conf().get
+from lib.config import C
 
 # Arguments
 parser = argparse.ArgumentParser(description='Creates a branch associated to an MDL issue')

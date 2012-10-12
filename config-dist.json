@@ -95,5 +95,10 @@
     "symlinkToData": "_data",
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 24
+    "masterBranch": 24,
+
+    // Aliases for MDK commands.
+    "aliases": {
+        "list": "info -l"
+    }
 }

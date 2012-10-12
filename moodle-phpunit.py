@@ -24,16 +24,16 @@ http://github.com/FMCorz/mdk
 import sys
 import os
 import argparse
-from lib import moodle, workplace, config
+from lib import moodle, workplace
 from lib.tools import debug
+from lib.config import C
 
 # Arguments
 parser = argparse.ArgumentParser(description='Initialize PHP Unit')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
 args = parser.parse_args()
 
-C = config.Conf().get
-Wp = workplace.Workplace(C('dirs.storage'))
+Wp = workplace.Workplace(C.get('dirs.storage'))
 
 # Loading instance
 M = Wp.resolve(args.name)

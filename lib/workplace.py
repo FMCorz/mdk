@@ -27,30 +27,28 @@ import shutil
 from distutils.dir_util import copy_tree
 
 from tools import debug, process
-import config
+from config import C
 import db
 import git
 import moodle
-
-C = config.Conf().get
 
 class Workplace(object):
 
     def __init__(self, path = None, wwwDir = None, dataDir = None):
         if path == None:
-            path = C('dirs.storage')
+            path = C.get('dirs.storage')
         if wwwDir == None:
-            wwwDir = C('wwwDir')
+            wwwDir = C.get('wwwDir')
         if dataDir == None:
-            dataDir = C('dataDir')
+            dataDir = C.get('dataDir')
 
         if not os.path.isdir(path):
             raise Exception('Directory %s not found' % path)
 
         # Directory paths
         self.path = os.path.abspath(os.path.realpath(path))
-        self.cache = os.path.abspath(os.path.realpath(C('dirs.moodle')))
-        self.www = os.path.abspath(os.path.realpath(C('dirs.www')))
+        self.cache = os.path.abspath(os.path.realpath(C.get('dirs.moodle')))
+        self.www = os.path.abspath(os.path.realpath(C.get('dirs.www')))
 
         # Directory names
         self.wwwDir = wwwDir
@@ -62,20 +60,20 @@ class Workplace(object):
         cacheIntegration = os.path.join(self.cache, 'integration.git')
         if not os.path.isdir(cacheStable) and stable:
             debug('Cloning stable repository into cache...')
-            result = process('%s clone %s %s' % (C('git'), C('remotes.stable'), cacheStable))
-            result = process('%s fetch -a' % C('git'), cacheStable)
+            result = process('%s clone %s %s' % (C.get('git'), C.get('remotes.stable'), cacheStable))
+            result = process('%s fetch -a' % C.get('git'), cacheStable)
         if not os.path.isdir(cacheIntegration) and integration:
             debug('Cloning integration repository into cache...')
-            result = process('%s clone %s %s' % (C('git'), C('remotes.integration'), cacheIntegration))
-            result = process('%s fetch -a' % C('git'), cacheIntegration)
+            result = process('%s clone %s %s' % (C.get('git'), C.get('remotes.integration'), cacheIntegration))
+            result = process('%s fetch -a' % C.get('git'), cacheIntegration)
 
     def create(self, name = None, version = 'master', integration = False, useCacheAsRemote = False):
         """Creates a new instance of Moodle"""
         if name == None:
             if integration:
-                name = C('wording.prefixIntegration') + prefixVersion
+                name = C.get('wording.prefixIntegration') + prefixVersion
             else:
-                name = C('wording.prefixStable') + prefixVersion
+                name = C.get('wording.prefixStable') + prefixVersion
 
         installDir = os.path.join(self.path, name)
         wwwDir = os.path.join(installDir, self.wwwDir)
@@ -100,7 +98,7 @@ class Workplace(object):
         # Clone the instances
         debug('Cloning repository...')
         if useCacheAsRemote:
-            result = process('%s clone %s %s' % (C('git'), repository, wwwDir))
+            result = process('%s clone %s %s' % (C.get('git'), repository, wwwDir))
         else:
             copy_tree(repository, wwwDir)
 
@@ -114,14 +112,14 @@ class Workplace(object):
             os.symlink(wwwDir, linkDir)
 
         # Symlink to dataDir in wwwDir
-        if C('symlinkToData'):
-            linkDataDir = os.path.join(wwwDir, C('symlinkToData'))
+        if C.get('symlinkToData'):
+            linkDataDir = os.path.join(wwwDir, C.get('symlinkToData'))
             if not os.path.isfile(linkDataDir) and not os.path.isdir(linkDataDir) and not os.path.islink(linkDataDir):
                 os.symlink(dataDir, linkDataDir)
 
         # Creating, fetch, pulling branches
         debug('Checking out branch...')
-        repo = git.Git(wwwDir, C('git'))
+        repo = git.Git(wwwDir, C.get('git'))
         result = repo.fetch('origin')
         if version == 'master':
             repo.checkout('master')
@@ -133,7 +131,7 @@ class Workplace(object):
             else:
                 repo.checkout(branch)
         repo.pull()
-        repo.addRemote(C('myRemote'), C('remotes.mine'))
+        repo.addRemote(C.get('myRemote'), C.get('remotes.mine'))
 
         M = self.get(name)
         return M
@@ -166,19 +164,19 @@ class Workplace(object):
 
         # Wording version
         if version == 'master':
-            prefixVersion = C('wording.prefixMaster')
+            prefixVersion = C.get('wording.prefixMaster')
         else:
             prefixVersion = version
 
         # Generating name
         if integration:
-            name = C('wording.prefixIntegration') + prefixVersion
+            name = C.get('wording.prefixIntegration') + prefixVersion
         else:
-            name = C('wording.prefixStable') + prefixVersion
+            name = C.get('wording.prefixStable') + prefixVersion
 
         # Append the suffix
         if suffix != None and suffix != '':
-            name += C('wording.suffixSeparator') + suffix
+            name += C.get('wording.suffixSeparator') + suffix
 
         return name
 
@@ -299,7 +297,7 @@ class Workplace(object):
             if not os.path.isdir(cache):
                 continue
 
-            repo = git.Git(cache, C('git'))
+            repo = git.Git(cache, C.get('git'))
 
             verbose and debug('Working on %s...' % cache)
             verbose and debug('Fetching %s' % remote)

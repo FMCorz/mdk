@@ -27,11 +27,11 @@ import os
 import argparse
 import re
 
-from lib import config, db, moodle, workplace
+from lib import db, moodle, workplace
 from lib.tools import debug, yesOrNo
+from lib.config import C
 
 DB = db.DB
-C = config.Conf().get
 Wp = workplace.Workplace()
 
 # Arguments
@@ -39,9 +39,9 @@ parser = argparse.ArgumentParser(description='Creates a new instance of Moodle')
 parser.add_argument('-t', '--integration', action='store_true', help='create an instance from integration')
 parser.add_argument('-i', '--install', action='store_true', help='launch the installation script after creating the instance', dest='install')
 parser.add_argument('-r', '--run', action='store', nargs='*', help='scripts to run after installation', metavar='run')
-parser.add_argument('-v', '--version', action='store', choices=[ str(x) for x in range(13, C('masterBranch')) ] + ['master'], default='master', help='version of Moodle', metavar='version')
+parser.add_argument('-v', '--version', action='store', choices=[ str(x) for x in range(13, int(C.get('masterBranch'))) ] + ['master'], default='master', help='version of Moodle', metavar='version')
 parser.add_argument('-s', '--suffix', action='store', help='suffix for the instance name', metavar='suffix')
-parser.add_argument('-e', '--engine', action='store', choices=['mysqli', 'pgsql'], default=C('defaultEngine'), help='database engine to use', metavar='engine')
+parser.add_argument('-e', '--engine', action='store', choices=['mysqli', 'pgsql'], default=C.get('defaultEngine'), help='database engine to use', metavar='engine')
 args = parser.parse_args()
 
 engine = args.engine
@@ -51,13 +51,13 @@ name = Wp.generateInstanceName(version, integration = args.integration, suffix =
 # Wording version
 versionNice = version
 if version == 'master':
-	versionNice = C('wording.master')
+	versionNice = C.get('wording.master')
 
 # Generating names
 if args.integration:
-	fullname = C('wording.integration') + ' ' + versionNice + ' ' + C('wording.%s' % engine)
+	fullname = C.get('wording.integration') + ' ' + versionNice + ' ' + C.get('wording.%s' % engine)
 else:
-	fullname = C('wording.stable') + ' ' + versionNice + ' ' + C('wording.%s' % engine)
+	fullname = C.get('wording.stable') + ' ' + versionNice + ' ' + C.get('wording.%s' % engine)
 
 # Append the suffix
 if args.suffix:
@@ -69,7 +69,7 @@ kwargs = {
 	'name': name,
 	'version': version,
 	'integration': args.integration,
-	'useCacheAsRemote': C('useCacheAsRemote')
+	'useCacheAsRemote': C.get('useCacheAsRemote')
 }
 try:
 	M = Wp.create(**kwargs)
@@ -82,7 +82,7 @@ if args.install:
 
 	# Checking database
 	dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()[:28]
-	db = DB(engine, C('db.%s' % engine))
+	db = DB(engine, C.get('db.%s' % engine))
 	dropDb = False
 	if db.dbexists(dbname):
 		debug('Database already exists (%s)' % dbname)

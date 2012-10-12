@@ -26,10 +26,9 @@ import os
 import sys
 import argparse
 
-from lib import config, tools, workplace
+from lib import tools, workplace
 from lib.tools import debug
-
-C = config.Conf().get
+from lib.config import C
 
 # Arguments
 parser = argparse.ArgumentParser(description='Completely remove an instance')
