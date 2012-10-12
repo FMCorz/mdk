@@ -50,7 +50,7 @@ if not M:
 branch = M.generateBranchName(args.issue, suffix=args.suffix)
 
 # Track
-track = 'origin/%s' % M.get('stablebranch')
+track = '%s/%s' % (C.get('upstreamRemote'), M.get('stablebranch'))
 
 # Git repo
 repo = M.git()

@@ -63,7 +63,7 @@ Mlist = Wp.resolveMultiple(names)
 # Loops over instances to rebase
 for M in Mlist:
 	debug('Working on %s' % (M.get('identifier')))
-	M.git().fetch('origin')
+	M.git().fetch(C.get('upstreamRemote'))
 
 	# Test if currently in a detached branch
 	if M.git().currentBranch() == 'HEAD':
@@ -91,7 +91,7 @@ for M in Mlist:
 
 		# Rebase
 		debug('> Rebasing %s...' % (branch))
-		base = 'origin/%s' % M.get('stablebranch')
+		base = '%s/%s' % (C.get('upstreamRemote'), M.get('stablebranch'))
 		result = M.git().rebase(branch=branch, base=base)
 		if result[0] != 0:
 			debug('Error while rebasing branch %s on top of %s' % (branch, base))

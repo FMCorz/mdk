@@ -139,7 +139,7 @@ Create a branch from an issue number on the tracker (MDL-12345) and sets it to t
 
 **Examples**
 
-In a Moodle 2.2 instance, this will create a branch named MDL-12345-22 which will track origin/MOODLE_22_STABLE.
+In a Moodle 2.2 instance, this will create a branch named MDL-12345-22 which will track upstream/MOODLE_22_STABLE.
 
     moodle fix MDL-12345
     moodle fix 12345
@@ -202,7 +202,7 @@ Force a push of the branch MDL-12345-22 from the instance stable_22 to your remo
 
 ### - rebase
 
-Fetch the latest branches from origin and rebase your local branches.
+Fetch the latest branches from the upstream remote and rebase your local branches.
 
 **Examples**
 
@@ -234,7 +234,7 @@ Set the instance stable_master ready for development
 
 ### - update
 
-Fetch the latest stables branches from the origin and pull the changes into the local stable branch.
+Fetch the latest stables branches from the upstream remote and pull the changes into the local stable branch.
 
 **Examples**
 

@@ -92,13 +92,16 @@ class Workplace(object):
 
         if integration:
             repository = os.path.join(self.cache, 'integration.git')
+            upstreamRepository = C.get('remotes.integration')
         else:
             repository = os.path.join(self.cache, 'moodle.git')
+            upstreamRepository = C.get('remotes.stable')
 
         # Clone the instances
         debug('Cloning repository...')
         if useCacheAsRemote:
             result = process('%s clone %s %s' % (C.get('git'), repository, wwwDir))
+            upstreamRepository = repository
         else:
             copy_tree(repository, wwwDir)
 
@@ -117,21 +120,25 @@ class Workplace(object):
             if not os.path.isfile(linkDataDir) and not os.path.isdir(linkDataDir) and not os.path.islink(linkDataDir):
                 os.symlink(dataDir, linkDataDir)
 
-        # Creating, fetch, pulling branches
         debug('Checking out branch...')
         repo = git.Git(wwwDir, C.get('git'))
-        result = repo.fetch('origin')
+
+        # Setting up the correct remote names
+        repo.setRemote(C.get('myRemote'), C.get('remotes.mine'))
+        repo.setRemote(C.get('upstreamRemote'), upstreamRepository)
+
+        # Creating, fetch, pulling branches
+        result = repo.fetch(C.get('upstreamRemote'))
         if version == 'master':
             repo.checkout('master')
         else:
-            track = 'origin/MOODLE_%s_STABLE' % version
+            track = '%s/MOODLE_%s_STABLE' % (C.get('upstreamRemote'), version)
             branch = 'MOODLE_%s_STABLE' % version
             if not repo.createBranch(branch, track):
                 debug('Could not create branch %s tracking %s' % (branch, track))
             else:
                 repo.checkout(branch)
-        repo.pull()
-        repo.addRemote(C.get('myRemote'), C.get('remotes.mine'))
+        repo.pull(remote = C.get('upstreamRemote'))
 
         M = self.get(name)
         return M
@@ -312,7 +319,7 @@ class Workplace(object):
                     raise Exception('Could not create branch %s tracking %s in repository %s' % (branch, track, cache))
 
                 if not repo.checkout(branch):
-                    raise exception('error while checking out branch %s in repository %s' % (branch, cache))
+                    raise Exception('Error while checking out branch %s in repository %s' % (branch, cache))
 
                 if not repo.reset(to = track, hard = True):
                     raise Exception('Could not hard reset to %s in repository %s' % (branch, cache))

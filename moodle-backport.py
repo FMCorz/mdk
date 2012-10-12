@@ -112,7 +112,7 @@ for v in versions:
 
 	# Creates a new branch if necessary
 	newbranch = M2.generateBranchName(issue, suffix=suffix)
-	track = 'origin/%s' % M2.get('stablebranch')
+	track = '%s/%s' % (C.get('upstreamRemote'), M2.get('stablebranch'))
 	if not M2.git().hasBranch(newbranch):
 		debug('Creating branch %s' % newbranch)
 		if not M2.git().createBranch(newbranch, track=track):
@@ -124,8 +124,8 @@ for v in versions:
 		debug('Hard reset to %s' % (track))
 		M2.git().reset(to=track, hard=True)
 
-	# Picking the diff origin/MOODLE_23_STABLE..github/MDL-12345-master
-	cherry = 'origin/%s..%s/%s' % (originaltrack, remote, branch)
+	# Picking the diff upstream/MOODLE_23_STABLE..github/MDL-12345-master
+	cherry = '%s/%s..%s/%s' % (C.get('upstreamRemote'), originaltrack, remote, branch)
 	debug('Cherry-picking %s' % (cherry))
 	result = M2.git().pick(cherry)
 	if result[0] != 0:

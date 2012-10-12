@@ -23,6 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import os
+import re
 import shlex
 import subprocess
 
@@ -64,6 +65,11 @@ class Git(object):
 		else:
 			return result[1].replace('refs/heads/', '').strip()
 
+	def delRemote(self, remote):
+		cmd = 'remote rm %s' % remote
+		result = self.execute(cmd)
+		return result[0] == 0
+
 	def execute(self, cmd, path = None):
 		if path == None:
 			path = self.getPath()
@@ -94,6 +100,24 @@ class Git(object):
 			return result[1].strip()
 		else:
 			return None
+
+	def getRemote(self, remote):
+		remotes = self.getRemotes()
+		return remotes.get(remote, None)
+
+	def getRemotes(self):
+		"""Return the remotes"""
+		cmd = 'remote -v'
+		result = self.execute(cmd)
+		remotes = None
+		if result[0] == 0:
+			remotes = {}
+			for line in result[1].split('\n'):
+				if not line: continue
+				(remote, repo) = re.split('\s+', line, 1)
+				repo = re.sub(' \(push\)|\(fetch\)$', '', repo)
+				remotes[remote] = repo
+		return remotes
 
 	def hasBranch(self, branch, remote = ''):
 		if remote != '':
@@ -170,6 +194,14 @@ class Git(object):
 		if hard:
 			mode = '--hard'
 		cmd = 'reset %s %s' % (mode, to)
+		result = self.execute(cmd)
+		return result[0] == 0
+
+	def setRemote(self, remote, url):
+		if not self.getRemote(remote):
+			cmd = 'remote add %s %s' % (remote, url)
+		else:
+			cmd = 'remote set-url %s %s' % (remote, url)
 		result = self.execute(cmd)
 		return result[0] == 0
 

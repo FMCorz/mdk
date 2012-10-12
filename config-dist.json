@@ -63,15 +63,16 @@
         "pgsql": "PostgreSQL"
     },
 
-
     // The host name to set during an install
     "host": "localhost",
     // Moodle admin login
     "login": "admin",
     // Moodle admin password
     "passwd": "test",
-    // What to call your remote, do not call that origin!
-    "myRemote": "github",
+    // What to call your remote, the one pointing to remotes.mine
+    "myRemote": "origin",
+    // What to call the upstream remote, the one pointing to the official repositoriy (stable or integration)
+    "upstreamRemote": "upstream",
 
     // The name of the data directory
     "dataDir": "moodledata",
@@ -86,7 +87,7 @@
     // Path to PHP
     "php": "/usr/bin/php",
 
-    // Experimental setting to use a local cache as your origin remotes.
+    // Experimental setting to use a local cache as your upstream remotes.
     // Can be useful to prevent fetch from a slow remote.
     "useCacheAsRemote": false,
 
