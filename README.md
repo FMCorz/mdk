@@ -96,7 +96,6 @@ Restore the second backup of the instance stable_master
 
     moodle backup --restore stable_master_02
 
-
 ### - create
 
 Create a new instance of Moodle. It will be named according to your config file.
@@ -111,6 +110,19 @@ Create an instance of Moodle 2.2 using PostgreSQL from the integration remote, a
 
     moodle create --version 22 --engine pgsql --integration --install
 
+### - config
+
+Set your MDK settings from the command line.
+
+**Examples**
+
+Show the list of your settings
+     
+    moodle config list
+
+Change the value of the setting 'dirs.storage' to '/var/www/repositories'
+
+    moodle config set dirs.storage /var/www/repositories
 
 ### - fix
 
