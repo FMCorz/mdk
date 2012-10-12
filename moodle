@@ -18,37 +18,57 @@
 #
 # http://github.com/FMCorz/mdk
 
-COMMAND="moodle-$1.py"
-BIN=`which $COMMAND`
+COMMAND=$1
+ARGS=${@:2}
 
-if [ -z "$BIN" ]
-then
-    if [ -n "${BASH_SOURCE[0]}" ]
+# Resolve a command
+function resolve {
+    BIN=`which moodle-$1.py`
+    if [ -z "$BIN" ]
     then
-        SOURCE="${BASH_SOURCE[0]}"
-        DIR="$( dirname "$SOURCE" )"
-        while [ -h "$SOURCE" ]
-        do
-            SOURCE="$(readlink "$SOURCE")"
-            [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-            DIR="$( cd -P "$( dirname "$SOURCE"  )" && pwd )"
-        done
-        DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-        BIN="$DIR/$COMMAND"
+        if [ -n "${BASH_SOURCE[0]}" ]
+        then
+            SOURCE="${BASH_SOURCE[0]}"
+            DIR="$( dirname "$SOURCE" )"
+            while [ -h "$SOURCE" ]
+            do
+                SOURCE="$(readlink "$SOURCE")"
+                [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+                DIR="$( cd -P "$( dirname "$SOURCE"  )" && pwd )"
+            done
+            DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+            BIN="$DIR/moodle-$1.py"
+        fi
     fi
-fi
+    if [ -z "$BIN" ] || [ ! -f "$BIN" ]
+    then
+        exit 1
+    fi
+    echo "$BIN"
+}
 
-if [ -z "$BIN" ] || [ ! -f "$BIN" ]
+# Checking if an alias exist for that command.
+BIN=`resolve "alias"`
+ALIAS=`$BIN show $COMMAND`
+
+if [ -n "$ALIAS" ]
 then
-	echo "Unknown Moodle command..."
-	exit 1
+    COMMAND=`echo $ALIAS | cut -d ' ' -f 1`
+    ALIASARGS=`echo $ALIAS | cut -d ' ' -f 2-`
+    ARGS="$ALIASARGS $ARGS"
 fi
 
-if [ ! -x "$BIN" ]
+BIN=`resolve $COMMAND`
+
+if [ $? == 1 ]
+then
+    echo "Unknown Moodle command $1..."
+    exit 1
+elif [ ! -x "$BIN" ]
 then
     echo "Permission denied. $BIN is not executable."
     exit 1
 fi
 
-$BIN ${@:2}
+$BIN $ARGS
 exit $?

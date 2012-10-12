@@ -63,6 +63,16 @@ If you already have instances installed, and your settings are correct, try the 
 Command list
 ------------
 
+### - alias
+
+Set up aliases of your Moodle commands.
+
+**Example**
+
+This line defines the alias 'upall', for 'moodle update --all'
+    
+    moodle alias add upall "update --all"
+
 ### - backport
 
 Backport a branch to another instance of Moodle.
@@ -76,7 +86,6 @@ Assuming we are in a Moodle instance, this backports the current branch to the v
 Backports the branch MDL-12345-23 from the instance stable_23 to the instance stable_22, and pushes the new branch to your remote
 
     moodle backport stable_23 --branch MDL-12345-23 --version 22 --push
-
 
 ### - backup
 
