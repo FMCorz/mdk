@@ -48,8 +48,8 @@ if args.list:
 		l = Wp.list()
 	l.sort()
 	for i in l:
-		M = Wp.get(i)
 		if not args.nameonly:
+			M = Wp.get(i)
 			print '{0:<25}'.format(i), M.get('release')
 		else:
 			print i
