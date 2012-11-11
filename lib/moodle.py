@@ -420,7 +420,7 @@ class Moodle(object):
 
         script = None
         type = None
-        if os.path.isfile(f) and scriptname.rsplit('.', 1) in supported:
+        if os.path.isfile(f) and scriptname.rsplit('.', 1)[1] in supported:
             script = f
             type = scriptname.rsplit('.', 1)[1]
         else:
