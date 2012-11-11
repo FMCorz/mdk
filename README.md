@@ -7,10 +7,9 @@ Requirements
 ------------
 
 - Python 2.7
-- Moodle 2.x
 - MySQL or PostgreSQL
 
-The tools should work on Moodle 1.9 but have not really been tested yet.
+Most of the tools work on Moodle 1.9 onwards, but some CLI tools required by MDK might not be available in all versions.
 
 Usage
 -----
@@ -21,7 +20,7 @@ The commands are called using that form:
 
 Get some help on a command using:
 
-    moodle <command>  --help
+    moodle <command> --help
 
 Installation
 ------------
@@ -48,17 +47,25 @@ Alternatively you could add to directory where `moodle` is in your environment v
 
 Copy the config file `config-dist.json` to `config.json`.
 
-Read through the config file to find out what you have to set up.
+Here are some settings that you will have to set:
 
-The most important are the directories (`dirs`), database access (`db`) and your repository (`remotes.mine`).
+- dirs.www: This is typically the directory where points http://localhost/. You need write access in that directory as a symbolic link to your Moodle instance will ve created there. 
+- dirs.storage: This is the directory where will be stored your instances of Moodle and their data. Each instance of Moodle will have its own folder in which you will find moodledata and the web directory. You obviously need write access in this directory.
+- dirs.moodle: This folder will be used by MDK to store some data like a copy of the remotes, or backup files, etc...
+- db.*: The information to connect to your database.
+- remotes.mine: The URL to your personal repository.
 
-If you already have instances installed and a way of naming your branches, you will have to update the `wording` part. Use extra care with the regular expressions!
+There are quite a lot more other settings which you could play with, read through the config file to find them out.
 
 ### 5. Done
 
-If you already have instances installed, and your settings are correct, try the following command.
+Try the following command to create and install a typical Stable Master instance:
 
-    moodle info --list
+    moodle create -i
+
+Now you should be able to access it from http://localhost/stablemaster, or type the following command the list it:
+
+    moodle list
 
 Command list
 ------------
@@ -107,7 +114,7 @@ Restore the second backup of the instance stable_master
 
 ### - check
 
-Perform some checks on the environment to identify possible problems
+Perform some checks on the environment to identify possible problems.
 
 ### - create
 
@@ -143,7 +150,7 @@ Create a branch from an issue number on the tracker (MDL-12345) and sets it to t
 
 **Examples**
 
-In a Moodle 2.2 instance, this will create a branch named MDL-12345-22 which will track upstream/MOODLE_22_STABLE.
+In a Moodle 2.2 instance, this will create (and checkout) a branch named MDL-12345-22 which will track upstream/MOODLE_22_STABLE.
 
     moodle fix MDL-12345
     moodle fix 12345
