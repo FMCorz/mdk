@@ -29,7 +29,7 @@ from lib.config import C
 
 # Arguments
 parser = argparse.ArgumentParser(description='Manage your configuration')
-parser.add_argument('command', metavar='command', choices=['list', 'show', 'set'], help='the action to perform')
+parser.add_argument('command', metavar='command', choices=['flatlist', 'list', 'show', 'set'], help='the action to perform')
 parser.add_argument('arguments', metavar='arguments', default=None, nargs='*', help='arguments for the command')
 args = parser.parse_args()
 
@@ -41,8 +41,16 @@ if args.command == 'list':
             else:
                 print u' ' * ident + '[%s]' % name
                 show_list(setting, ident + 2)
-
     show_list(C.get(), 0)
+
+elif args.command == 'flatlist':
+    def show_list(settings, parent = ''):
+        for name, setting in settings.items():
+            if type(setting) != dict:
+                print u'%s: %s' % (parent + name, setting)
+            else:
+                show_list(setting, parent + name + u'.')
+    show_list(C.get())
 
 elif args.command == 'show':
     if len(args.arguments) != 1:
