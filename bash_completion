@@ -1,0 +1,184 @@
+#
+# Moodle Development Kit
+#
+# Copyright (c) 2012 Frédéric Massart - FMCorz.net
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# http://github.com/FMCorz/mdk
+#
+
+# This file defines the functions for Bash completion.
+#
+# To install on Ubuntu, link this file into /etc/bash_completion.d
+#     ln -s bash_completion /etc/bash_completion.d/moodle_completion
+#     source /etc/bash_completion.d/moodle_completion
+
+function _moodle() {
+    local BIN CMD CUR PREV OPTS
+    COMPREPLY=()
+    BIN="${COMP_WORDS[0]}"
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    OPTS=""
+
+    # Helper to list the scripts available to `moodle run`.
+    function _list_scripts() {
+        local FOLDER
+        FOLDER="$(dirname $(readlink `which $BIN`))/scripts"
+        if [[ -d "$FOLDER" ]]; then
+            echo "$(ls $FOLDER | grep -v 'README.md')"
+        fi
+    }
+
+    if [[ "${COMP_CWORD}" == 1 ]]; then
+        # List the commands and aliases.
+        OPTS="alias backport backup check config create fix info install phpunit purge push rebase remove run update upgrade"
+        OPTS="$OPTS $($BIN alias list | cut -d ':' -f 1)"
+    else
+        # List of options according to the command.
+        CMD="${COMP_WORDS[1]}"
+        PREV="${COMP_WORDS[COMP_CWORD-1]}"
+        case "${CMD}" in
+            alias)
+                if [[ "${COMP_CWORD}" == 2 ]]; then
+                    OPTS="list show add remove"
+                elif [[ "${COMP_CWORD}" == 3 && "${PREV}" != "add" && "${PREV}" != "list" ]]; then
+                    OPTS="$($BIN alias list | cut -d ':' -f 1)"
+                fi
+                ;;
+            backport)
+                if [[ "$CUR" == -* ]]; then
+                    OPTS="--branch --remote --integration --dont-push --push --push-to --force-push --versions"
+                else
+                    OPTS="-- $($BIN info -ln)"
+                fi
+                ;;
+            backup)
+                OPTS="--list --info --restore"
+                if [[ "${COMP_CWORD}" == 3 && ("${PREV}" == "--restore" || "${PREV}" == "--info") ]]; then
+                    OPTS="$($BIN backup --list | cut -d ' ' -f 1)"
+                elif [[ "${COMP_CWORD}" == 2 && "$CUR"  != -* ]]; then
+                    OPTS="$OPTS $($BIN info -ln)"
+                fi
+                ;;
+            check)
+                # Empty options.
+                ;;
+            config)
+                if [[ "${COMP_CWORD}" == 2 ]]; then
+                    OPTS="flatlist list show set"
+                elif [[ "${COMP_CWORD}" == 3 && ("${PREV}" == "set" || "${PREV}" == "show") ]]; then
+                    OPTS="$($BIN config flatlist | cut -d ':' -f 1)"
+                fi
+                ;;
+            create)
+                OPTS="--integration --install --run --version --suffix --engine"
+                if [[ "$PREV" == "--engine" ]]; then
+                    OPTS='mysqli pgsql'
+                elif [[ "$PREV" == "--run" ]]; then
+                    OPTS="$(_list_scripts)"
+                fi
+                ;;
+            fix)
+                if [[ "$PREV" == "-n" || "$PREV" == "--name" ]]; then
+                    OPTS=`$BIN info -ln`
+                else
+                    OPTS="--name"
+                fi
+                ;;
+            info)
+                OPTS="--list"
+                if [[ "${COMP_CWORD}" == 2 && "$CUR" != -* ]]; then
+                    OPTS="$OPTS $($BIN info -ln)"
+                elif [[ "${COMP_CWORD}" == 3 && ("$PREV" == "--list" || "$PREV" == "-l") ]]; then
+                    OPTS="--integration --stable --names-only"
+                fi
+                ;;
+            install)
+                OPTS="--engine --fullname --run"
+                case "$PREV" in
+                    -e|--engine)
+                        OPTS="mysqli pgsql"
+                        ;;
+                    -r|--run)
+                        OPTS="$(_list_scripts)"
+                        ;;
+                    *)
+                        if [[ "$CUR" != -* ]]; then
+                            OPTS="$OPTS $($BIN info -ln)"
+                        fi
+                    ;;
+                esac
+                ;;
+            phpunit)
+                OPTS=`$BIN info -ln`
+                ;;
+            purge)
+                OPTS="--all --integration --stable"
+                if [[ "$CUR" != -* ]]; then
+                    OPTS="$OPTS $($BIN info -ln)"
+                fi
+                ;;
+            push)
+                if [[ "$PREV" != "--branch" && "$PREV" != "-b" && "$PREV" != "--remote" && "$PREV" != "-r" ]]; then
+                    OPTS="--branch --remote --force --include-stable --force-stable"
+                    if [[ "$CUR" != -* ]]; then
+                        OPTS="$OPTS $($BIN info -ln)"
+                    fi
+                fi
+                ;;
+            rebase)
+                if [[ "$PREV" == "rebase" || "$PREV" == "-p" || "$PREV" == "--push" || "$PREV" == "-f" || "$PREV" == "--force-push" ]]; then
+                    OPTS="--issues --suffix --versions --push --remote --force-push"
+                    if [[ "$CUR" != -* ]]; then
+                        OPTS="$OPTS $($BIN info -ln)"
+                    fi
+                fi
+                ;;
+            remove)
+                OPTS=`$BIN info -ln`
+                ;;
+            run)
+                if [[ "${COMP_CWORD}" == 2 ]]; then
+                    OPTS="$(_list_scripts)"
+                elif [[ "${COMP_CWORD}" == 3 ]]; then
+                    OPTS="--integration --stable --all $($BIN info -ln)"
+                fi
+                ;;
+            update)
+                OPTS="--integration --stable --all --upgrade --update-cache"
+                if [[ "$CUR" != -* ]]; then
+                    OPTS="$OPTS $($BIN info -ln)"
+                fi
+                ;;
+            upgrade)
+                OPTS="--integration --stable --all --updade --no-checkout"
+                if [[ "$CUR" != -* ]]; then
+                    OPTS="$OPTS $($BIN info -ln)"
+                fi
+                ;;
+            *)
+                ;;
+        esac
+    fi
+
+    COMPREPLY=( $(compgen -W "${OPTS}" -- ${CUR}) )
+    return 0
+}
+
+if [[ -n "$(which moodle)" ]]; then
+    complete -F _moodle moodle
+elif [[ -n "$(which mdk)" ]]; then
+    complete -F _moodle mdk
+fi
