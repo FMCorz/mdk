@@ -22,8 +22,8 @@
 # This file defines the functions for Bash completion.
 #
 # To install on Ubuntu, link this file into /etc/bash_completion.d
-#     ln -s bash_completion /etc/bash_completion.d/moodle_completion
-#     source /etc/bash_completion.d/moodle_completion
+#     ln -s bash_completion /etc/bash_completion.d/moodle
+#     source /etc/bash_completion.d/moodle
 
 function _moodle() {
     local BIN CMD CUR PREV OPTS
@@ -179,6 +179,7 @@ function _moodle() {
 
 if [[ -n "$(which moodle)" ]]; then
     complete -F _moodle moodle
-elif [[ -n "$(which mdk)" ]]; then
+fi
+if [[ -n "$(which mdk)" ]]; then
     complete -F _moodle mdk
 fi
