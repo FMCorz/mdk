@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+# We need to override usrlocal check, we're intentionally hacking it
+override_dh_usrlocal:
+
+install:
+	chmod +x debian/moodle-mdk/usr/lib/moodle-mdk/moodle
+	chmod +x debian/moodle-mdk/usr/lib/moodle-mdk/moodle*.py

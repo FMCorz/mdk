@@ -1,0 +1,4 @@
+lib/* usr/local/lib/moodle-mdk/lib/
+*.py usr/local/lib/moodle-mdk/
+moodle usr/local/lib/moodle-mdk/
+config-dist.json /etc/moodle-mdk/

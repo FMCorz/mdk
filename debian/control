@@ -1,0 +1,12 @@
+Source: moodle-mdk
+Maintainer: Dan Poltawski <dan@moodle.com>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 8)
+
+Package: moodle-mdk
+Architecture: any
+Depends: ${misc:Depends}, git, php5-cli, python, python-argparse
+Description: Moodle Development Kit
+ A collection of tools meant to make Moodle developers' lives easier.
