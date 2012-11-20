@@ -59,7 +59,7 @@ function _moodle() {
                 ;;
             backport)
                 if [[ "$CUR" == -* ]]; then
-                    OPTS="--branch --remote --integration --dont-push --push --push-to --force-push --versions"
+                    OPTS="--branch --remote --integration --dont-push --dont-fetch --push --push-to --force-push --versions"
                 else
                     OPTS="-- $($BIN info -ln)"
                 fi
