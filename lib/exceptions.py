@@ -22,11 +22,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+
 class BackupDirectoryExistsException(Exception):
     pass
+
 
 class BackupDBExistsException(Exception):
     pass
 
+
 class BackupDBEngineNotSupported(Exception):
+    pass
+
+
+class ConfigFileNotFound(Exception):
+    pass
+
+
+class ConfigFileCouldNotBeLoaded(Exception):
     pass
