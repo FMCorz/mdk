@@ -26,7 +26,6 @@ import sys
 import argparse
 from lib import workplace, moodle, tools
 from lib.tools import debug
-from lib.config import C
 
 Wp = workplace.Workplace()
 
@@ -44,7 +43,7 @@ names = args.names
 if args.all:
     names = Wp.list()
 elif args.integration or args.stable:
-    names = Wp.list(integration = args.integration, stable = args.stable)
+    names = Wp.list(integration=args.integration, stable=args.stable)
 
 # Doing stuff
 Mlist = Wp.resolveMultiple(names)

@@ -30,6 +30,7 @@ from tools import debug, process
 from db import DB
 from config import C
 from git import Git
+from exceptions import ScriptNotFound
 
 class Moodle(object):
 
@@ -415,23 +416,33 @@ class Moodle(object):
     def runScript(self, scriptname, **kwargs):
         """Runs a script on the instance"""
         supported = ['php']
-        path = os.path.join(os.path.dirname(__file__), '..', 'scripts')
-        f = os.path.join(path, scriptname)
+        directories = ['~/.moodle-sdk', '/etc/moodle-sdk']
+        if C.get('dirs.moodle') != None:
+            directories.insert(0, C.get('dirs.moodle'))
+        directories.append(os.path.join(os.path.dirname(__file__), '..'))
 
-        script = None
-        type = None
-        if os.path.isfile(f) and scriptname.rsplit('.', 1)[1] in supported:
-            script = f
-            type = scriptname.rsplit('.', 1)[1]
-        else:
-            for ext in supported:
-                if os.path.isfile(f + '.' + ext):
-                    script = f + '.' + ext
-                    type = ext
-                    break
+        # Loop over each directory in order of preference.
+        for directory in directories:
+            script = None
+            type = None
+
+            f = os.path.expanduser(os.path.join(directory, 'scripts', scriptname))
+            if os.path.isfile(f) and scriptname.rsplit('.', 1)[1] in supported:
+                script = f
+                type = scriptname.rsplit('.', 1)[1]
+            else:
+                for ext in supported:
+                    print f + '.' + ext
+                    if os.path.isfile(f + '.' + ext):
+                        script = f + '.' + ext
+                        type = ext
+                        break
+            # Exit the loop if the script has been found.
+            if script != None and type != None:
+                break
 
         if not script:
-            raise Exception('Could not find the script, or format not supported')
+            raise ScriptNotFound('Could not find the script, or format not supported')
 
         if type == 'php':
             dest = os.path.join(self.get('path'), 'mdkrun.php')
