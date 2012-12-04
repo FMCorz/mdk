@@ -10,9 +10,9 @@
         // The web directory you are going to access Moodle from. A symlink will be created here.
         "www": "/var/www",
         // The directory where the instances will be stored
-        "storage": "/var/www/moodles",
+        "storage": "~/moodles",
         // A directory used by MDK to store different kind of things such as backups and cached repositories.
-        "moodle": "/home/fred/.moodle-sdk"
+        "moodle": "~/.moodle-sdk"
     },
 
     // List of remotes to work with

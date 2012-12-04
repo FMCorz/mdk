@@ -416,7 +416,7 @@ class Moodle(object):
     def runScript(self, scriptname, **kwargs):
         """Runs a script on the instance"""
         supported = ['php']
-        directories = ['~/.moodle-sdk', '/etc/moodle-sdk']
+        directories = ['~/.moodle-sdk']
         if C.get('dirs.moodle') != None:
             directories.insert(0, C.get('dirs.moodle'))
         directories.append(os.path.join(os.path.dirname(__file__), '..'))

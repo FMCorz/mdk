@@ -39,7 +39,7 @@ sqlfile = 'dump.sql'
 class BackupManager(object):
 
     def __init__(self):
-        self.path = os.path.join(C.get('dirs.moodle'), 'backup')
+        self.path = os.path.expanduser(os.path.join(C.get('dirs.moodle'), 'backup'))
 
     def create(self, M):
         """Creates a new backup of M"""

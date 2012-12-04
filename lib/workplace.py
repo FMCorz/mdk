@@ -46,9 +46,9 @@ class Workplace(object):
             raise Exception('Directory %s not found' % path)
 
         # Directory paths
-        self.path = os.path.abspath(os.path.realpath(path))
-        self.cache = os.path.abspath(os.path.realpath(C.get('dirs.moodle')))
-        self.www = os.path.abspath(os.path.realpath(C.get('dirs.www')))
+        self.path = os.path.abspath(os.path.realpath(os.path.expanduser(path)))
+        self.cache = os.path.abspath(os.path.realpath(os.path.expanduser(C.get('dirs.moodle'))))
+        self.www = os.path.abspath(os.path.realpath(os.path.expanduser(C.get('dirs.www'))))
 
         # Directory names
         self.wwwDir = wwwDir
