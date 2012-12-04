@@ -78,8 +78,8 @@ else:
     myremoteurl = C.get('remotes.mine')
 
     if C.get('useCacheAsRemote'):
-        remoteInt = os.path.abspath(os.path.realpath(os.path.join(C.get('dirs.moodle'), 'integration.git')))
-        remoteSta = os.path.abspath(os.path.realpath(os.path.join(C.get('dirs.moodle'), 'moodle.git')))
+        remoteInt = os.path.abspath(os.path.realpath(os.path.join(C.get('dirs.mdk'), 'integration.git')))
+        remoteSta = os.path.abspath(os.path.realpath(os.path.join(C.get('dirs.mdk'), 'moodle.git')))
     else:
         remoteInt = C.get('remotes.integration')
         remoteSta = C.get('remotes.stable')

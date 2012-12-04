@@ -47,7 +47,7 @@ class Workplace(object):
 
         # Directory paths
         self.path = os.path.abspath(os.path.realpath(os.path.expanduser(path)))
-        self.cache = os.path.abspath(os.path.realpath(os.path.expanduser(C.get('dirs.moodle'))))
+        self.cache = os.path.abspath(os.path.realpath(os.path.expanduser(C.get('dirs.mdk'))))
         self.www = os.path.abspath(os.path.realpath(os.path.expanduser(C.get('dirs.www'))))
 
         # Directory names

@@ -266,10 +266,16 @@ class Moodle(object):
             db.createdb(dbname)
         db.selectdb(dbname)
 
+        # Defining wwwroot.
+        wwwroot = 'http://%s/' % C.get('host')
+        if C.get('path') != '' and C.get('path') != None:
+            wwwroot = wwwroot + C.get('path') + '/'
+        wwwroot = wwwroot + self.identifier
+
         debug('Installing %s...' % self.identifier)
         cli = 'admin/cli/install.php'
-        params = (C.get('host'), self.identifier, dataDir, engine, dbname, C.get('db.%s.user' % engine), C.get('db.%s.passwd' % engine), C.get('db.%s.host' % engine), fullname, self.identifier, C.get('login'), C.get('passwd'))
-        args = '--wwwroot="http://%s/%s/" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
+        params = (wwwroot, dataDir, engine, dbname, C.get('db.%s.user' % engine), C.get('db.%s.passwd' % engine), C.get('db.%s.host' % engine), fullname, self.identifier, C.get('login'), C.get('passwd'))
+        args = '--wwwroot="%s" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
         result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
             raise Exception('Error while running the install, please manually fix the problem.')
