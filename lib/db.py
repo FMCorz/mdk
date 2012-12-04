@@ -117,10 +117,22 @@ class DB(object):
 
     def dropdb(self, db):
 
+        try:
+            # Disable transaction on PostgreSQL.
+            old_isolation_level = self.conn.isolation_level
+            self.conn.set_isolation_level(0)
+        except:
+            pass
+
         if self.engine == 'mysqli':
             self.cur.execute('DROP DATABASE `%s`' % db)
         elif self.engine == 'pgsql':
             self.cur.execute('DROP DATABASE "%s"' % db)
+
+        try:
+            self.conn.set_isolation_level(old_isolation_level)
+        except:
+            pass
 
     def dump(self, fd, prefix=''):
         """Dump a database to the file descriptor passed"""
