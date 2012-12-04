@@ -42,13 +42,13 @@ class Workplace(object):
         if dataDir == None:
             dataDir = C.get('dataDir')
 
-        if not os.path.isdir(path):
-            raise Exception('Directory %s not found' % path)
-
         # Directory paths
         self.path = os.path.abspath(os.path.realpath(os.path.expanduser(path)))
         self.cache = os.path.abspath(os.path.realpath(os.path.expanduser(C.get('dirs.mdk'))))
         self.www = os.path.abspath(os.path.realpath(os.path.expanduser(C.get('dirs.www'))))
+
+        if not os.path.isdir(self.path):
+            raise Exception('Directory %s not found' % self.path)
 
         # Directory names
         self.wwwDir = wwwDir
