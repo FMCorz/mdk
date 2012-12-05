@@ -44,6 +44,12 @@ parser = argparse.ArgumentParser(description='Initialise MDK for the current use
 parser.add_argument('-f', '--force', action='store_true', help='Force the initialisation')
 args = parser.parse_args()
 
+# Check root.
+if os.getuid() != 0:
+    debug('You must execute this as root.')
+    debug('  sudo mdk init')
+    sys.exit(1)
+
 # Check what user we want to initialise for.
 while True:
     username = question('What user are you initialising MDK for?', os.getlogin())
