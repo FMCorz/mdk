@@ -1,3 +1,9 @@
+moodle-sdk (0.2) precise; urgency=low
+
+  * Packaging for MDK 0.2.
+
+ -- Frédéric Massart <fred@moodle.com>  Wed, 05 Dec 2012 15:53:50 +0800
+
 moodle-sdk (0.1ubuntu15) precise; urgency=low
 
   * Try the whole thing with MDK init. 

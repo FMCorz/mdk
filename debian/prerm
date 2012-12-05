@@ -1,6 +1,11 @@
 #!/bin/sh -e
 #DEBHELPER#
 
+# Remove .pyc files
+if [ -d "/usr/share/moodle-sdk" ]; then
+    find /usr/share/moodle-sdk -name *.pyc -delete
+fi
+
 # Removing the configuration files.
 if [ -f "/etc/moodle-sdk/config.json" ]; then
     rm /etc/moodle-sdk/config.json
