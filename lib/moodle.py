@@ -428,6 +428,7 @@ class Moodle(object):
         directories = ['~/.moodle-sdk']
         if C.get('dirs.moodle') != None:
             directories.insert(0, C.get('dirs.moodle'))
+        directories.append('/etc/moodle-sdk')
         directories.append(os.path.join(os.path.dirname(__file__), '..'))
 
         # Loop over each directory in order of preference.

@@ -11,3 +11,12 @@ Formats
 ### PHP
 
 PHP scripts will be executed from the web directory of an instance. They will be executed as any other CLI script.
+
+Directories
+-----------
+
+The scripts are looked for in each of the following directories until found:
+- <Setting dirs.moodle>/scripts
+- ~/.moodle-sdk/scripts
+- /etc/moodle-sdk/scripts
+- /path/to/moodle-sdk/scripts
