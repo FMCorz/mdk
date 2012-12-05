@@ -43,6 +43,7 @@ function _moodle() {
 
     if [[ "${COMP_CWORD}" == 1 ]]; then
         # List the commands and aliases.
+        # Ignoring these commands on purpose: init
         OPTS="alias backport backup check config create fix info install phpunit purge push rebase remove run update upgrade"
         OPTS="$OPTS $($BIN alias list | cut -d ':' -f 1)"
     else
