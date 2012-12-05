@@ -23,10 +23,10 @@
 echo "<h2>Moodle Development Kit</h1>";
 echo "<ul>";
 
-$path = dirname(__FILE__);
+$path = getcwd();
 $dirs = scandir($path);
 foreach ($dirs as $dir) {
-    if (!is_dir($path . $dir)) {
+    if ($dir == '.' || $dir == '..' || !is_dir($path . '/' . $dir)) {
         continue;
     }
     print "<li><a href='$dir'>$dir</a></li>";
