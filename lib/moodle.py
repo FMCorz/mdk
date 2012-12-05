@@ -28,9 +28,12 @@ import shutil
 
 from tools import debug, process
 from db import DB
-from config import C
+from config import Conf
 from git import Git
 from exceptions import ScriptNotFound
+
+C = Conf()
+
 
 class Moodle(object):
 

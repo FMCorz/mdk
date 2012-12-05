@@ -26,7 +26,9 @@ import os
 import argparse
 from lib import moodle, workplace
 from lib.tools import debug
-from lib.config import C
+from lib.config import Conf
+
+C = Conf()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Initialize PHP Unit')

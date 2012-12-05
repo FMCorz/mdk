@@ -32,9 +32,10 @@ from distutils.errors import DistutilsFileError
 from lib import workplace, moodle, tools, backup
 from lib.exceptions import *
 from lib.tools import debug
-from lib.config import C
+from lib.config import Conf
 
 Wp = workplace.Workplace()
+C = Conf()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Backup a Moodle instance')

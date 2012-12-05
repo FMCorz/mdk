@@ -24,55 +24,75 @@ http://github.com/FMCorz/mdk
 
 import sys
 import os
-import subprocess, shlex
+import subprocess
+import shlex
 import re
 
+
 def yesOrNo(q):
-	answers = ['y', 'n']
-	while True:
-		i = raw_input('%s (y/n) ' % (q)).strip().lower()
-		if i == 'y':
-			return True
-		elif i == 'n':
-			return False
+    while True:
+        i = raw_input('%s (y/n) ' % (q)).strip().lower()
+        if i == 'y':
+            return True
+        elif i == 'n':
+            return False
+
+
+def question(q, default=None, options=None):
+    """Asks the user a question, and return the answer"""
+    text = q
+    if default != None:
+        text = text + ' [%s]' % str(default)
+    i = raw_input('%s\n  ' % text)
+    if i.strip() == '':
+        return default
+    else:
+        if options != None and i not in options:
+            return question(q, default, options)
+        return i
+
 
 def chmodRecursive(path, chmod):
-	os.chmod(path, chmod)
-	for (dirpath, dirnames, filenames) in os.walk(path):
-		for d in dirnames:
-			dir = os.path.join(dirpath, d)
-			os.chmod(dir, chmod)
-		for f in filenames:
-			file = os.path.join(dirpath, f)
-			os.chmod(file, chmod)
+    os.chmod(path, chmod)
+    for (dirpath, dirnames, filenames) in os.walk(path):
+        for d in dirnames:
+            dir = os.path.join(dirpath, d)
+            os.chmod(dir, chmod)
+        for f in filenames:
+            file = os.path.join(dirpath, f)
+            os.chmod(file, chmod)
+
 
 def debug(str):
-	print str
-	sys.stdout.flush()
+    print str
+    sys.stdout.flush()
+
 
 def parseBranch(branch, pattern):
-	pattern = re.compile(pattern, flags=re.I)
-	result = pattern.search(branch)
-	if not result:
-		return False
-	result = {
-		'issue': result.group(pattern.groupindex['issue']),
-		'version': result.group(pattern.groupindex['version'])
-	}
-	try:
-		result['suffix'] = result.group(pattern.groupindex['suffix'])
-	except:
-		result['suffix'] = None
-	return result
+    pattern = re.compile(pattern, flags=re.I)
+    result = pattern.search(branch)
+    if not result:
+        return False
+    result = {
+        'issue': result.group(pattern.groupindex['issue']),
+        'version': result.group(pattern.groupindex['version'])
+    }
+    try:
+        result['suffix'] = result.group(pattern.groupindex['suffix'])
+    except:
+        result['suffix'] = None
+    return result
+
 
 def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
-	if type(cmd) != 'list':
-		cmd = shlex.split(str(cmd))
-	proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
-	(out, err) = proc.communicate()
-	return (proc.returncode, out, err)
+    if type(cmd) != 'list':
+        cmd = shlex.split(str(cmd))
+    proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
+    (out, err) = proc.communicate()
+    return (proc.returncode, out, err)
+
 
 def stableBranch(version):
-	if version == 'master':
-		return 'master'
-	return 'MOODLE_%d_STABLE' % int(version)
+    if version == 'master':
+        return 'master'
+    return 'MOODLE_%d_STABLE' % int(version)

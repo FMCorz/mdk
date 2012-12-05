@@ -26,9 +26,10 @@ import sys
 import argparse
 from lib import workplace, moodle, tools
 from lib.tools import debug
-from lib.config import C
+from lib.config import Conf
 
 Wp = workplace.Workplace()
+C = Conf()
 
 # Arguments
 parser = argparse.ArgumentParser(description="Push a branch to a remote.")

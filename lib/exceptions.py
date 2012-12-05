@@ -43,5 +43,9 @@ class ConfigFileCouldNotBeLoaded(Exception):
     pass
 
 
+class ConfigFileCouldNotBeSaved(Exception):
+    pass
+
+
 class ScriptNotFound(Exception):
     pass

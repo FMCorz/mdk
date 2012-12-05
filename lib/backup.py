@@ -29,10 +29,11 @@ from distutils.dir_util import copy_tree
 
 from tools import debug, chmodRecursive
 from db import DB
-from config import C
+from config import Conf
 from workplace import Workplace
 from exceptions import *
 
+C = Conf()
 jason = 'info.json'
 sqlfile = 'dump.sql'
 

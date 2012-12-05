@@ -29,7 +29,9 @@ import re
 
 from lib import git, tools, moodle, workplace
 from lib.tools import debug
-from lib.config import C
+from lib.config import Conf
+
+C = Conf()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Creates a branch associated to an MDL issue')

@@ -27,10 +27,13 @@ import shutil
 from distutils.dir_util import copy_tree
 
 from tools import debug, process
-from config import C
+from config import Conf
 import db
 import git
 import moodle
+
+C = Conf()
+
 
 class Workplace(object):
 

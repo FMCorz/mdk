@@ -27,9 +27,10 @@ import os
 import argparse
 from lib import workplace
 from lib.tools import debug
-from lib.config import C, Conf
+from lib.config import Conf
 
 Wp = workplace.Workplace()
+C = Conf()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Perform several checks on your current installation')

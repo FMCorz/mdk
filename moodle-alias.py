@@ -25,7 +25,9 @@ http://github.com/FMCorz/mdk
 import sys
 import argparse
 from lib.tools import debug
-from lib.config import C
+from lib.config import Conf
+
+C = Conf()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Manage your aliases')

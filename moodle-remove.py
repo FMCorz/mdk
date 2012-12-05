@@ -28,7 +28,9 @@ import argparse
 
 from lib import tools, workplace
 from lib.tools import debug
-from lib.config import C
+from lib.config import Conf
+
+C = Conf()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Completely remove an instance')
