@@ -29,6 +29,7 @@ import shutil
 import grp
 import re
 import pwd
+import subprocess
 
 from lib.tools import debug, question
 
@@ -88,7 +89,10 @@ try:
     group = grp.getgrnam('moodle-sdk')
     if not username in group.gr_mem:
         debug('Adding user %s to group %s.' % (username, group.gr_name))
-        os.initgroups(username, group.gr_gid)
+        # This command does not work for some reason...
+        # os.initgroups(username, group.gr_gid)
+        chgrp = subprocess.Popen(['usermod', '-a', '-G', 'moodle-sdk', username])
+        chgrp.wait()
 except KeyError:
     # Raised when the group has not been found.
     group = None
