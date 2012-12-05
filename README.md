@@ -4,7 +4,7 @@ Moodle Development Kit
 A collection of tools meant to make developers' lives easier.
 
 Requirements
-------------
+============
 
 - Python 2.7
 - MySQL or PostgreSQL
@@ -12,65 +12,59 @@ Requirements
 Most of the tools work on Moodle 1.9 onwards, but some CLI tools required by MDK might not be available in all versions.
 
 Usage
------
+=====
 
 The commands are called using that form:
 
-    moodle <command> <arguments>
+    mdk <command> <arguments>
 
 Get some help on a command using:
 
-    moodle <command> --help
+    mdk <command> --help
 
 Installation
-------------
+============
+
+Debian/Ubuntu package
+---------------------
+
+
+
+Manual installation
+-------------------
 
 ### 1. Clone the repository
 
-    git clone git://github.com/FMCorz/mdk.git
+    cd /opt
+    sudo git clone git://github.com/FMCorz/mdk.git moodle-sdk
 
-### 2. Check permissions
+### 2. Make executable and accessible
 
-In the freshly cloned repository, each `moodle-<command>.py` and `moodle` must be executable.
+    sudo chmod +x /opt/moodle-sdk/moodle /opt/moodle-sdk/moodle-*.py
+    sudo ln -s /opt/moodle-sdk/moodle /usr/local/bin/mdk
 
-    chmod +x moodle moodle-*.py
+### 3. Set up the basics
 
-### 3. Make MDK accessible
+Assuming that you are using Apache, which is set up to serve the files from /var/www, leave the default values as they are in `mdk init`, except for your remote and the database passwords.
 
-Create a symbolic link to the `moodle` bash script in your bin directory
+    mkdir ~/www
+    sudo ln -s ~/www /var/www/m
+    sudo mdk init
 
-    ln -s /path/to/mdk/moodle /usr/local/bin
+### 4. Done
 
-Alternatively you could add to directory where `moodle` is in your environment variable $PATH.
+Try the following command to create a typical Stable Master instance (this will take some time because the cache is still empty):
 
-### 4. Config file
+    mdk create
+    mdk list
 
-Copy the config file `config-dist.json` to `config.json`.
-
-Here are some settings that you will have to set:
-
-- dirs.www: This is typically the directory where points http://localhost/. You need write access in that directory as a symbolic link to your Moodle instance will ve created there. 
-- dirs.storage: This is the directory where will be stored your instances of Moodle and their data. Each instance of Moodle will have its own folder in which you will find moodledata and the web directory. You obviously need write access in this directory.
-- dirs.moodle: This folder will be used by MDK to store some data like a copy of the remotes, or backup files, etc...
-- db.*: The information to connect to your database.
-- remotes.mine: The URL to your personal repository.
-
-There are quite a lot more other settings which you could play with, read through the config file to find them out.
-
-### 5. Done
-
-Try the following command to create and install a typical Stable Master instance:
-
-    moodle create -i
-
-Now you should be able to access it from http://localhost/stablemaster, or type the following command the list it:
-
-    moodle list
+Now you should be able to access it from http://localhost/m/stable_master.
 
 Command list
-------------
+============
 
-### - alias
+alias
+-----
 
 Set up aliases of your Moodle commands.
 
@@ -78,9 +72,10 @@ Set up aliases of your Moodle commands.
 
 This line defines the alias 'upall', for 'moodle update --all'
     
-    moodle alias add upall "update --all"
+    mdk alias add upall "update --all"
 
-### - backport
+backport
+--------
 
 Backport a branch to another instance of Moodle.
 
@@ -88,13 +83,14 @@ Backport a branch to another instance of Moodle.
 
 Assuming we are in a Moodle instance, this backports the current branch to the version 2.2 and 2.3
 
-    moodle backport --version 22 23
+    mdk backport --version 22 23
 
 Backports the branch MDL-12345-23 from the instance stable_23 to the instance stable_22, and pushes the new branch to your remote
 
-    moodle backport stable_23 --branch MDL-12345-23 --version 22 --push
+    mdk backport stable_23 --branch MDL-12345-23 --version 22 --push
 
-### - backup
+backup
+------
 
 Backup a whole instance so that it can be restored later.
 
@@ -102,21 +98,23 @@ Backup a whole instance so that it can be restored later.
 
 Backup the instance named stable_master
 
-    moodle backup stable_master
+    mdk backup stable_master
 
 List the backups
 
-    moodle backup --list
+    mdk backup --list
 
 Restore the second backup of the instance stable_master
 
-    moodle backup --restore stable_master_02
+    mdk backup --restore stable_master_02
 
-### - check
+check
+-----
 
 Perform some checks on the environment to identify possible problems.
 
-### - create
+create
+------
 
 Create a new instance of Moodle. It will be named according to your config file.
 
@@ -124,13 +122,14 @@ Create a new instance of Moodle. It will be named according to your config file.
 
 Create a new instance of Moodle 2.1
 
-    moodle create --version 21
+    mdk create --version 21
 
 Create an instance of Moodle 2.2 using PostgreSQL from the integration remote, and run the installation script.
 
-    moodle create --version 22 --engine pgsql --integration --install
+    mdk create --version 22 --engine pgsql --integration --install
 
-### - config
+config
+------
 
 Set your MDK settings from the command line.
 
@@ -138,13 +137,14 @@ Set your MDK settings from the command line.
 
 Show the list of your settings
      
-    moodle config list
+    mdk config list
 
 Change the value of the setting 'dirs.storage' to '/var/www/repositories'
 
-    moodle config set dirs.storage /var/www/repositories
+    mdk config set dirs.storage /var/www/repositories
 
-### - fix
+fix
+---
 
 Create a branch from an issue number on the tracker (MDL-12345) and sets it to track the right branch.
 
@@ -152,11 +152,12 @@ Create a branch from an issue number on the tracker (MDL-12345) and sets it to t
 
 In a Moodle 2.2 instance, this will create (and checkout) a branch named MDL-12345-22 which will track upstream/MOODLE_22_STABLE.
 
-    moodle fix MDL-12345
-    moodle fix 12345
+    mdk fix MDL-12345
+    mdk fix 12345
 
 
-### - info
+info
+----
 
 Display information about the instances on the system.
 
@@ -164,28 +165,31 @@ Display information about the instances on the system.
 
 List the instances
 
-    moodle info --list
+    mdk info --list
 
 Display the information known about the instance *stable_master*
 
-    moodle info stable_master
+    mdk info stable_master
 
 
-### - install
+install
+-------
 
 Run the command line installation script with all parameters set on an existing instance.
 
 **Examples**
 
-    moodle install --engine mysqli stable_master
+    mdk install --engine mysqli stable_master
 
 
-### - phpunit
+phpunit
+-------
 
 Get the instance ready for PHP Unit tests.
 
 
-### - purge
+purge
+-----
 
 Purge the cache.
 
@@ -193,10 +197,11 @@ Purge the cache.
 
 To purge the cache of all the instances
 
-    moodle purge --all
+    mdk purge --all
 
 
-### - push
+push
+----
 
 Shortcut to push a branch to your remote.
 
@@ -204,14 +209,15 @@ Shortcut to push a branch to your remote.
 
 Push the current branch to your repository
 
-    moodle push
+    mdk push
 
 Force a push of the branch MDL-12345-22 from the instance stable_22 to your remote
 
-    moodle push --force --branch MDL-12345-22 stable_22
+    mdk push --force --branch MDL-12345-22 stable_22
 
 
-### - rebase
+rebase
+------
 
 Fetch the latest branches from the upstream remote and rebase your local branches.
 
@@ -219,20 +225,22 @@ Fetch the latest branches from the upstream remote and rebase your local branche
 
 This will rebase the branches MDL-12345-xx and MDL-56789-xx on the instances stable_22, stable_23 and stable_master. And push them to your remote if successful.
 
-    moodle rebase --issues 12345 56789 --version 22 23 master --push
-    moodle rebase --issues MDL-12345 MDL-56789 --push stable_22 stable_23 stable_master
+    mdk rebase --issues 12345 56789 --version 22 23 master --push
+    mdk rebase --issues MDL-12345 MDL-56789 --push stable_22 stable_23 stable_master
 
 
-### - remove
+remove
+------
 
 Remove an instance, deleting every thing including the database.
 
 **Example**
 
-    moodle remove stable_master
+    mdk remove stable_master
 
 
-### - run
+run
+---
 
 Execute a script on an instance. The scripts are stored in the scripts directory.
 
@@ -240,10 +248,11 @@ Execute a script on an instance. The scripts are stored in the scripts directory
 
 Set the instance stable_master ready for development
 
-    moodle run dev stable_master
+    mdk run dev stable_master
 
 
-### - update
+update
+------
 
 Fetch the latest stables branches from the upstream remote and pull the changes into the local stable branch.
 
@@ -251,41 +260,44 @@ Fetch the latest stables branches from the upstream remote and pull the changes 
 
 This updates the instances stable_22 and stable_23
 
-    moodle update stable_22 stable_23
+    mdk update stable_22 stable_23
 
 This updates all your integration instances and runs the upgrade script of Moodle.
 
-    moodle update --integration --upgrade
+    mdk update --integration --upgrade
 
 
-### - upgrade
+upgrade
+-------
 
-Run the upgrade script of your instance
+Run the upgrade script of your instance.
 
 **Examples**
 
 The following runs an upgrade on your stable branches
 
-    moodle upgrade --stable
+    mdk upgrade --stable
 
 This will run an update an each instance before performing the upgrade process
 
-    moodle upgrade --all --update
+    mdk upgrade --all --update
 
 Scripts
--------
+=======
 
-You can write custom scripts and execute them on your instances using the command `moodle run`. MDK looks for the scripts in the _scripts_ directory and identifies their type by reading their extension. For example, a script called 'helloworld.php' will be executed as a command line script from the root of an installation.
+You can write custom scripts and execute them on your instances using the command `mdk run`. MDK looks for the scripts in the _scripts_ directories and identifies their type by reading their extension. For example, a script called 'helloworld.php' will be executed as a command line script from the root of an installation.
 
     # From anywhere on the system
-    $ moodle run helloworld stable_master
+    $ mdk run helloworld stable_master
 
-    # Is similar to typing the following command in /var/www/stable_master
+    # Is similar to typing the following command
+    $ cp /path/to/script/helloworld.php /path/to/moodle/instances/stable_master
+    $ cd /path/to/moodle/instances/stable_master
     $ php helloworld.php
 
 Scripts are very handy when it comes to performing more complexed tasks.
 
 License
--------
+=======
 
 Licensed under the [GNU GPL License](http://www.gnu.org/copyleft/gpl.html)

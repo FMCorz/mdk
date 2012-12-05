@@ -14,13 +14,13 @@
     "dirs": {
         // The web directory you are going to access Moodle from, typically your virtual host DocumentRoot.
         // A symlink to the web directory of your Moodle instance will be created here.
-        "www": "/var/lib/moodle-sdk/www",
+        "www": "~/www",
         // The directory where the instances will be stored.
         "storage": "~/moodles",
         // A directory used by MDK to store different kind of things such as scripts and backups.
         "moodle": "~/.moodle-sdk",
-        // Global MDK storage folder. Used for cached repositories and stuff which can be shared system-wide.
-        "mdk": "/var/lib/moodle-sdk/storage"
+        // Used for cached repositories and stuff which could be shared system-wide.
+        "mdk": "~/.moodle-sdk"
     },
 
     // List of remotes to work with
@@ -51,8 +51,8 @@
     "wording": {
 
         // How to name your instances
-        "prefixStable": "stable",
-        "prefixIntegration": "integration",
+        "prefixStable": "stable_",
+        "prefixIntegration": "integration_",
         "prefixMaster": "master",
         "suffixSeparator": "_",
 
@@ -72,9 +72,9 @@
     },
 
     // The host name to set during an install
-    "host": "moodle-sdk",
+    "host": "localhost",
     // Path to your Moodle instances, http://host/path/ should point to dirs.www.
-    "path": "",
+    "path": "m",
     // Moodle admin login
     "login": "admin",
     // Moodle admin password
@@ -106,7 +106,7 @@
     "symlinkToData": "_data",
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 24,
+    "masterBranch": 25,
 
     // Aliases for MDK commands.
     "aliases": {
