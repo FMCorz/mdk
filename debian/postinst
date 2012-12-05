@@ -1,0 +1,25 @@
+#!/bin/sh -e
+#DEBHELPER#
+
+# Create a group.
+groupadd -f moodle-sdk
+
+# Copy the configuration file to where it has to go.
+cp /usr/share/moodle-sdk/config-dist.json /etc/moodle-sdk/config.json
+chgrp moodle-sdk /etc/moodle-sdk/config.json
+chmod 0664 /etc/moodle-sdk/config.json
+
+# Give write access on directories.
+chgrp moodle-sdk /var/lib/moodle-sdk/storage
+chgrp moodle-sdk /var/lib/moodle-sdk/www
+chmod 0775 /var/lib/moodle-sdk/storage
+chmod 0775 /var/lib/moodle-sdk/www
+
+# Adding moodle-sdk to host file.
+if [ -z "$(cat /etc/hosts | grep 'moodle-sdk')" ]; then
+    echo "\n\n# Moodle SDK\n127.0.0.1\tmoodle-sdk" >> /etc/hosts
+fi
+
+# Enable the virtual host.
+a2ensite moodle-sdk
+apache2ctl graceful

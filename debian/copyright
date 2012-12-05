@@ -1,1 +1,22 @@
-Copyright (c) 2012 Frédéric Massart - FMCorz.net
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Moodle Development Kit
+Upstream-Contact: Frédéric Massart <fred@moodle.com>
+Source: http://github.com/FMCorz/mdk
+Copyright: Copyright (c) 2012 Frédéric Massart - FMCorz.net
+License: GPL-3+
+ /usr/share/common-licenses/GPL
+
+Files: *
+Copyright: Copyright (c) 2012 Frédéric Massart - FMCorz.net
+License: GPL-3+
+ /usr/share/common-licenses/GPL
+
+Files: lib/bpgsql/*
+Copyright: Copyright (C) 2001-2008 Barry Pederson <bp@barryp.org>
+License: GPL-2+
+ /usr/share/common-licenses/GPL-2
+
+Files: lib/pymysql/*
+Copyright: Copyright (c) 2010 PyMySQL contributors
+License: MIT
+ debian/moodle-sdk/usr/share/moodle-sdk/lib/pymysql/LICENSE

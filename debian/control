@@ -1,12 +1,13 @@
-Source: moodle-mdk
+Source: moodle-sdk
 Maintainer: Dan Poltawski <dan@moodle.com>
+Uploaders: Frédéric Massart <fred@moodle.com>
 Section: misc
 Priority: optional
-Standards-Version: 3.9.2
+Standards-Version: 3.9.3
 Build-Depends: debhelper (>= 8)
 
-Package: moodle-mdk
+Package: moodle-sdk
 Architecture: any
-Depends: ${misc:Depends}, git, php5-cli, python, python-argparse
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-argparse, python-mysqldb, python-psycopg2, git, apache2, mysql-server, postgresql, php5, php5-cli, php5-curl, php5-mysql, php5-pgsql
 Description: Moodle Development Kit
  A collection of tools meant to make Moodle developers' lives easier.

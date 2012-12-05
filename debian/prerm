@@ -1,0 +1,26 @@
+#!/bin/sh -e
+#DEBHELPER#
+
+# Removing the configuration files.
+if [ -f "/etc/moodle-sdk/config.json" ]; then
+    rm /etc/moodle-sdk/config.json
+fi
+
+# Removing content of directories.
+if [ -d "/var/lib/moodle-sdk/storage" ]; then
+    rm -r /var/lib/moodle-sdk/storage
+fi
+if [ -d "/var/lib/moodle-sdk/www" ]; then
+    rm -r /var/lib/moodle-sdk/www
+fi
+
+# Remove the group.
+if [ -n "$(cat /etc/group | grep 'moodle-sdk:')" ]; then
+    groupdel moodle-sdk
+fi
+
+# Disable the virtual host.
+a2dissite moodle-sdk
+apache2ctl graceful
+
+# Do not remove the line added in /etc/hosts on purpose. Might be dangerous.

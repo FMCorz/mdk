@@ -1,3 +1,94 @@
+moodle-sdk (0.1ubuntu15) precise; urgency=low
+
+  * Try the whole thing with MDK init. 
+
+ -- Frédéric Massart <fred@moodle.com>  Wed, 05 Dec 2012 12:15:17 +0800
+
+moodle-sdk (0.1ubuntu14) precise; urgency=low
+
+  * Another day of update begins. 
+
+ -- Frédéric Massart <fred@moodle.com>  Wed, 05 Dec 2012 10:09:04 +0800
+
+moodle-sdk (0.1ubuntu13) precise; urgency=low
+
+  * Getting there... 
+
+ -- Frédéric Massart <fred@moodle.com>  Tue, 04 Dec 2012 17:41:02 +0800
+
+moodle-sdk (0.1ubuntu12) precise; urgency=low
+
+  * Yet another attempt. 
+
+ -- Frédéric Massart <fred@moodle.com>  Tue, 04 Dec 2012 14:29:45 +0800
+
+moodle-sdk (0.1ubuntu11) precise; urgency=low
+
+  * Attempting on /var/lib now... 
+
+ -- Frédéric Massart <fred@moodle.com>  Tue, 04 Dec 2012 12:32:30 +0800
+
+moodle-sdk (0.1ubuntu10) precise; urgency=low
+
+  * Attempt to store data in /srv/moodle-sdk. 
+
+ -- Frédéric Massart <fred@moodle.com>  Tue, 04 Dec 2012 12:21:31 +0800
+
+moodle-sdk (0.1ubuntu9) precise; urgency=low
+
+  * Some more pointless versioning.
+
+ -- Frédéric Massart <fred@moodle.com>  Tue, 04 Dec 2012 11:24:24 +0800
+
+moodle-sdk (0.1ubuntu8) precise; urgency=low
+
+  * Should I really try to describe what I'm doing here? 
+
+ -- Frédéric Massart <fred@moodle.com>  Tue, 04 Dec 2012 11:05:39 +0800
+
+moodle-sdk (0.1ubuntu7) precise; urgency=low
+
+  * Added a postinst script to rename the config file (still trying things here). 
+
+ -- Frédéric Massart <fred@moodle.com>  Tue, 04 Dec 2012 10:18:26 +0800
+
+moodle-sdk (0.1ubuntu6) precise; urgency=low
+
+  * Forgot to copy lib/ and added scripts/ to usr/share. 
+
+ -- Frédéric Massart <fred@moodle.com>  Tue, 04 Dec 2012 10:02:58 +0800
+
+moodle-sdk (0.1ubuntu5) precise; urgency=low
+
+  * Another tentative of logic to install the package.
+
+ -- Frédéric Massart <fred@moodle.com>  Tue, 04 Dec 2012 10:00:17 +0800
+
+moodle-sdk (0.1ubuntu4) precise; urgency=low
+
+  * Do use the Python logic to install the package. 
+
+ -- Frédéric Massart <fred@moodle.com>  Mon, 03 Dec 2012 17:48:52 +0800
+
+moodle-sdk (0.1ubuntu3) precise; urgency=low
+
+  * Switched back Pre-Depends in Depends.
+
+ -- Frédéric Massart <fred@moodle.com>  Mon, 03 Dec 2012 17:15:28 +0800
+
+moodle-sdk (0.1ubuntu2) precise; urgency=low
+
+  * Changed dependencies to Pre-Depends. 
+
+ -- Frédéric Massart <fred@moodle.com>  Mon, 03 Dec 2012 17:08:34 +0800
+
+moodle-sdk (0.1ubuntu1) precise; urgency=low
+
+  * Added dependencies (apache2, mysql-server, postgresql, php5, php5-mysql, php5-pgsql, python-mysqldb, python-psycopg2)
+  * Rename the package to moodle-sdk.
+
+ -- Frédéric Massart <fred@moodle.com>  Mon, 03 Dec 2012 13:52:49 +0800
+
 moodle-mdk (0.1) unstable; urgency=low
 
   * Initial release. 

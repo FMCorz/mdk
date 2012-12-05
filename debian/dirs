@@ -1,3 +1,8 @@
-/usr/local/lib/moodle-mdk
-/usr/local/lib/moodle-mdk/lib
+/usr/share/moodle-sdk
+/usr/share/moodle-sdk/extra
+/usr/share/moodle-sdk/lib
+/usr/share/moodle-sdk/scripts
+/etc/moodle-sdk
+/var/lib/moodle-sdk/storage
+/var/lib/moodle-sdk/www
 /usr/bin

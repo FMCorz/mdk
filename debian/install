@@ -1,4 +1,6 @@
-lib/* usr/local/lib/moodle-mdk/lib/
-*.py usr/local/lib/moodle-mdk/
-moodle usr/local/lib/moodle-mdk/
-config-dist.json /etc/moodle-mdk/
+moodle /usr/share/moodle-sdk
+moodle-*.py /usr/share/moodle-sdk/
+config-dist.json /usr/share/moodle-sdk/
+extra/* /usr/share/moodle-sdk/extra/
+lib/*.py /usr/share/moodle-sdk/lib/
+scripts/* /usr/share/moodle-sdk/scripts/
