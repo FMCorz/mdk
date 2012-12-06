@@ -442,7 +442,6 @@ class Moodle(object):
                 type = scriptname.rsplit('.', 1)[1]
             else:
                 for ext in supported:
-                    print f + '.' + ext
                     if os.path.isfile(f + '.' + ext):
                         script = f + '.' + ext
                         type = ext
