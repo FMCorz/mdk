@@ -31,7 +31,7 @@ import re
 import pwd
 import subprocess
 
-from lib.tools import debug, question
+from lib.tools import debug, question, get_current_user
 
 
 def resolve_directory(path, user):
@@ -53,7 +53,7 @@ if os.getuid() != 0:
 
 # Check what user we want to initialise for.
 while True:
-    username = question('What user are you initialising MDK for?', os.getlogin())
+    username = question('What user are you initialising MDK for?', get_current_user())
     try:
         user = pwd.getpwnam(username)
         usergroup = grp.getgrnam(username)

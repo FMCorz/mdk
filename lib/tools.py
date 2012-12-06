@@ -63,6 +63,21 @@ def chmodRecursive(path, chmod):
             os.chmod(file, chmod)
 
 
+def get_current_user():
+    """Attempt to get the currently logged in user"""
+    username = 'root'
+    import os
+    try:
+        username = os.getlogin()
+    except OSError:
+        import getpass
+        try:
+            username = getpass.getuser()
+        except:
+            pass
+    return username
+
+
 def debug(str):
     print str
     sys.stdout.flush()
