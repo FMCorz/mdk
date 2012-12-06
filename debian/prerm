@@ -1,31 +1,38 @@
 #!/bin/sh -e
 #DEBHELPER#
 
+MODE="$1"
+
 # Remove .pyc files
 if [ -d "/usr/share/moodle-sdk" ]; then
     find /usr/share/moodle-sdk -name *.pyc -delete
-fi
-
-# Removing the configuration files.
-if [ -f "/etc/moodle-sdk/config.json" ]; then
-    rm /etc/moodle-sdk/config.json
-fi
-
-# Removing content of directories.
-if [ -d "/var/lib/moodle-sdk/storage" ]; then
-    rm -r /var/lib/moodle-sdk/storage
-fi
-if [ -d "/var/lib/moodle-sdk/www" ]; then
-    rm -r /var/lib/moodle-sdk/www
-fi
-
-# Remove the group.
-if [ -n "$(cat /etc/group | grep 'moodle-sdk:')" ]; then
-    groupdel moodle-sdk
 fi
 
 # Disable the virtual host.
 a2dissite moodle-sdk
 apache2ctl graceful
 
-# Do not remove the line added in /etc/hosts on purpose. Might be dangerous.
+# Action to perform when the package is removed or purged.
+if [ "$MODE" = "remove" ] || [ "$MODE" = "purge" ]; then
+
+    # Removing the configuration files.
+    if [ -f "/etc/moodle-sdk/config.json" ]; then
+        rm /etc/moodle-sdk/config.json
+    fi
+
+    # Removing content of directories.
+    if [ -d "/var/lib/moodle-sdk/storage" ]; then
+        rm -r /var/lib/moodle-sdk/storage
+    fi
+    if [ -d "/var/lib/moodle-sdk/www" ]; then
+        rm -r /var/lib/moodle-sdk/www
+    fi
+
+    # Remove the group.
+    if [ -n "$(cat /etc/group | grep 'moodle-sdk:')" ]; then
+        groupdel moodle-sdk
+    fi
+
+    # Do not remove the line added in /etc/hosts on purpose. Might be dangerous.
+
+fi

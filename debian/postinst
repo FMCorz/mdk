@@ -5,6 +5,7 @@
 groupadd -f moodle-sdk
 
 # Copy the configuration file to where it has to go.
+# TODO Do not overwrite the default configuration file.
 cp /usr/share/moodle-sdk/config-dist.json /etc/moodle-sdk/config.json
 chgrp moodle-sdk /etc/moodle-sdk/config.json
 chmod 0664 /etc/moodle-sdk/config.json
