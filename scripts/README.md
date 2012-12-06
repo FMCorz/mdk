@@ -16,7 +16,7 @@ Directories
 -----------
 
 The scripts are looked for in each of the following directories until found:
-- <Setting dirs.moodle>/scripts
+- (Setting dirs.moodle)/scripts
 - ~/.moodle-sdk/scripts
 - /etc/moodle-sdk/scripts
 - /path/to/moodle-sdk/scripts

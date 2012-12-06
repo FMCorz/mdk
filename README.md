@@ -25,10 +25,23 @@ Get some help on a command using:
 Installation
 ============
 
-Debian/Ubuntu package
----------------------
+Ubuntu package
+--------------
 
+    sudo apt-add-repository ppa:2x1cq-fred-7nqa6/ppa
+    sudo apt-get update
+    sudo apt-get install moodle-sdk
+    # Most settings are probably good as they are, just configure your remote and database engines.
+    sudo mdk init
+    # The next line prevents your from logging out and in again.
+    sudo su `whoami`
 
+You're done! Try the following command to create a typical Stable Master instance (this will take some time because the cache is still empty):
+
+    mdk create
+    mdk list
+
+Now you should be able to access it from http://moodle-sdk/stable_master.
 
 Manual installation
 -------------------
