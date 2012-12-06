@@ -27,7 +27,15 @@ import argparse
 from lib.tools import debug
 from lib.config import Conf
 
-C = Conf()
+try:
+    C = Conf()
+except:
+    # Quietly die here. The main reason would be that the config file could not
+    # be loaded for some reason, which means that the environment has not been
+    # set yet. Therefore we exit quietly. This is a very specific case for
+    # moodle-alias as it is used in the Moodle bash script which does not know
+    # if the environment is properly set or not.
+    sys.exit()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Manage your aliases')
