@@ -6,10 +6,10 @@ A collection of tools meant to make developers' lives easier.
 Requirements
 ============
 
-- Python 2.7
+- Python 2.7 (or Python 2.6 with the package _python-argparse_)
 - MySQL or PostgreSQL
 
-Most of the tools work on Moodle 1.9 onwards, but some CLI tools required by MDK might not be available in all versions.
+Most of the tools work on Moodle 1.9 onwards, but some CLI scripts required by MDK might not be available in all versions.
 
 Usage
 =====
@@ -36,7 +36,8 @@ Ubuntu package
     # The next line prevents your from logging out and in again.
     sudo su `whoami`
 
-You're done! Try the following command to create a typical Stable Master instance (this will take some time because the cache is still empty):
+You're done!
+Try the following command to create a typical Stable Master instance (this will take some time because the cache is still empty):
 
     mdk create
     mdk list
