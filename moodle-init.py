@@ -150,6 +150,8 @@ if not os.path.isdir(mdkdir):
 
 # Git repository.
 C.set('remotes.mine', question('What is your remote?', C.get('remotes.mine')))
+C.set('myRemote', question('How to name your remote?', C.get('myRemote')))
+C.set('upstreamRemote', question('How to name the upsream remote (official Moodle remote)?', C.get('upstreamRemote')))
 
 # Database settings.
 C.set('db.mysqli.user', question('What is your MySQL user?', C.get('db.mysqli.user')))
