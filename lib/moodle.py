@@ -162,7 +162,7 @@ class Moodle(object):
 
     def generateBranchName(self, issue, suffix='', version=''):
         """Generates a branch name"""
-        mdl = re.sub(r'MDL(-|_)?', '', issue, flags=re.I)
+        mdl = re.sub(r'(MDL|mdl)(-|_)?', '', issue)
         if version == '':
             version = self.get('branch')
         args = {
@@ -442,7 +442,6 @@ class Moodle(object):
                 type = scriptname.rsplit('.', 1)[1]
             else:
                 for ext in supported:
-                    print f + '.' + ext
                     if os.path.isfile(f + '.' + ext):
                         script = f + '.' + ext
                         type = ext
