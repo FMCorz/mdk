@@ -103,7 +103,7 @@
 
     // Name of the symlink pointing to the data directory to create in the www directory
     // during an instance creation. If false, the symlink won't be created.
-    "symlinkToData": "_data",
+    "symlinkToData": false,
 
     // You should not edit this, this is the branch that is considered as master by developers.
     "masterBranch": 25,
