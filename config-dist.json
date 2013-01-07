@@ -71,6 +71,14 @@
         "pgsql": "PostgreSQL"
     },
 
+    // The information for publishing diff urls to tracker
+    "jira": {
+        "url": "https://tracker.moodle.org/",
+        "username": "me"
+    },
+    // The base for github diff urls
+    "diffUrlBase": "https://github.com/me/moodle/compare",
+
     // The host name to set during an install
     "host": "localhost",
     // Path to your Moodle instances, http://host/path/ should point to dirs.www.

@@ -24,7 +24,7 @@ http://github.com/FMCorz/mdk
 
 import sys
 import argparse
-from lib import workplace, moodle, tools
+from lib import workplace, moodle, tools, jira
 from lib.tools import debug
 from lib.config import Conf
 
@@ -36,6 +36,7 @@ parser = argparse.ArgumentParser(description="Push a branch to a remote.")
 parser.add_argument('-b', '--branch', metavar='branch', help='the branch to push. Default is current branch.')
 parser.add_argument('-r', '--remote', metavar='remote', help='remote to push to. Default is your remote.')
 parser.add_argument('-f', '--force', action='store_true', help='force the push (does not apply on the stable branch)')
+parser.add_argument('-j', '--update-jira', action='store_true', help='also add the github links to the jira issue ', dest='updatejira')
 parser.add_argument('-s', '--include-stable', action='store_true', help='also push the stable branch (MOODLE_xx_STABLE, master)', dest='includestable')
 parser.add_argument('-k', '--force-stable', action='store_true', help='force the push on the stable branch', dest='forcestable')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance to work on')
@@ -61,12 +62,41 @@ if args.branch == None:
 else:
 	branch = args.branch
 
+# Getting issue number
+# Parsing the branch
+parsedbranch = tools.parseBranch(branch, C.get('wording.branchRegex'))
+if not parsedbranch:
+	debug('Could not extract issue number from %s' % branch)
+	sys.exit(1)
+issue = 'MDL-%s' % (parsedbranch['issue'])
+
+suffix = parsedbranch['suffix']
+version = parsedbranch['version']
+
+versionslong = {'master' : 'Master',
+                '24' : '2.4',
+                '23' : '2.3',
+                '22' : '2.2'}
+versionlong = versionslong[version]
+
 # Pushing current branch
 debug('Pushing branch %s to remote %s...' % (branch, remote))
 result = M.git().push(remote, branch, force=args.force)
 if result[0] != 0:
 	debug(result[2])
 	sys.exit(1)
+
+if args.updatejira:
+    myremoteurl = C.get('remotes.mine')
+    mydiffurl = C.get('diffUrlBase')
+    # Get the hash of the last upstream commit
+    headcommit = M.git().head('%s/%s' % (C.get('upstreamRemote'), M.get('stablebranch')))
+    J = jira.Jira()
+    diffurl = '%s/%s...%s' % (mydiffurl, headcommit, branch)
+
+    J.set_custom_fields(issue, {'Pull  from Repository': myremoteurl,
+                                'Pull %s Branch' % (versionlong) : branch,
+                                'Pull %s Diff URL' % (versionlong) : diffurl})
 
 # Pushing stable branch
 if args.includestable:
