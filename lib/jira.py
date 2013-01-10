@@ -26,9 +26,11 @@ http://github.com/FMCorz/mdk
 import json
 
 from tools import debug, process
-from config import C
+from config import Conf
 from getpass import getpass
 from restkit import request, BasicAuth
+
+C = Conf()
 
 class Jira(object):
 
