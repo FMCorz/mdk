@@ -199,7 +199,7 @@ Run the command line installation script with all parameters set on an existing 
 phpunit
 -------
 
-Get the instance ready for PHP Unit tests.
+Get the instance ready for PHPUnit tests.
 
 
 purge

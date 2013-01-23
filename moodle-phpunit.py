@@ -25,13 +25,14 @@ import sys
 import os
 import argparse
 from lib import moodle, workplace
-from lib.tools import debug
+from lib.tools import debug, process
 from lib.config import Conf
 
 C = Conf()
 
 # Arguments
-parser = argparse.ArgumentParser(description='Initialize PHP Unit')
+parser = argparse.ArgumentParser(description='Initialize PHPUnit')
+parser.add_argument('-r', '--run', action='store_true', help='also run the tests')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
 args = parser.parse_args()
 
@@ -51,7 +52,10 @@ if not M.get('installed'):
 # Run cli
 try:
     M.initPHPUnit()
-    debug('PHP Unit ready!')
+    debug('PHPUnit ready!')
+    if args.run:
+        debug('Running PHPUnit')
+        process('phpunit', M.path, None, None)
 except Exception as e:
     debug(e)
     sys.exit(1)

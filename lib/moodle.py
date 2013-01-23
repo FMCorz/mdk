@@ -191,12 +191,12 @@ class Moodle(object):
         return self._git
 
     def initPHPUnit(self):
-        """Initialise the PHP Unit environment"""
+        """Initialise the PHPUnit environment"""
 
         if self.branch_compare(23, '<'):
-            raise Exception('PHP Unit is only available from Moodle 2.3')
+            raise Exception('PHPUnit is only available from Moodle 2.3')
 
-        # Set PHP Unit data root
+        # Set PHPUnit data root
         phpunit_dataroot = self.get('dataroot') + '_phpu'
         if self.get('phpunit_dataroot') == None:
             self.addConfig('phpunit_dataroot', phpunit_dataroot)
@@ -205,7 +205,7 @@ class Moodle(object):
         if not os.path.isdir(phpunit_dataroot):
             os.mkdir(phpunit_dataroot, 0777)
 
-        # Set PHP Unit prefix
+        # Set PHPUnit prefix
         phpunit_prefix = 'phpu_'
         if self.get('phpunit_prefix') == None:
             self.addConfig('phpunit_prefix', phpunit_prefix)
@@ -221,11 +221,11 @@ class Moodle(object):
 
         if exception or result[0] > 0:
             if result[0] == 129:
-                raise Exception('PHP Unit is not installed on your system')
+                raise Exception('PHPUnit is not installed on your system')
             elif result[0] > 0:
-                raise Exception('Something wrong with PHP Unit configuration')
+                raise Exception('Something wrong with PHPUnit configuration')
             else:
-                raise Exception('Error while calling PHP Unit init script')
+                raise Exception('Error while calling PHPUnit init script')
 
     def info(self):
         """Returns a dictionary of information about this instance"""
