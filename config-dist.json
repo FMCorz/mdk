@@ -74,10 +74,33 @@
     // The information for publishing diff urls to tracker
     "jira": {
         "url": "https://tracker.moodle.org/",
-        "username": "me"
+        "username": "me",
+        "fieldnames" : {
+            "repositoryurl" : "Pull  From Repository",
+            "22" : {
+                "branch" : "Pull 22 Branch",
+                "diffurl" : "Pull 22 Diff URL"
+            },
+            "23" : {
+                "branch" : "Pull 23 Branch",
+                "diffurl" : "Pull 23 Diff URL"
+            },
+            "24" : {
+                "branch" : "Pull 24 Branch",
+                "diffurl" : "Pull 24 Diff URL"
+            },
+            "25" : {
+                "branch" : "Pull 25 Branch",
+                "diffurl" : "Pull 25 Diff URL"
+            },
+            "master" : {
+                "branch" : "Pull Master Branch",
+                "diffurl" : "Pull Master Diff URL"
+            },
+        }
     },
     // The base for github diff urls
-    "diffUrlBase": "https://github.com/me/moodle/compare",
+    "diffUrlTemplate": "https://github.com/me/moodle/compare/%headcommit%...%branch%",
 
     // The host name to set during an install
     "host": "localhost",

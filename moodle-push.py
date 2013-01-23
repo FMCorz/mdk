@@ -36,7 +36,7 @@ parser = argparse.ArgumentParser(description="Push a branch to a remote.")
 parser.add_argument('-b', '--branch', metavar='branch', help='the branch to push. Default is current branch.')
 parser.add_argument('-r', '--remote', metavar='remote', help='remote to push to. Default is your remote.')
 parser.add_argument('-f', '--force', action='store_true', help='force the push (does not apply on the stable branch)')
-parser.add_argument('-j', '--update-jira', action='store_true', help='also add the github links to the jira issue ', dest='updatejira')
+parser.add_argument('-j', '--update-jira', action='store_true', help='also add the github links to the jira issue.', dest='updatejira')
 parser.add_argument('-s', '--include-stable', action='store_true', help='also push the stable branch (MOODLE_xx_STABLE, master)', dest='includestable')
 parser.add_argument('-k', '--force-stable', action='store_true', help='force the push on the stable branch', dest='forcestable')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance to work on')
@@ -62,22 +62,6 @@ if args.branch == None:
 else:
 	branch = args.branch
 
-# Getting issue number
-# Parsing the branch
-parsedbranch = tools.parseBranch(branch, C.get('wording.branchRegex'))
-if not parsedbranch:
-	debug('Could not extract issue number from %s' % branch)
-	sys.exit(1)
-issue = 'MDL-%s' % (parsedbranch['issue'])
-
-suffix = parsedbranch['suffix']
-version = parsedbranch['version']
-
-versionslong = {'master' : 'Master',
-                '24' : '2.4',
-                '23' : '2.3',
-                '22' : '2.2'}
-versionlong = versionslong[version]
 
 # Pushing current branch
 debug('Pushing branch %s to remote %s...' % (branch, remote))
@@ -87,16 +71,42 @@ if result[0] != 0:
 	sys.exit(1)
 
 if args.updatejira:
-    myremoteurl = C.get('remotes.mine')
-    mydiffurl = C.get('diffUrlBase')
-    # Get the hash of the last upstream commit
-    headcommit = M.git().head('%s/%s' % (C.get('upstreamRemote'), M.get('stablebranch')))
-    J = jira.Jira()
-    diffurl = '%s/%s...%s' % (mydiffurl, headcommit, branch)
+    # Getting issue number
+    # Parsing the branch
+    parsedbranch = tools.parseBranch(branch, C.get('wording.branchRegex'))
+    if not parsedbranch:
+        debug('Could not extract issue number from %s' % branch)
+        sys.exit(1)
+    issue = 'MDL-%s' % (parsedbranch['issue'])
 
-    J.set_custom_fields(issue, {'Pull  from Repository': myremoteurl,
-                                'Pull %s Branch' % (versionlong) : branch,
-                                'Pull %s Diff URL' % (versionlong) : diffurl})
+    version = parsedbranch['version']
+
+    # Get the jira config
+    repositoryurl = C.get('repositoryUrl')
+    diffurltemplate = C.get('diffUrlTemplate')
+    stablebranch = M.get('stablebranch')
+    upstreamremote = C.get('upstreamRemote')
+    # Get the hash of the last upstream commit
+    ref = '%s/%s' % (upstreamremote, stablebranch)
+    headcommit = M.git().hashes(ref=ref, limit=1)[0]
+
+    J = jira.Jira()
+    diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%', stablebranch).replace('%headcommit%', headcommit)
+
+    fieldrepositoryurl = C.get('jira.fieldnames.repositoryurl')
+    fieldbranch = C.get('jira.fieldnames.%s.branch' % version)
+    fielddiffurl = C.get('jira.fieldnames.%s.diffurl' % version)
+
+    if not (fieldrepositoryurl or fieldbranch or fielddiffurl):
+        debug('Cannot set Jira fields for this version(%s) as the field names are not configured in the config file.', version)
+
+    else:
+        debug('Setting jira fields: \n\t%s: %s \n\t%s: %s \n\t%s: %s\n' % (fieldrepositoryurl, repositoryurl,
+                                                                           fieldbranch, branch,
+                                                                           fielddiffurl, diffurl))
+        J.set_custom_fields(issue, { fieldrepositoryurl : repositoryurl,
+                                     fieldbranch : branch,
+                                     fielddiffurl : diffurl })
 
 # Pushing stable branch
 if args.includestable:

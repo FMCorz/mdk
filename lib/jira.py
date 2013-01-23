@@ -22,12 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-#import os
 import json
 
 from tools import debug, process
 from config import Conf
-from getpass import getpass
+import getpass
+import keyring
 from restkit import request, BasicAuth
 
 C = Conf()
@@ -38,45 +38,37 @@ class Jira(object):
     username = ''
     password = ''
     apiversion = '2'
-    config = None
     version = None
 
     _loaded = False
 
     def __init__(self):
-        self.config = {}
         self.version = {}
         self._load()
 
     def get(self, param, default = None):
         """Returns a property of this instance"""
-        info = self.info()
-        try:
-            return info[param]
-        except:
-            return default
+        return self.info().get(param, default)
 
     def info(self):
         """Returns a dictionary of information about this instance"""
         info = {}
         self._load()
-        for (k, v) in self.config.items():
-            info[k] = v
         for (k, v) in self.version.items():
             info[k] = v
         return info
 
     def get_issue(self, key):
-        """Load the version info from the jira server using a rest api call"""
+        """Load the issue info from the jira server using a rest api call"""
 
         requesturl = self.url + 'rest/api/' + self.apiversion + '/issue/' + key + '?expand=names'
         response = request(requesturl, filters=[self.auth]);
 
         if response.status_int == 404:
-            raise Exception('Issue could not be found.')
+            raise JiraException('Issue could not be found.')
 
         if not response.status_int == 200:
-            raise Exception('Jira is not available.')
+            raise JiraException('Jira is not available.')
 
         issue = json.loads(response.body_string())
         return issue
@@ -88,7 +80,7 @@ class Jira(object):
         response = request(requesturl, filters=[self.auth]);
 
         if not response.status_int == 200:
-            raise Exception('Jira is not available: ' + response.status)
+            raise JiraException('Jira is not available: ' + response.status)
 
         serverinfo = json.loads(response.body_string())
         self.version = serverinfo
@@ -99,21 +91,30 @@ class Jira(object):
         if self._loaded:
             return True
 
-        # First get the jira details from the config file
+        # First get the jira details from the config file.
         self.url = C.get('jira.url')
         self.username = C.get('jira.username')
-        self.password = getpass('Jira password for user %s:' % self.username)
+        # str() is needed because keyring does not handle unicode.
+        self.password = keyring.get_password('mdk-jira-password', str(self.username))
 
-        # Testing basic auth
-        self.auth = BasicAuth(self.username, self.password)
+        if not self.url or not self.username:
+            raise JiraException('Jira has not been configured in the config file.')
 
+        while not self._loaded:
 
-        if not self.url or not self.username or not self.password:
-            raise Exception('Jira has not been configured in the config file.')
+            # Testing basic auth
+            if self.password:
+                self.auth = BasicAuth(self.username, self.password)
 
-        self.get_server_info()
+                try:
+                    self.get_server_info()
+                    self._loaded = True
+                except JiraException:
+                    print 'Either the password is incorrect or you may need to enter a Captcha to continue.'
+            if not self._loaded:
+                self.password = getpass.getpass('Jira password for user %s:' % self.username)
+        keyring.set_password('mdk-jira-password', str(self.username), str(self.password))
 
-        self._loaded = True
         return True
 
     def set_custom_fields(self, key, updates):
@@ -123,8 +124,6 @@ class Jira(object):
         and the value is the new value to set. This only works for fields of type text.
         """
         issue = self.get_issue(key)
-
-        # print json.dumps(issue, indent=4)
 
         customfieldkey = ''
         namelist = {}
@@ -150,7 +149,7 @@ class Jira(object):
         response = request(requesturl, filters=[self.auth], method='PUT', body=json.dumps(update), headers={'Content-Type' : 'application/json'});
 
         if response.status_int != 204:
-            raise Exception('Issue was not updated:' + response.status)
+            raise JiraException('Issue was not updated:' + response.status)
 
         return True
 
@@ -159,16 +158,5 @@ class Jira(object):
         self._loaded = False
         return self._load()
 
-
-# Some testing functions for this class
-if __name__ == "__main__":
-    # Get server info
-
-    server = Jira()
-
-    info = server.info()
-
-    print info
-
-    server.set_custom_fields('MDL-37148', {'Pull  from Repository': 'git://github.com/damyon/moodle.git'})
-
+class JiraException(Exception):
+    pass

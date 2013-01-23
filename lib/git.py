@@ -148,12 +148,10 @@ class Git(object):
         cmd = 'pull %s %s' % (remote, ref)
         return self.execute(cmd)
 
-    def head(self, ref):
-        return self.log(ref, 1)[1].split(' ')[0]
-
-    def log(self, ref = '', limit = 30):
-        cmd = 'log %s -n %d --oneline' % (ref, limit)
-        return self.execute(cmd)
+    def hashes(self, ref = '', format = '%H', limit = 30):
+        cmd = 'log %s -n %d --format=%s' % (ref, limit, format)
+        hashlist = self.execute(cmd)
+        return hashlist[1].split('\n')[:-1]
 
     def push(self, remote = '', branch = '', force = None):
         if force:
