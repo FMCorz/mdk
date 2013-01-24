@@ -76,22 +76,22 @@
         "url": "https://tracker.moodle.org/",
         "username": "me",
         "fieldnames" : {
-            "repositoryurl" : "Pull  From Repository",
+            "repositoryurl" : "Pull  from Repository",
             "22" : {
-                "branch" : "Pull 22 Branch",
-                "diffurl" : "Pull 22 Diff URL"
+                "branch" : "Pull 2.2 Branch",
+                "diffurl" : "Pull 2.2 Diff URL"
             },
             "23" : {
-                "branch" : "Pull 23 Branch",
-                "diffurl" : "Pull 23 Diff URL"
+                "branch" : "Pull 2.3 Branch",
+                "diffurl" : "Pull 2.3 Diff URL"
             },
             "24" : {
-                "branch" : "Pull 24 Branch",
-                "diffurl" : "Pull 24 Diff URL"
+                "branch" : "Pull 2.4 Branch",
+                "diffurl" : "Pull 2.4 Diff URL"
             },
             "25" : {
-                "branch" : "Pull 25 Branch",
-                "diffurl" : "Pull 25 Diff URL"
+                "branch" : "Pull 2.5 Branch",
+                "diffurl" : "Pull 2.5 Diff URL"
             },
             "master" : {
                 "branch" : "Pull Master Branch",
