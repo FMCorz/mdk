@@ -24,7 +24,7 @@ http://github.com/FMCorz/mdk
 
 import sys
 import argparse
-from lib import workplace, tools
+from lib import workplace, tools, jira
 from lib.tools import debug
 from lib.config import Conf
 
