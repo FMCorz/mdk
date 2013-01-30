@@ -53,7 +53,7 @@ names = args.names
 if args.all:
     names = Wp.list()
 elif args.integration or args.stable:
-    names = Wp.list(integrationc=args.integration, stablec=args.stable)
+    names = Wp.list(integration=args.integration, stable=args.stable)
 
 Mlist = Wp.resolveMultiple(names)
 if len(Mlist) < 1:
