@@ -58,21 +58,44 @@ class Moodle(object):
         self._load()
 
     def addConfig(self, name, value):
-        """Add a parameter to the config file"""
+        """Add a parameter to the config file
+        Will attempt to write them before the inclusion of lib/setup.php"""
         configFile = os.path.join(self.path, 'config.php')
         if not os.path.isfile(configFile):
             return None
 
-        if type(value) != 'int':
+        if type(value) == bool:
+            value = 'true' if value else 'false'
+        elif type(value) != int:
             value = "'" + str(value) + "'"
         value = str(value)
 
         try:
-            f = open(configFile, 'a')
-            f.write('\n$CFG->%s = %s;' % (name, value))
+            f = open(configFile, 'r')
+            lines = f.readlines()
+            f.close()
+
+            for i, line in enumerate(lines):
+                if re.search(r'^// MDK Edit\.$', line.rstrip()):
+                    break
+                elif re.search(r'require_once.*/lib/setup\.php', line):
+                    lines.insert(i, '// MDK Edit.\n')
+                    lines.insert(i + 1, '\n')
+                    # As we've added lines, let's move the index
+                    break
+
+            i += 1
+            if i > len(lines):
+                i = len(lines)
+            lines.insert(i, '$CFG->%s = %s;\n' % (name, value))
+
+            f = open(configFile, 'w')
+            f.writelines(lines)
             f.close()
         except:
             raise Exception('Error while writing to config file')
+
+        self.reload()
 
     def branch_compare(self, branch, compare = '>='):
         """Compare the branch of the current instance with the one passed"""
@@ -215,7 +238,7 @@ class Moodle(object):
         result = (None, None, None)
         exception = False
         try:
-            result = self.cli('/admin/tool/phpunit/cli/init.php', stdout = None, stderr = None)
+            result = self.cli('/admin/tool/phpunit/cli/init.php', stdout=None, stderr=None)
         except Exception as e:
             exception = True
 
@@ -226,6 +249,86 @@ class Moodle(object):
                 raise Exception('Something wrong with PHPUnit configuration')
             else:
                 raise Exception('Error while calling PHPUnit init script')
+
+    def initBehat(self, switchcompletely=False):
+        """Initialise the Behat environment"""
+        if self.branch_compare(25, '<'):
+            raise Exception('Behat is only available from Moodle 2.5')
+
+        # Set Behat data root
+        behat_dataroot = self.get('dataroot') + '_behat'
+        if self.get('behat_dataroot') == None:
+            self.addConfig('behat_dataroot', behat_dataroot)
+        elif self.get('behat_dataroot') != behat_dataroot:
+            raise Exception('Excepted value for behat_dataroot is \'%s\'' % behat_dataroot)
+        if not os.path.isdir(behat_dataroot):
+            os.mkdir(behat_dataroot, 0777)
+
+        # Set PHPUnit prefix
+        behat_prefix = 'behat_'
+        if self.get('behat_prefix') == None:
+            self.addConfig('behat_prefix', behat_prefix)
+        elif self.get('behat_prefix') != behat_prefix:
+            raise Exception('Excepted value for behat_prefix is \'%s\'' % behat_prefix)
+
+        # Switch completely?
+        self.updateConfig('behat_switchcompletely', switchcompletely)
+        if switchcompletely:
+            self.updateConfig('behat_wwwroot', self.get('wwwroot'))
+        else:
+            self.removeConfig('behat_wwwroot')
+
+        # Drop the tables
+        def drop():
+            result = (None, None, None)
+            try:
+                debug('Dropping database')
+                result = self.cli('/admin/tool/behat/cli/util.php', args='--drop', stdout=None, stderr=None)
+            except:
+                pass
+            return result
+
+        # Enabling Behat (or updating the definitions)
+        def enable():
+            result = (None, None, None)
+            try:
+                debug('Enabling Behat')
+                result = self.cli('/admin/tool/behat/cli/util.php', args='--enable')
+            except:
+                pass
+            return result
+
+        # Install the tables
+        def install():
+            result = (None, None, None)
+            try:
+                debug('Installing Behat tables')
+                result = self.cli('/admin/tool/behat/cli/util.php', args='--install', stdout=None, stderr=None)
+            except:
+                pass
+            return result
+
+        # Not really proud of this logic, but it works for now. Ideally there shouldn't be any duplicated call to enable().
+        result = enable()
+        if result[0] == 251:
+            raise Exception('Error: Behat requires PHP 5.4 or the flag --switch-completely to be set')
+        elif result[0] == 253:
+            # Need to drop the tables
+            drop()
+            installResult = install()
+            if installResult[0] != 0:
+                raise Exception('Unknown error while installing Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
+            result = enable()
+        elif result[0] == 254:
+            # Installation required
+            installResult = install()
+            if installResult[0] != 0:
+                raise Exception('Unknown error while installing Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
+            result = enable()
+
+        # Could not enable Behat
+        if result[0] != 0:
+            raise Exception('Unknown error while enabling Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
 
     def info(self):
         """Returns a dictionary of information about this instance"""
@@ -422,6 +525,30 @@ class Moodle(object):
         self._loaded = False
         return self._load()
 
+    def removeConfig(self, name):
+        """Remove a configuration setting from the config file."""
+        configFile = os.path.join(self.path, 'config.php')
+        if not os.path.isfile(configFile):
+            return None
+
+        try:
+            f = open(configFile, 'r')
+            lines = f.readlines()
+            f.close()
+
+            for line in lines:
+                if re.search(r'\$CFG->%s\s*=.*;' % (name), line):
+                    lines.remove(line)
+                    break
+
+            f = open(configFile, 'w')
+            f.writelines(lines)
+            f.close()
+        except:
+            raise Exception('Error while writing to config file')
+
+        self.reload()
+
     def runScript(self, scriptname, **kwargs):
         """Runs a script on the instance"""
         supported = ['php']
@@ -480,6 +607,11 @@ class Moodle(object):
 
         # Return to previous branch
         self.checkout_stable(False)
+
+    def updateConfig(self, name, value):
+        """Update a setting in the config file."""
+        self.removeConfig(name)
+        self.addConfig(name, value)
 
     def upgrade(self, nocheckout = False):
         """Calls the upgrade script"""
