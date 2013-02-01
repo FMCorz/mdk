@@ -99,7 +99,7 @@ function _moodle() {
                 fi
                 ;;
             info)
-                OPTS="--list --var"
+                OPTS="--list --var --edit"
                 if [[ "${COMP_CWORD}" == 2 && "$CUR" != -* ]]; then
                     OPTS="$OPTS $($BIN info -ln)"
                 elif [[ "${COMP_CWORD}" == 3 && ("$PREV" == "--list" || "$PREV" == "-l") ]]; then
