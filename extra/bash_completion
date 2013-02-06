@@ -158,7 +158,7 @@ function _moodle() {
                 fi
                 ;;
             update)
-                OPTS="--integration --stable --all --upgrade --update-cache"
+                OPTS="--integration --stable --all --upgrade --update-cache --proceed"
                 if [[ "$CUR" != -* ]]; then
                     OPTS="$OPTS $($BIN info -ln)"
                 fi

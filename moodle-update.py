@@ -38,6 +38,7 @@ parser.add_argument('-i', '--integration', action='store_true', help='runs the s
 parser.add_argument('-s', '--stable', action='store_true', help='runs the script on the stable instances', dest='stable')
 parser.add_argument('-u', '--upgrade', action='store_true', help='upgrade the instance after successful update', dest='upgrade')
 parser.add_argument('-c', '--update-cache', action='store_true', help='update the cached remotes. Useful when using cache as remote.', dest='updatecache')
+parser.add_argument('-p', '--proceed', action='store_true', help='do not exit the process after updating the cache', dest='process')
 parser.add_argument('names', metavar='names', default=None, nargs='*', help='name of the instances')
 args = parser.parse_args()
 
@@ -46,6 +47,8 @@ if args.updatecache:
     debug('Updating cached remote')
     Wp.updateCachedClones()
     debug('Done.')
+    if not args.process:
+        sys.exit(0)
     debug('')
 
 # Updating instances
