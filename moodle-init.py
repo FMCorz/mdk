@@ -56,10 +56,16 @@ while True:
     username = question('What user are you initialising MDK for?', get_current_user())
     try:
         user = pwd.getpwnam(username)
-        usergroup = grp.getgrnam(username)
     except:
-        debug('Error while getting information for user %s')
+        debug('Error while getting information for user %s' % (username))
         continue
+
+    try:
+        usergroup = grp.getgrgid(user.pw_gid)
+    except:
+        debug('Error while getting the group of user %s' % (username))
+        continue
+
     break
 
 # Default directories.
