@@ -123,7 +123,8 @@ function _moodle() {
                 esac
                 ;;
             phpunit)
-                OPTS=`$BIN info -ln`
+                OPTS="--force --run"
+                OPTS="$OPTS $($BIN info -ln)"
                 ;;
             purge)
                 OPTS="--all --integration --stable"

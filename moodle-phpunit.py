@@ -22,9 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 import sys
-import os
 import argparse
-from lib import moodle, workplace
+from lib import workplace
 from lib.tools import debug, process
 from lib.config import Conf
 
@@ -32,6 +31,7 @@ C = Conf()
 
 # Arguments
 parser = argparse.ArgumentParser(description='Initialize PHPUnit')
+parser.add_argument('-f', '--force', action='store_true', help='force the initialisation')
 parser.add_argument('-r', '--run', action='store_true', help='also run the tests')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
 args = parser.parse_args()
@@ -51,7 +51,7 @@ if not M.get('installed'):
 
 # Run cli
 try:
-    M.initPHPUnit()
+    M.initPHPUnit(force=args.force)
     debug('PHPUnit ready!')
     if args.run:
         debug('Running PHPUnit')

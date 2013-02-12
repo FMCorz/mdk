@@ -157,7 +157,7 @@ class Moodle(object):
                     raise Exception('Error while popping the stash. Probably got conflicts.')
                 self._cos_hasstash = False
 
-    def cli(self, cli, args = '', **kwargs):
+    def cli(self, cli, args='', **kwargs):
         """Executes a command line tool script"""
         cli = os.path.join(self.get('path'), cli.lstrip('/'))
         if not os.path.isfile(cli):
@@ -197,7 +197,7 @@ class Moodle(object):
             branch += C.get('wording.branchSuffixSeparator') + suffix
         return branch
 
-    def get(self, param, default = None):
+    def get(self, param, default=None):
         """Returns a property of this instance"""
         info = self.info()
         try:
@@ -213,7 +213,7 @@ class Moodle(object):
                 raise Exception('Could not find the Git repository')
         return self._git
 
-    def initPHPUnit(self):
+    def initPHPUnit(self, force=False):
         """Initialise the PHPUnit environment"""
 
         if self.branch_compare(23, '<'):
@@ -236,19 +236,21 @@ class Moodle(object):
             raise Exception('Excepted value for phpunit_prefix is \'%s\'' % phpunit_prefix)
 
         result = (None, None, None)
-        exception = False
+        exception = None
         try:
+            if force:
+                result = self.cli('/admin/tool/phpunit/cli/util.php', args='--drop', stdout=None, stderr=None)
             result = self.cli('/admin/tool/phpunit/cli/init.php', stdout=None, stderr=None)
-        except Exception as e:
-            exception = True
+        except Exception as exception:
+            pass
 
-        if exception or result[0] > 0:
+        if exception != None or result[0] > 0:
             if result[0] == 129:
                 raise Exception('PHPUnit is not installed on your system')
             elif result[0] > 0:
                 raise Exception('Something wrong with PHPUnit configuration')
             else:
-                raise Exception('Error while calling PHPUnit init script')
+                raise exception
 
     def initBehat(self, switchcompletely=False):
         """Initialise the Behat environment"""
