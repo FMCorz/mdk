@@ -27,6 +27,7 @@ import re
 import shlex
 import subprocess
 
+
 class Git(object):
 
     _path = None
@@ -130,8 +131,10 @@ class Git(object):
     def hashes(self, ref='', format='%H', limit=30):
         """Returns the latest hashes from git log"""
         cmd = 'log %s -n %d --format=%s' % (ref, limit, format)
-        hashlist = self.execute(cmd)
-        return hashlist[1].split('\n')[:-1]
+        (returncode, hashlist, stderr) = self.execute(cmd)
+        if returncode != 0:
+            raise GitException('Error while getting hashes. Command: %s' % (cmd))
+        return hashlist.split('\n')[:-1]
 
     def isRepository(self, path = None):
         if path == None:
@@ -231,3 +234,7 @@ class Git(object):
 
     def setPath(self, path):
         self._path = str(path)
+
+
+class GitException(Exception):
+    pass
