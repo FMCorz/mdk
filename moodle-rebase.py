@@ -121,7 +121,7 @@ for M in Mlist:
 		pop = M.git().stash(command='pop')
 		if pop[0] != 0:
 			debug('An error ocured while unstashing your changes')
-			debug(result[2])
+			debug(pop[2])
 		else:
 			debug('Popped the stash')
 

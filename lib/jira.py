@@ -26,6 +26,7 @@ import sys
 import json
 from tools import debug
 from config import Conf
+from urllib import urlencode
 import getpass
 try:
     from restkit import request, BasicAuth
@@ -62,10 +63,14 @@ class Jira(object):
         """Returns a property of this instance"""
         return self.info().get(param, default)
 
-    def getIssue(self, key):
-        """Load the issue info from the jira server using a rest api call"""
+    def getIssue(self, key, fields='*all'):
+        """Load the issue info from the jira server using a rest api call.
 
-        requesturl = self.url + 'rest/api/' + self.apiversion + '/issue/' + key + '?expand=names'
+        The returned key 'named' of the returned dict is organised by name of the fields, not id.
+        """
+
+        querystring = {'fields': fields, 'expand': 'names'}
+        requesturl = self.url + 'rest/api/' + self.apiversion + '/issue/' + key + '?%s' % (urlencode(querystring))
         response = request(requesturl, filters=[self.auth])
 
         if response.status_int == 404:
@@ -75,6 +80,14 @@ class Jira(object):
             raise JiraException('Jira is not available.')
 
         issue = json.loads(response.body_string())
+        issue['named'] = {}
+
+        # Populate the named fields in a separate key. Allows us to easily find them without knowing the field ID.
+        namelist = issue.get('names', {})
+        for fieldkey, fieldvalue in issue.get('fields', {}).items():
+            if namelist.get(fieldkey, None) != None:
+                issue['named'][namelist.get(fieldkey)] = fieldvalue
+
         return issue
 
     def getServerInfo(self):
