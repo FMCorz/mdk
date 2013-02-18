@@ -134,7 +134,7 @@ function _moodle() {
                 ;;
             push)
                 if [[ "$PREV" != "--branch" && "$PREV" != "-b" && "$PREV" != "--remote" && "$PREV" != "-r" ]]; then
-                    OPTS="--branch --remote --force --include-stable --force-stable"
+                    OPTS="--branch --remote --force --include-stable --force-stable --update-tracker"
                     if [[ "$CUR" != -* ]]; then
                         OPTS="$OPTS $($BIN info -ln)"
                     fi
