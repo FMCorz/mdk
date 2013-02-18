@@ -166,21 +166,15 @@ class Jira(object):
 
         /!\ This only works for fields of type text.
         """
+
         issue = self.getIssue(key)
-
-        namelist = {}
-
         update = {'fields': {}}
-        namelist = issue['names']
 
-        for fieldkey in issue['fields']:
-            field = issue['fields'][fieldkey]
-
-            for updatename in updates:
-                updatevalue = updates[updatename]
-                if namelist[fieldkey] == updatename:
-                    if not field or field != updatevalue:
-                        update['fields'][fieldkey] = updatevalue
+        for updatename, updatevalue in updates.items():
+            remotevalue = issue.get('named').get(updatename)
+            if not remotevalue or remotevalue != updatevalue:
+                fieldkey = [k for k, v in issue.get('names').iteritems() if v == updatename][0]
+                update['fields'][fieldkey] = updatevalue
 
         if not update['fields']:
             # No fields to update
@@ -191,7 +185,7 @@ class Jira(object):
         response = request(requesturl, filters=[self.auth], method='PUT', body=json.dumps(update), headers={'Content-Type': 'application/json'})
 
         if response.status_int != 204:
-            raise JiraException('Issue was not updated:' + response.status)
+            raise JiraException('Issue was not updated: %s' % (str(response.status)))
 
         return True
 
