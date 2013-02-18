@@ -161,34 +161,6 @@ for v in versions:
         else:
             debug('Popped the stash')
 
-    # Update jira
-    if args.updatejira:
-        repositoryurl = C.get('repositoryUrl')
-        diffurltemplate = C.get('diffUrlTemplate')
-        stablebranch = M2.get('stablebranch')
-        upstreamremote = C.get('upstreamRemote')
-        # Get the hash of the last upstream commit
-        ref = '%s/%s' % (upstreamremote, stablebranch)
-        headcommit = M.git().hashes(ref=ref, limit=1)[0]
-
-        J = jira.Jira()
-        diffurl = diffurltemplate.replace('%branch%', newbranch).replace('%stablebranch%', stablebranch).replace('%headcommit%', headcommit)
-
-        fieldrepositoryurl = C.get('jira.fieldnames.repositoryurl')
-        fieldbranch = C.get('jira.fieldnames.%s.branch' % v)
-        fielddiffurl = C.get('jira.fieldnames.%s.diffurl' % v)
-
-        if not (fieldrepositoryurl or fieldbranch or fielddiffurl):
-            debug('Cannot set Jira fields for this version(%s) as the field names are not configured in the config file.', v)
-
-        else:
-            debug('Setting jira fields: \n\t%s: %s \n\t%s: %s \n\t%s: %s\n' % (fieldrepositoryurl, repositoryurl,
-                                                                               fieldbranch, newbranch,
-                                                                               fielddiffurl, diffurl))
-            J.set_custom_fields(issue, { fieldrepositoryurl : repositoryurl,
-                                         fieldbranch : newbranch,
-                                         fielddiffurl : diffurl })
-
     debug('Instance %s successfully patched!' % name)
     debug('')
 

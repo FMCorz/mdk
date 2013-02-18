@@ -71,8 +71,8 @@
         "pgsql": "PostgreSQL"
     },
 
-    // The information for publishing diff urls to tracker
-    "jira": {
+    // The information for integrating MDK with Jira
+    "tracker": {
         "url": "https://tracker.moodle.org/",
         "username": "me",
         "fieldnames" : {
@@ -96,11 +96,18 @@
             "master" : {
                 "branch" : "Pull Master Branch",
                 "diffurl" : "Pull Master Diff URL"
-            },
+            }
         }
     },
-    // The base for github diff urls
-    "diffUrlTemplate": "https://github.com/me/moodle/compare/%headcommit%...%branch%",
+    // The base for diff URLs, you can use the following wildcards:
+    // - %branch%: The branch name;
+    // - %stablebranch%: The stable branch (MOODLE_23_STABLE, MOODLE_24_STABLE, master, ...);
+    // - %headcommit%: The head commit.
+    // This is used to populate the fields on the tracker issue.
+    "diffUrlTemplate": "https://github.com/YourGitHub/moodle/compare/%headcommit%...%branch%",
+
+    // The public acccess URL of your repository. It is used to populate the fields on the tracker issue.
+    "repositoryUrl": "git://github.com/YourGitHub/moodle.git",
 
     // The host name to set during an install
     "host": "localhost",

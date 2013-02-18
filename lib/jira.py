@@ -22,15 +22,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import sys
 import json
-
-from tools import debug, process
+from tools import debug
 from config import Conf
 import getpass
-import keyring
-from restkit import request, BasicAuth
+try:
+    from restkit import request, BasicAuth
+except:
+    debug('Could not load module restkit for Jira.')
+    debug('Try `apt-get install python-restkit`, or visit http://pypi.python.org/pypi/restkit')
+    debug('Exiting...')
+    sys.exit(1)
+try:
+    import keyring
+except:
+    debug('Could not load module keyring. You might want to install it.')
+    debug('Try `apt-get install python-keyring`, or visit http://pypi.python.org/pypi/keyring')
+    pass
 
 C = Conf()
+
 
 class Jira(object):
 
@@ -46,23 +58,15 @@ class Jira(object):
         self.version = {}
         self._load()
 
-    def get(self, param, default = None):
+    def get(self, param, default=None):
         """Returns a property of this instance"""
         return self.info().get(param, default)
 
-    def info(self):
-        """Returns a dictionary of information about this instance"""
-        info = {}
-        self._load()
-        for (k, v) in self.version.items():
-            info[k] = v
-        return info
-
-    def get_issue(self, key):
+    def getIssue(self, key):
         """Load the issue info from the jira server using a rest api call"""
 
         requesturl = self.url + 'rest/api/' + self.apiversion + '/issue/' + key + '?expand=names'
-        response = request(requesturl, filters=[self.auth]);
+        response = request(requesturl, filters=[self.auth])
 
         if response.status_int == 404:
             raise JiraException('Issue could not be found.')
@@ -73,17 +77,25 @@ class Jira(object):
         issue = json.loads(response.body_string())
         return issue
 
-    def get_server_info(self):
+    def getServerInfo(self):
         """Load the version info from the jira server using a rest api call"""
 
         requesturl = self.url + 'rest/api/' + self.apiversion + '/serverInfo'
-        response = request(requesturl, filters=[self.auth]);
+        response = request(requesturl, filters=[self.auth])
 
         if not response.status_int == 200:
             raise JiraException('Jira is not available: ' + response.status)
 
         serverinfo = json.loads(response.body_string())
         self.version = serverinfo
+
+    def info(self):
+        """Returns a dictionary of information about this instance"""
+        info = {}
+        self._load()
+        for (k, v) in self.version.items():
+            info[k] = v
+        return info
 
     def _load(self):
         """Loads the information"""
@@ -92,10 +104,16 @@ class Jira(object):
             return True
 
         # First get the jira details from the config file.
-        self.url = C.get('jira.url')
-        self.username = C.get('jira.username')
-        # str() is needed because keyring does not handle unicode.
-        self.password = keyring.get_password('mdk-jira-password', str(self.username))
+        self.url = C.get('tracker.url')
+        self.username = C.get('tracker.username')
+
+        try:
+            # str() is needed because keyring does not handle unicode.
+            self.password = keyring.get_password('mdk-jira-password', str(self.username))
+        except:
+            # Do not die if keyring package is not available.
+            self.password = None
+            pass
 
         if not self.url or not self.username:
             raise JiraException('Jira has not been configured in the config file.')
@@ -107,28 +125,39 @@ class Jira(object):
                 self.auth = BasicAuth(self.username, self.password)
 
                 try:
-                    self.get_server_info()
+                    self.getServerInfo()
                     self._loaded = True
                 except JiraException:
                     print 'Either the password is incorrect or you may need to enter a Captcha to continue.'
             if not self._loaded:
-                self.password = getpass.getpass('Jira password for user %s:' % self.username)
-        keyring.set_password('mdk-jira-password', str(self.username), str(self.password))
+                self.password = getpass.getpass('Jira password for user %s: ' % self.username)
+
+        try:
+            keyring.set_password('mdk-jira-password', str(self.username), str(self.password))
+        except:
+            # Do not die if keyring package is not available.
+            pass
 
         return True
 
-    def set_custom_fields(self, key, updates):
-        """ Set a list of fields for this issue in Jira
+    def reload(self):
+        """Reloads the information"""
+        self._loaded = False
+        return self._load()
+
+    def setCustomFields(self, key, updates):
+        """Set a list of fields for this issue in Jira
 
         The updates parameter is a dictionary of key values where the key is the custom field name
-        and the value is the new value to set. This only works for fields of type text.
-        """
-        issue = self.get_issue(key)
+        and the value is the new value to set.
 
-        customfieldkey = ''
+        /!\ This only works for fields of type text.
+        """
+        issue = self.getIssue(key)
+
         namelist = {}
 
-        update = { 'fields' : {} }
+        update = {'fields': {}}
         namelist = issue['names']
 
         for fieldkey in issue['fields']:
@@ -146,17 +175,13 @@ class Jira(object):
             return True
 
         requesturl = self.url + 'rest/api/' + self.apiversion + '/issue/' + key
-        response = request(requesturl, filters=[self.auth], method='PUT', body=json.dumps(update), headers={'Content-Type' : 'application/json'});
+        response = request(requesturl, filters=[self.auth], method='PUT', body=json.dumps(update), headers={'Content-Type': 'application/json'})
 
         if response.status_int != 204:
             raise JiraException('Issue was not updated:' + response.status)
 
         return True
 
-    def reload(self):
-        """Reloads the information"""
-        self._loaded = False
-        return self._load()
 
 class JiraException(Exception):
     pass

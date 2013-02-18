@@ -127,6 +127,12 @@ class Git(object):
         (returncode, stdout, stderr) = self.execute(cmd)
         return returncode == 0
 
+    def hashes(self, ref='', format='%H', limit=30):
+        """Returns the latest hashes from git log"""
+        cmd = 'log %s -n %d --format=%s' % (ref, limit, format)
+        hashlist = self.execute(cmd)
+        return hashlist[1].split('\n')[:-1]
+
     def isRepository(self, path = None):
         if path == None:
             path = self.getPath()
@@ -147,11 +153,6 @@ class Git(object):
     def pull(self, remote = '', ref = ''):
         cmd = 'pull %s %s' % (remote, ref)
         return self.execute(cmd)
-
-    def hashes(self, ref = '', format = '%H', limit = 30):
-        cmd = 'log %s -n %d --format=%s' % (ref, limit, format)
-        hashlist = self.execute(cmd)
-        return hashlist[1].split('\n')[:-1]
 
     def push(self, remote = '', branch = '', force = None):
         if force:
