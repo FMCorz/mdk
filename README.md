@@ -122,6 +122,13 @@ Restore the second backup of the instance stable_master
 
     mdk backup --restore stable_master_02
 
+
+behat
+-----
+
+Get the instance ready for acceptance testing (Behat).
+
+
 check
 -----
 

@@ -254,8 +254,14 @@ class Moodle(object):
 
     def initBehat(self, switchcompletely=False):
         """Initialise the Behat environment"""
+
         if self.branch_compare(25, '<'):
             raise Exception('Behat is only available from Moodle 2.5')
+
+        # Force switch completely for PHP < 5.4
+        (none, phpVersion, none) = process('%s -r "echo version_compare(phpversion(), \'5.4\');"' % (C.get('php')))
+        if int(phpVersion) <= 0:
+            switchcompletely = True
 
         # Set Behat data root
         behat_dataroot = self.get('dataroot') + '_behat'
@@ -266,7 +272,7 @@ class Moodle(object):
         if not os.path.isdir(behat_dataroot):
             os.mkdir(behat_dataroot, 0777)
 
-        # Set PHPUnit prefix
+        # Set Behat DB prefix
         behat_prefix = 'behat_'
         if self.get('behat_prefix') == None:
             self.addConfig('behat_prefix', behat_prefix)
@@ -310,19 +316,22 @@ class Moodle(object):
                 pass
             return result
 
+        # Force a cache purge
+        self.purge()
+
         # Not really proud of this logic, but it works for now. Ideally there shouldn't be any duplicated call to enable().
         result = enable()
         if result[0] == 251:
             raise Exception('Error: Behat requires PHP 5.4 or the flag --switch-completely to be set')
-        elif result[0] == 253:
-            # Need to drop the tables
-            drop()
+        elif result[0] == 254:
+            # Installation required
             installResult = install()
             if installResult[0] != 0:
                 raise Exception('Unknown error while installing Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
             result = enable()
-        elif result[0] == 254:
-            # Installation required
+        elif result[0] > 0:
+            # Need to drop the tables
+            drop()
             installResult = install()
             if installResult[0] != 0:
                 raise Exception('Unknown error while installing Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))

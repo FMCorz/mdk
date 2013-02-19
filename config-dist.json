@@ -134,6 +134,8 @@
     "git": "/usr/bin/git",
     // Path to PHP
     "php": "/usr/bin/php",
+    // Path to Java
+    "java": "/usr/bin/java",
 
     // Experimental setting to use a local cache as your upstream remotes.
     // Can be useful to prevent fetch from a slow remote.

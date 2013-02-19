@@ -27,6 +27,7 @@ import os
 import subprocess
 import shlex
 import re
+import threading
 
 
 def yesOrNo(q):
@@ -111,3 +112,17 @@ def stableBranch(version):
     if version == 'master':
         return 'master'
     return 'MOODLE_%d_STABLE' % int(version)
+
+
+class ProcessInThread(threading.Thread):
+    """Executes a process in a separate thread"""
+
+    cli = None
+    loop = True
+
+    def __init__(self, cli):
+        threading.Thread.__init__(self)
+        self.cli = cli
+
+    def run(self):
+        process(self.cli)
