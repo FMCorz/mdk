@@ -502,13 +502,32 @@ class Moodle(object):
         config = os.path.join(self.path, 'config.php')
         if os.path.isfile(config):
             self.installed = True
-            prog = re.compile(r'^\s*\$CFG->([a-z_]+)\s*=\s*(?P<brackets>[\'"])(.+)(?P=brackets)\s*;$', re.I)
+            prog = re.compile(r'^\s*\$CFG->([a-z_]+)\s*=\s*((?P<brackets>[\'"])?(.+)(?P=brackets)|([0-9.]+)|(true|false|null))\s*;$', re.I)
             try:
                 f = open(config, 'r')
                 for line in f:
                     match = prog.search(line)
-                    if match == None: continue
-                    self.config[match.group(1)] = match.group(3)
+                    if match == None:
+                        continue
+
+                    if match.group(5) != None:
+                        # Number
+                        value = float(match.group(5)) if '.' in str(match.group(5)) else int(match.group(5))
+                    elif match.group(6) != None:
+                        # Boolean or null
+                        value = str(match.group(6)).lower()
+                        if value == 'true':
+                            value = True
+                        elif value == 'false':
+                            value = False
+                        else:
+                            value = None
+                    else:
+                        # Likely to be a string
+                        value = match.group(4)
+
+                    self.config[match.group(1)] = value
+
                 f.close()
 
             except Exception as e:
