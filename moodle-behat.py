@@ -39,6 +39,7 @@ parser.add_argument('-r', '--run', action='store_true', help='run the tests')
 parser.add_argument('-j', '--no-javascript', action='store_true', help='skip the tests involving Javascript', dest='nojavascript')
 parser.add_argument('-s', '--switch-completely', action='store_true', help='force the switch completely setting. This will be automatically enabled for PHP < 5.4', dest='switchcompletely')
 parser.add_argument('--selenium', metavar='jarfile', nargs='?', default=None, help='path to the selenium standalone server to use', dest='selenium')
+parser.add_argument('--selenium-verbose', action='store_true', help='outputs the output from selenium in the same window', dest='seleniumverbose')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
 args = parser.parse_args()
 
@@ -96,6 +97,11 @@ try:
     cmd.append('--config=%s/behat/behat.yml' % (M.get('behat_dataroot')))
     cmd = ' '.join(cmd)
 
+    phpCommand = '%s -S http://localhost:8000' % (C.get('php'))
+    seleniumCommand = None
+    if seleniumPath:
+        seleniumCommand = '%s -jar %s' % (C.get('java'), seleniumPath)
+
     if args.run:
         debug('Preparing Behat testing')
 
@@ -103,14 +109,18 @@ try:
         phpServer = None
         if not M.get('behat_switchcompletely'):
             debug('Starting standalone PHP server')
-            phpServer = ProcessInThread('%s -S http://localhost:8000' % (C.get('php')))
+            phpServer = ProcessInThread(phpCommand)
             phpServer.start()
 
         # Launching Selenium
         seleniumServer = None
         if seleniumPath and not args.nojavascript:
             debug('Starting Selenium server')
-            seleniumServer = ProcessInThread('%s -jar %s' % (C.get('java'), seleniumPath))
+            kwargs = {}
+            if args.seleniumverbose:
+                kwargs['stdout'] = None
+                kwargs['stderr'] = None
+            seleniumServer = ProcessInThread(seleniumCommand, **kwargs)
             seleniumServer.start()
 
         debug('Running Behat tests')
@@ -133,7 +143,10 @@ try:
             M.updateConfig('behat_switchcompletely', False)
 
     else:
-        debug('Behat command: %s' % (cmd))
+        debug('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
+        if seleniumCommand:
+            debug('Launch Selenium (optional):\n %s' % (seleniumCommand))
+        debug('Launch Behat:\n %s' % (cmd))
 
 except Exception as e:
     debug(e)

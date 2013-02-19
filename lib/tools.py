@@ -24,6 +24,7 @@ http://github.com/FMCorz/mdk
 
 import sys
 import os
+import signal
 import subprocess
 import shlex
 import re
@@ -122,6 +123,7 @@ class ProcessInThread(threading.Thread):
     stdout = None
     stderr = None
     _kill = False
+    _pid = None
 
     def __init__(self, cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
         threading.Thread.__init__(self)
@@ -133,10 +135,15 @@ class ProcessInThread(threading.Thread):
         self.stderr = stderr
 
     def kill(self):
-        self._kill = True
+        os.kill(self._pid, signal.SIGKILL)
 
     def run(self):
         proc = subprocess.Popen(self.cmd, cwd=self.cwd, stdout=self.stdout, stderr=self.stderr)
-        while proc.poll():
-            if self._kill:
-                proc.kill()
+        self._pid = proc.pid
+        while True:
+            if proc.poll():
+                break
+
+            # Reading the output seems to prevent the process to hang.
+            if self.stdout == subprocess.PIPE:
+                proc.stdout.read(1)

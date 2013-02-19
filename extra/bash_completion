@@ -74,7 +74,7 @@ function _moodle() {
                 fi
                 ;;
             behat)
-                OPTS="--run --switch-completely --no-javascript --selenium"
+                OPTS="--run --switch-completely --no-javascript --selenium --selenium-verbose"
                 OPTS="$OPTS $($BIN info -ln)"
                 ;;
             check)
