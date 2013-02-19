@@ -114,11 +114,24 @@ try:
             seleniumServer.start()
 
         debug('Running Behat tests')
+
         # Sleep for a few seconds before starting Behat
         if phpServer or seleniumServer:
             sleep(3)
 
+        # Running the tests
         process(cmd, M.path, None, None)
+
+        # Kill the remaining processes
+        if phpServer:
+            phpServer.kill()
+        if seleniumServer:
+            seleniumServer.kill()
+
+        # Remove the switch completely tag
+        if M.get('behat_switchcompletely'):
+            M.updateConfig('behat_switchcompletely', False)
+
     else:
         debug('Behat command: %s' % (cmd))
 

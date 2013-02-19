@@ -117,12 +117,26 @@ def stableBranch(version):
 class ProcessInThread(threading.Thread):
     """Executes a process in a separate thread"""
 
-    cli = None
-    loop = True
+    cmd = None
+    cwd = None
+    stdout = None
+    stderr = None
+    _kill = False
 
-    def __init__(self, cli):
+    def __init__(self, cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
         threading.Thread.__init__(self)
-        self.cli = cli
+        if type(cmd) != 'list':
+            cmd = shlex.split(str(cmd))
+        self.cmd = cmd
+        self.cwd = None
+        self.stdout = stdout
+        self.stderr = stderr
+
+    def kill(self):
+        self._kill = True
 
     def run(self):
-        process(self.cli)
+        proc = subprocess.Popen(self.cmd, cwd=self.cwd, stdout=self.stdout, stderr=self.stderr)
+        while proc.poll():
+            if self._kill:
+                proc.kill()
