@@ -22,19 +22,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-import sys
 import json
 from tools import debug
 from config import Conf
 from urllib import urlencode
+from urlparse import urlparse
+from base64 import b64encode
+import httplib
 import getpass
-try:
-    from restkit import request, BasicAuth
-except:
-    debug('Could not load module restkit for Jira.')
-    debug('Try `apt-get install python-restkit`, or visit http://pypi.python.org/pypi/restkit')
-    debug('Exiting...')
-    sys.exit(1)
 try:
     import keyring
 except:
@@ -47,11 +42,15 @@ C = Conf()
 
 class Jira(object):
 
-    serverurl = ''
     username = ''
     password = ''
     apiversion = '2'
     version = None
+    url = None
+
+    host = ''
+    ssl = False
+    uri = ''
 
     _loaded = False
 
@@ -70,16 +69,14 @@ class Jira(object):
         """
 
         querystring = {'fields': fields, 'expand': 'names'}
-        requesturl = self.url + 'rest/api/' + self.apiversion + '/issue/' + key + '?%s' % (urlencode(querystring))
-        response = request(requesturl, filters=[self.auth])
+        resp = self.request('issue/%s' % (str(key)), data=urlencode(querystring))
 
-        if response.status_int == 404:
+        if resp['status'] == 404:
             raise JiraException('Issue could not be found.')
+        elif not resp['status'] == 200:
+            raise JiraException('The tracker is not available.')
 
-        if not response.status_int == 200:
-            raise JiraException('Jira is not available.')
-
-        issue = json.loads(response.body_string())
+        issue = resp['data']
         issue['named'] = {}
 
         # Populate the named fields in a separate key. Allows us to easily find them without knowing the field ID.
@@ -92,15 +89,11 @@ class Jira(object):
 
     def getServerInfo(self):
         """Load the version info from the jira server using a rest api call"""
+        resp = self.request('serverInfo')
+        if resp['status'] != 200:
+            raise JiraException('Unexpected response code: %s' % (str(resp['status'])))
 
-        requesturl = self.url + 'rest/api/' + self.apiversion + '/serverInfo'
-        response = request(requesturl, filters=[self.auth])
-
-        if not response.status_int == 200:
-            raise JiraException('Jira is not available: ' + response.status)
-
-        serverinfo = json.loads(response.body_string())
-        self.version = serverinfo
+        self.version = resp['data']
 
     def info(self):
         """Returns a dictionary of information about this instance"""
@@ -117,8 +110,13 @@ class Jira(object):
             return True
 
         # First get the jira details from the config file.
-        self.url = C.get('tracker.url')
+        self.url = C.get('tracker.url').rstrip('/')
         self.username = C.get('tracker.username')
+
+        parsed = urlparse(self.url)
+        self.ssl = True if parsed.scheme == 'https' else False
+        self.host = parsed.netloc
+        self.uri = parsed.path
 
         try:
             # str() is needed because keyring does not handle unicode.
@@ -126,17 +124,14 @@ class Jira(object):
         except:
             # Do not die if keyring package is not available.
             self.password = None
-            pass
 
         if not self.url or not self.username:
-            raise JiraException('Jira has not been configured in the config file.')
+            raise JiraException('The tracker has not been configured in the config file.')
 
         while not self._loaded:
 
             # Testing basic auth
             if self.password:
-                self.auth = BasicAuth(self.username, self.password)
-
                 try:
                     self.getServerInfo()
                     self._loaded = True
@@ -158,6 +153,31 @@ class Jira(object):
         self._loaded = False
         return self._load()
 
+    def request(self, uri, method='GET', data='', headers={}):
+        """Sends a request to the server and returns the response status and data"""
+
+        uri = self.uri + '/rest/api/' + str(self.apiversion) + '/' + uri.strip('/')
+        if method == 'GET':
+            uri += '?%s' % (data)
+            data = ''
+
+        # Basic authentication
+        headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = 'Basic %s' % (b64encode('%s:%s' % (self.username, self.password)))
+
+        if self.ssl:
+            r = httplib.HTTPSConnection(self.host)
+        else:
+            r = httplib.HTTPConnection(self.host)
+        r.request(method.upper(), uri, data, headers)
+
+        resp = r.getresponse()
+        data = resp.read()
+        if len(data) > 0:
+            data = json.loads(data)
+
+        return {'status': resp.status, 'data': data}
+
     def setCustomFields(self, key, updates):
         """Set a list of fields for this issue in Jira
 
@@ -178,14 +198,13 @@ class Jira(object):
 
         if not update['fields']:
             # No fields to update
-            debug('No Jira updates required')
+            debug('No updates required')
             return True
 
-        requesturl = self.url + 'rest/api/' + self.apiversion + '/issue/' + key
-        response = request(requesturl, filters=[self.auth], method='PUT', body=json.dumps(update), headers={'Content-Type': 'application/json'})
+        resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(update))
 
-        if response.status_int != 204:
-            raise JiraException('Issue was not updated: %s' % (str(response.status)))
+        if resp['status'] != 204:
+            raise JiraException('Issue was not updated: %s' % (str(resp['status'])))
 
         return True
 
