@@ -52,61 +52,61 @@ name = Wp.generateInstanceName(version, integration = args.integration, suffix =
 # Wording version
 versionNice = version
 if version == 'master':
-	versionNice = C.get('wording.master')
+    versionNice = C.get('wording.master')
 
 # Generating names
 if args.integration:
-	fullname = C.get('wording.integration') + ' ' + versionNice + ' ' + C.get('wording.%s' % engine)
+    fullname = C.get('wording.integration') + ' ' + versionNice + ' ' + C.get('wording.%s' % engine)
 else:
-	fullname = C.get('wording.stable') + ' ' + versionNice + ' ' + C.get('wording.%s' % engine)
+    fullname = C.get('wording.stable') + ' ' + versionNice + ' ' + C.get('wording.%s' % engine)
 
 # Append the suffix
 if args.suffix:
-	fullname += ' ' + args.suffix.replace('-', ' ').replace('_', ' ').title()
+    fullname += ' ' + args.suffix.replace('-', ' ').replace('_', ' ').title()
 
 # Create the instance
 debug('Creating instance %s...' % name)
 kwargs = {
-	'name': name,
-	'version': version,
-	'integration': args.integration,
-	'useCacheAsRemote': C.get('useCacheAsRemote')
+    'name': name,
+    'version': version,
+    'integration': args.integration,
+    'useCacheAsRemote': C.get('useCacheAsRemote')
 }
-try:
-	M = Wp.create(**kwargs)
-except Exception as e:
-	debug(e)
-	sys.exit(1)
+# try:
+M = Wp.create(**kwargs)
+# except Exception as e:
+# debug(e)
+# sys.exit(1)
 
 # Run the install script
 if args.install:
 
-	# Checking database
-	dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()[:28]
-	db = DB(engine, C.get('db.%s' % engine))
-	dropDb = False
-	if db.dbexists(dbname):
-		debug('Database already exists (%s)' % dbname)
-		dropDb = yesOrNo('Do you want to remove it?')
+    # Checking database
+    dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()[:28]
+    db = DB(engine, C.get('db.%s' % engine))
+    dropDb = False
+    if db.dbexists(dbname):
+        debug('Database already exists (%s)' % dbname)
+        dropDb = yesOrNo('Do you want to remove it?')
 
-	# Install
-	kwargs = {
-		'engine': engine,
-		'dbname': dbname,
-		'dropDb': dropDb,
-		'fullname': fullname,
-		'dataDir': Wp.getPath(name, 'data')
-	}
-	M.install(**kwargs)
+    # Install
+    kwargs = {
+        'engine': engine,
+        'dbname': dbname,
+        'dropDb': dropDb,
+        'fullname': fullname,
+        'dataDir': Wp.getPath(name, 'data')
+    }
+    M.install(**kwargs)
 
-	# Running scripts
-	if M.isInstalled() and type(args.run) == list:
-	    for script in args.run:
-	        debug('Running script \'%s\'' % (script))
-	        try:
-	            M.runScript(script)
-	        except Exception as e:
-	            debug('Error while running the script')
-	            debug(e)
+    # Running scripts
+    if M.isInstalled() and type(args.run) == list:
+        for script in args.run:
+            debug('Running script \'%s\'' % (script))
+            try:
+                M.runScript(script)
+            except Exception as e:
+                debug('Error while running the script')
+                debug(e)
 
 debug('Process complete!')

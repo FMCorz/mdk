@@ -118,7 +118,7 @@ class Workplace(object):
             os.symlink(wwwDir, linkDir)
 
         # Symlink to dataDir in wwwDir
-        if C.get('symlinkToData'):
+        if type(C.get('symlinkToData')) == str:
             linkDataDir = os.path.join(wwwDir, C.get('symlinkToData'))
             if not os.path.isfile(linkDataDir) and not os.path.isdir(linkDataDir) and not os.path.islink(linkDataDir):
                 os.symlink(dataDir, linkDataDir)
