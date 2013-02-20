@@ -225,6 +225,12 @@ class Conf(Config):
     """MDK config class"""
 
     userFile = None
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(Conf, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
 
     def __init__(self):
         self.userFile = os.path.expanduser('~/.moodle-sdk/config.json')
