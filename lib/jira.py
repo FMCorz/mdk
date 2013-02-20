@@ -166,6 +166,7 @@ class Jira(object):
         """Sends a request to the server and returns the response status and data"""
 
         uri = self.uri + '/rest/api/' + str(self.apiversion) + '/' + uri.strip('/')
+        method = method.upper()
         if method == 'GET':
             uri += '?%s' % (data)
             data = ''
@@ -178,12 +179,18 @@ class Jira(object):
             r = httplib.HTTPSConnection(self.host)
         else:
             r = httplib.HTTPConnection(self.host)
-        r.request(method.upper(), uri, data, headers)
+        r.request(method, uri, data, headers)
 
         resp = r.getresponse()
+        if resp.status == 403:
+            raise JiraException('403 Request not authorized. %s %s' % (method, uri))
+
         data = resp.read()
         if len(data) > 0:
-            data = json.loads(data)
+            try:
+                data = json.loads(data)
+            except ValueError:
+                raise JiraException('Could not parse JSON data. Data received:\n%s' % data)
 
         return {'status': resp.status, 'data': data}
 
