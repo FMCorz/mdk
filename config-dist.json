@@ -74,7 +74,7 @@
     // The information for integrating MDK with Jira
     "tracker": {
         "url": "https://tracker.moodle.org/",
-        "username": "me",
+        "username": false,
         "fieldnames" : {
             "repositoryurl" : "Pull  from Repository",
             "22" : {

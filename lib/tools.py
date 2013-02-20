@@ -29,6 +29,7 @@ import subprocess
 import shlex
 import re
 import threading
+import getpass
 
 
 def yesOrNo(q):
@@ -40,12 +41,17 @@ def yesOrNo(q):
             return False
 
 
-def question(q, default=None, options=None):
+def question(q, default=None, options=None, password=False):
     """Asks the user a question, and return the answer"""
     text = q
     if default != None:
         text = text + ' [%s]' % str(default)
-    i = raw_input('%s\n  ' % text)
+
+    if password:
+        i = getpass.getpass('%s\n   ' % text)
+    else:
+        i = raw_input('%s\n  ' % text)
+
     if i.strip() == '':
         return default
     else:

@@ -23,7 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import json
-from tools import debug
+from tools import debug, question
 from config import Conf
 from urllib import urlencode
 from urlparse import urlparse
@@ -125,9 +125,10 @@ class Jira(object):
             # Do not die if keyring package is not available.
             self.password = None
 
-        if not self.url or not self.username:
-            raise JiraException('The tracker has not been configured in the config file.')
+        if not self.url:
+            raise JiraException('The tracker host has not been configured in the config file.')
 
+        askUsername = True if not self.username else False
         while not self._loaded:
 
             # Testing basic auth
@@ -136,15 +137,23 @@ class Jira(object):
                     self.getServerInfo()
                     self._loaded = True
                 except JiraException:
-                    print 'Either the password is incorrect or you may need to enter a Captcha to continue.'
+                    askUsername = True
+                    print 'Either the username and password don\'t match or you may need to enter a Captcha to continue.'
             if not self._loaded:
-                self.password = getpass.getpass('Jira password for user %s: ' % self.username)
+                if askUsername:
+                    self.username = question('What is the username to use to connect to Moodle Tracker?', default=self.username if self.username else None)
+                self.password = question('Enter the password for username \'%s\' on Moodle Tracker?' % self.username, password=True)
+
+        # Save the username to the config file
+        if self.username != C.get('tracker.username'):
+            C.set('tracker.username', self.username)
 
         try:
             keyring.set_password('mdk-jira-password', str(self.username), str(self.password))
         except:
             # Do not die if keyring package is not available.
             pass
+
 
         return True
 
