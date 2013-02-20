@@ -216,8 +216,10 @@ class Conf(Config):
 
     userFile = None
 
-    def __init__(self):
-        self.userFile = os.path.expanduser('~/.moodle-sdk/config.json')
+    def __init__(self, userfile=None):
+        if userfile == None:
+            userfile = os.path.expanduser('~/.moodle-sdk/config.json')
+        self.userFile = userfile
         files = [
             os.path.join(os.path.dirname(__file__), '..', 'config-dist.json'),
             os.path.join(os.path.dirname(__file__), '..', 'config.json'),
