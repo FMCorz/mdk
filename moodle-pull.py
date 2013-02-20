@@ -49,7 +49,15 @@ if args.testing and args.integration:
     sys.exit(1)
 
 # Tracker issue number.
-issue = re.sub(r'(MDL|mdl)(-|_)?', '', args.issue)
+issuenb = args.issue
+if not issuenb:
+    parsedbranch = tools.parseBranch(M.currentBranch(), C.get('wording.branchRegex'))
+    if not parsedbranch:
+        debug('Could not extract issue number from %s' % M.currentBranch())
+        sys.exit(1)
+    issuenb = parsedbranch['issue']
+
+issue = re.sub(r'(MDL|mdl)(-|_)?', '', issuenb)
 mdl = 'MDL-' + issue
 
 # Reading the information about the current instance.
