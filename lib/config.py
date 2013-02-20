@@ -25,6 +25,7 @@ http://github.com/FMCorz/mdk
 import os
 import json
 import re
+import copy
 from exceptions import ConfigFileCouldNotBeLoaded, ConfigFileNotFound, ConfigFileCouldNotBeSaved
 
 
@@ -45,16 +46,15 @@ class ConfigObject(object):
         """Return all the settings, or the setting if name is specified.
         In case the setting is not found default is returned instead.
         """
-        if name == None:
-            return self.data
-        name = unicode(name).split('.')
-        data = self.data
-        for n in name:
-            try:
-                data = data[n]
-            except:
-                data = default
-                break
+        data = copy.deepcopy(self.data)
+        if name != None:
+            name = unicode(name).split('.')
+            for n in name:
+                try:
+                    data = data[n]
+                except:
+                    data = default
+                    break
         return data
 
     def getFlat(self, data=None, parent=''):
@@ -100,7 +100,8 @@ class ConfigObject(object):
             if k in origData and type(v) == dict:
                 origData[k] = self.mergeData(origData[k], v)
             else:
-                origData[k] = v
+                # Deepcopy prevents references to original object
+                origData[k] = copy.deepcopy(v)
         return origData
 
     def remove(self, name):
@@ -121,17 +122,6 @@ class ConfigObject(object):
                     data = data[n]
                 except:
                     break
-        self.save()
-
-    def save(self, filepath):
-        """Save the settings to the config file"""
-        try:
-            f = open(filepath, 'w')
-            json.dump(self.get(), f, indent=4)
-            f.close()
-        except Exception as e:
-            print e
-            raise ConfigFileCouldNotBeSaved('Could not save to config file %s' % filepath)
 
     def set(self, name, value):
         """Set a new setting"""
@@ -237,6 +227,11 @@ class Conf(Config):
         Config.__init__(self, files)
         self.load(allowMissing=True)
 
+    def remove(self, name):
+        """Remove a setting"""
+        super(Conf, self).remove(name)
+        self.save()
+
     def save(self, to=None, confObj=None):
         """Save only the difference to the user config file"""
 
@@ -273,11 +268,6 @@ class Conf(Config):
 
         confObj = diffData
         super(Conf, self).save(to, confObj)
-
-    def remove(self, name):
-        """Remove a setting"""
-        super(Conf, self).remove(name)
-        self.save()
 
     def set(self, name, value):
         """Set a new setting"""
