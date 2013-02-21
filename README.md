@@ -33,7 +33,7 @@ Ubuntu package
     sudo apt-get install moodle-sdk
     # Most settings are probably good as they are, just configure your remote and database engines.
     sudo mdk init
-    # The next line prevents your from logging out and in again.
+    # The next line prevents you from logging out and in again.
     sudo su `whoami`
 
 You're done!
