@@ -221,19 +221,13 @@ class Moodle(object):
 
         # Set PHPUnit data root
         phpunit_dataroot = self.get('dataroot') + '_phpu'
-        if self.get('phpunit_dataroot') == None:
-            self.addConfig('phpunit_dataroot', phpunit_dataroot)
-        elif self.get('phpunit_dataroot') != phpunit_dataroot:
-            raise Exception('Excepted value for phpunit_dataroot is \'%s\'' % phpunit_dataroot)
+        self.updateConfig('phpunit_dataroot', phpunit_dataroot)
         if not os.path.isdir(phpunit_dataroot):
             os.mkdir(phpunit_dataroot, 0777)
 
         # Set PHPUnit prefix
         phpunit_prefix = 'phpu_'
-        if self.get('phpunit_prefix') == None:
-            self.addConfig('phpunit_prefix', phpunit_prefix)
-        elif self.get('phpunit_prefix') != phpunit_prefix:
-            raise Exception('Excepted value for phpunit_prefix is \'%s\'' % phpunit_prefix)
+        self.updateConfig('phpunit_prefix', phpunit_prefix)
 
         result = (None, None, None)
         exception = None
