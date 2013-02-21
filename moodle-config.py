@@ -46,7 +46,7 @@ if args.command == 'list':
     show_list(C.get(), 0)
 
 elif args.command == 'flatlist':
-    def show_list(settings, parent = ''):
+    def show_list(settings, parent=''):
         for name, setting in settings.items():
             if type(setting) != dict:
                 print u'%s: %s' % (parent + name, setting)
@@ -67,5 +67,13 @@ elif args.command == 'set':
         debug('Too few arguments. Two needed: moodle config set settingName value')
         sys.exit(1)
     setting = args.arguments[0]
-    value = u' '.join(args.arguments[1:])
-    C.set(setting, value)
+    val = u' '.join(args.arguments[1:])
+    if val.startswith('b:'):
+        val = True if val[2:].lower() in ['1', 'true'] else False
+    elif val.startswith('i:'):
+        try:
+            val = int(val[2:])
+        except ValueError:
+            # Not a valid int, let's consider it a string.
+            pass
+    C.set(setting, val)
