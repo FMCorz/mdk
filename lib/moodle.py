@@ -266,10 +266,11 @@ class Moodle(object):
         self.updateConfig('behat_prefix', behat_prefix)
 
         # Switch completely?
-        self.updateConfig('behat_switchcompletely', switchcompletely)
         if switchcompletely:
+            self.updateConfig('behat_switchcompletely', switchcompletely)
             self.updateConfig('behat_wwwroot', self.get('wwwroot'))
         else:
+            self.removeConfig('behat_switchcompletely')
             self.removeConfig('behat_wwwroot')
 
         # Drop the tables
