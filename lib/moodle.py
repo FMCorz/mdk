@@ -265,19 +265,11 @@ class Moodle(object):
 
         # Set Behat data root
         behat_dataroot = self.get('dataroot') + '_behat'
-        if self.get('behat_dataroot') == None:
-            self.addConfig('behat_dataroot', behat_dataroot)
-        elif self.get('behat_dataroot') != behat_dataroot:
-            raise Exception('Excepted value for behat_dataroot is \'%s\'' % behat_dataroot)
-        if not os.path.isdir(behat_dataroot):
-            os.mkdir(behat_dataroot, 0777)
+        self.updateConfig('behat_dataroot', behat_dataroot)
 
         # Set Behat DB prefix
-        behat_prefix = 'behat_'
-        if self.get('behat_prefix') == None:
-            self.addConfig('behat_prefix', behat_prefix)
-        elif self.get('behat_prefix') != behat_prefix:
-            raise Exception('Excepted value for behat_prefix is \'%s\'' % behat_prefix)
+        behat_prefix = 'zbehat_'
+        self.updateConfig('behat_prefix', behat_prefix)
 
         # Switch completely?
         self.updateConfig('behat_switchcompletely', switchcompletely)
