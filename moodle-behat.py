@@ -109,7 +109,9 @@ try:
         phpServer = None
         if not M.get('behat_switchcompletely'):
             debug('Starting standalone PHP server')
-            phpServer = ProcessInThread(phpCommand)
+            kwargs = {}
+            kwargs['cwd'] = M.get('path')
+            phpServer = ProcessInThread(phpCommand, **kwargs)
             phpServer.start()
 
         # Launching Selenium
@@ -140,7 +142,7 @@ try:
 
         # Remove the switch completely tag
         if M.get('behat_switchcompletely'):
-            M.updateConfig('behat_switchcompletely', False)
+            M.removeConfig('behat_switchcompletely')
 
     else:
         debug('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
