@@ -40,14 +40,14 @@ parser = argparse.ArgumentParser(description='Creates a new instance of Moodle')
 parser.add_argument('-t', '--integration', action='store_true', help='create an instance from integration')
 parser.add_argument('-i', '--install', action='store_true', help='launch the installation script after creating the instance', dest='install')
 parser.add_argument('-r', '--run', action='store', nargs='*', help='scripts to run after installation', metavar='run')
-parser.add_argument('-v', '--version', action='store', choices=[ str(x) for x in range(13, int(C.get('masterBranch'))) ] + ['master'], default='master', help='version of Moodle', metavar='version')
+parser.add_argument('-v', '--version', action='store', choices=[str(x) for x in range(13, int(C.get('masterBranch')))] + ['master'], default='master', help='version of Moodle', metavar='version')
 parser.add_argument('-s', '--suffix', action='store', help='suffix for the instance name', metavar='suffix')
 parser.add_argument('-e', '--engine', action='store', choices=['mysqli', 'pgsql'], default=C.get('defaultEngine'), help='database engine to use', metavar='engine')
 args = parser.parse_args()
 
 engine = args.engine
 version = args.version
-name = Wp.generateInstanceName(version, integration = args.integration, suffix = args.suffix)
+name = Wp.generateInstanceName(version, integration=args.integration, suffix=args.suffix)
 
 # Wording version
 versionNice = version
@@ -72,11 +72,11 @@ kwargs = {
     'integration': args.integration,
     'useCacheAsRemote': C.get('useCacheAsRemote')
 }
-# try:
-M = Wp.create(**kwargs)
-# except Exception as e:
-# debug(e)
-# sys.exit(1)
+try:
+    M = Wp.create(**kwargs)
+except Exception as e:
+    debug(e)
+    sys.exit(1)
 
 # Run the install script
 if args.install:
