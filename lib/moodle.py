@@ -395,7 +395,7 @@ class Moodle(object):
         args = '--wwwroot="%s" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
         result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
-            raise Exception('Error while running the install, please manually fix the problem.')
+            raise Exception('Error while running the install, please manually fix the problem.\n- Command was: %s %s %s' % (C.get('php'), cli, args))
 
         configFile = os.path.join(self.path, 'config.php')
         os.chmod(configFile, 0666)
