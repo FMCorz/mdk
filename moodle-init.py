@@ -87,7 +87,7 @@ if os.path.isfile(userconfigfile):
         sys.exit(1)
 elif not os.path.isfile(userconfigfile):
     debug('Creating user config file in %s.' % userconfigfile)
-    shutil.copyfile(os.path.join(scriptdir, 'config-dist.json'), userconfigfile)
+    open(userconfigfile, 'w')
     os.chown(userconfigfile, user.pw_uid, usergroup.gr_gid)
 
 # If the group moodle-sdk exists, then we want to add the user to it.
@@ -106,8 +106,7 @@ except KeyError:
 
 # Loading the configuration.
 from lib.config import Conf as Config
-C = Config()
-C.load(userconfigfile)
+C = Config(userfile=userconfigfile)
 
 # Asks the user what needs to be asked.
 while True:
@@ -155,15 +154,23 @@ if not os.path.isdir(mdkdir):
         debug('Error while creating %s, please fix manually.' % mdkdir)
 
 # Git repository.
-C.set('remotes.mine', question('What is your remote?', C.get('remotes.mine')))
-C.set('myRemote', question('How to name your remote?', C.get('myRemote')))
-C.set('upstreamRemote', question('How to name the upsream remote (official Moodle remote)?', C.get('upstreamRemote')))
+github = question('What is your Github username? (Leave blank if not using Github)')
+if github != None:
+    C.set('remotes.mine', C.get('remotes.mine').replace('YourGitHub', github))
+    C.set('repositoryUrl', C.get('repositoryUrl').replace('YourGitHub', github))
+    C.set('diffUrlTemplate', C.get('diffUrlTemplate').replace('YourGitHub', github))
+    C.set('myRemote', 'github')
+    C.set('upstreamRemote', 'origin')
+else:
+    C.set('remotes.mine', question('What is your remote?', C.get('remotes.mine')))
+    C.set('myRemote', question('What to call your remote?', C.get('myRemote')))
+    C.set('upstreamRemote', question('What to call the upsream remote (official Moodle remote)?', C.get('upstreamRemote')))
 
 # Database settings.
 C.set('db.mysqli.user', question('What is your MySQL user?', C.get('db.mysqli.user')))
-C.set('db.mysqli.passwd', question('What is your MySQL password?', C.get('db.mysqli.passwd')))
+C.set('db.mysqli.passwd', question('What is your MySQL password?', C.get('db.mysqli.passwd'), password=True))
 C.set('db.pgsql.user', question('What is your PostgreSQL user?', C.get('db.pgsql.user')))
-C.set('db.pgsql.passwd', question('What is your PostgreSQL password?', C.get('db.pgsql.passwd')))
+C.set('db.pgsql.passwd', question('What is your PostgreSQL password?', C.get('db.pgsql.passwd'), password=True))
 
 debug('')
 debug('MDK has been initialised with minimal configuration.')
@@ -174,4 +181,4 @@ debug('Type the following command to create your first instance:')
 debug('  mdk create')
 debug('(This will take some time, but don\'t worry, that\'s because the cache is still empty)')
 debug('')
-debug('/!\ Please logout/login before to avoid permission issues.')
+debug('/!\ Please logout/login before to avoid permission issues: sudo su `whoami`')
