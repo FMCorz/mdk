@@ -8,6 +8,6 @@ Build-Depends: debhelper (>= 8)
 
 Package: moodle-sdk
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-argparse, python-mysqldb, python-psycopg2, git, apache2, mysql-server, postgresql, php5, php5-cli, php5-curl, php5-mysql, php5-pgsql
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-argparse, python-keyring, python-mysqldb, python-psycopg2, git, apache2, mysql-server, postgresql, php5, php5-cli, php5-curl, php5-mysql, php5-pgsql
 Description: Moodle Development Kit
  A collection of tools meant to make Moodle developers' lives easier.
