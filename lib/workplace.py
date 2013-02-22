@@ -137,7 +137,7 @@ class Workplace(object):
         else:
             track = '%s/MOODLE_%s_STABLE' % (C.get('upstreamRemote'), version)
             branch = 'MOODLE_%s_STABLE' % version
-            if not repo.createBranch(branch, track):
+            if not repo.hasBranch(branch) and not repo.createBranch(branch, track):
                 debug('Could not create branch %s tracking %s' % (branch, track))
             else:
                 repo.checkout(branch)
