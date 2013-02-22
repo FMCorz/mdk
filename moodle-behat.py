@@ -56,21 +56,28 @@ if not M.get('installed'):
     debug('This instance needs to be installed first')
     sys.exit(1)
 
+# No Javascript
+nojavascript = args.nojavascript
+if not nojavascript and not C.get('java') or not os.path.isfile(os.path.abspath(C.get('java'))):
+    nojavascript = True
+    debug('Disabling Javascript because Java is required to run Selenium and could not be found.')
+
 # If not composer.phar, install Composer
 if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
     debug('Installing Composer')
     cliFile = 'behat_install_composer.php'
     cliPath = os.path.join(M.get('path'), 'behat_install_composer.php')
     urllib.urlretrieve('http://getcomposer.org/installer', cliPath)
-    M.cli('/' + cliFile, stdout=None)
+    M.cli('/' + cliFile, stdout=None, stderr=None)
     os.remove(cliPath)
-    M.cli('composer.phar', args='install --dev')
+    M.cli('composer.phar', args='install --dev', stdout=None, stderr=None)
+
 
 # Download selenium
 seleniumPath = os.path.expanduser(os.path.join(C.get('dirs.mdk'), 'selenium.jar'))
 if args.selenium:
     seleniumPath = args.selenium
-elif not os.path.isfile(seleniumPath):
+elif not nojavascript and not os.path.isfile(seleniumPath):
     debug('Attempting to find a download for Selenium')
     url = urllib.urlopen('http://docs.seleniumhq.org/download/')
     content = url.read()
@@ -92,7 +99,7 @@ try:
 
     # Preparing Behat command
     cmd = ['vendor/bin/behat']
-    if args.nojavascript:
+    if nojavascript:
         cmd.append('--tags ~@javascript')
     cmd.append('--config=%s/behat/behat.yml' % (M.get('behat_dataroot')))
     cmd = ' '.join(cmd)
@@ -116,7 +123,7 @@ try:
 
         # Launching Selenium
         seleniumServer = None
-        if seleniumPath and not args.nojavascript:
+        if seleniumPath and not nojavascript:
             debug('Starting Selenium server')
             kwargs = {}
             if args.seleniumverbose:
