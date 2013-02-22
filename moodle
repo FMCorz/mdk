@@ -53,6 +53,17 @@ ALIAS=`$BIN show $COMMAND`
 
 if [ -n "$ALIAS" ]
 then
+    # It's a shell command. Let's substitute the arguments.
+    if [[ ${ALIAS:0:1} == '!' ]]; then
+        CMD="${ALIAS:1}"
+        for ((I = 2; I <= $#; I++)); do
+            ARG=${@:I:1}
+            CMD=${CMD//\$$((I-1))/$ARG}
+        done
+        $CMD
+        exit $?
+    fi
+    # If we're here, it's not a shell command. Let's parse the command and arguments.
     COMMAND=`echo $ALIAS | cut -d ' ' -f 1`
     ALIASARGS=`echo $ALIAS | cut -d ' ' -s -f 2-`
     ARGS="$ALIASARGS $ARGS"

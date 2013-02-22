@@ -35,7 +35,8 @@ parser.add_argument('-l', '--list', action='store_true', help='list the instance
 parser.add_argument('-i', '--integration', action='store_true', help='used with --list, only display integration instances', dest='integration')
 parser.add_argument('-s', '--stable', action='store_true', help='used with --list, only display stable instances', dest='stable')
 parser.add_argument('-n', '--name-only', action='store_true', help='used with --list, only display instances name', dest='nameonly')
-parser.add_argument('-v', '--var', metavar='var', default=None, nargs='?', help='variable to output. Does not work with --list.')
+parser.add_argument('-v', '--var', metavar='var', default=None, nargs='?', help='variable to output or edit')
+parser.add_argument('-e', '--edit', metavar='value', nargs='?', help='value to set to the variable (--var). This value will be set in the config file of the instance. Prepend the value with i: or b: to set as int or boolean. DO NOT use names used by MDK (identifier, stablebranch, ...).', dest='edit')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
 args = parser.parse_args()
 
@@ -60,9 +61,23 @@ else:
         debug('This is not a Moodle instance')
         sys.exit(1)
 
-    # Printing variable
+    # Printing/Editing variable.
     if args.var != None:
-        print M.get(args.var)
+        # Edit a value.
+        if args.edit != None:
+            val = args.edit
+            if val.startswith('b:'):
+                val = True if val[2:].lower() in ['1', 'true'] else False
+            elif val.startswith('i:'):
+                try:
+                    val = int(val[2:])
+                except ValueError:
+                    # Not a valid int, let's consider it a string.
+                    pass
+            M.updateConfig(args.var, val)
+            debug('Set $CFG->%s to %s on %s' % (args.var, str(val), M.get('identifier')))
+        else:
+            print M.get(args.var)
 
     # Printing info
     else:

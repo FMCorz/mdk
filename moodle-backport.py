@@ -24,7 +24,7 @@ http://github.com/FMCorz/mdk
 
 import sys
 import argparse
-from lib import workplace, tools
+from lib import workplace, tools, jira
 from lib.tools import debug
 from lib.config import Conf
 
@@ -41,6 +41,7 @@ parser.add_argument('-e', '--dont-fetch', action='store_true', help='By default 
 parser.add_argument('-p', '--push', action='store_true', help='push the branch after successful backport')
 parser.add_argument('-t', '--push-to', metavar='remote', help='the remote to push the branch to. Default is %s.' % C.get('myRemote'), dest='pushremote')
 parser.add_argument('-f', '--force-push', action='store_true', help='Force the push', dest='forcepush')
+parser.add_argument('-j', '--update-jira', action='store_true', help='also add the github links to the jira issue.', dest='updatejira')
 parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance to backport from. Can be omitted if branch is specified.')
 parser.add_argument('-v', '--versions', metavar='version', required=True, nargs='+', choices=[str(x) for x in range(13, int(C.get('masterBranch')))] + ['master'], help='versions to backport to')
 args = parser.parse_args()

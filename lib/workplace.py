@@ -118,7 +118,7 @@ class Workplace(object):
             os.symlink(wwwDir, linkDir)
 
         # Symlink to dataDir in wwwDir
-        if C.get('symlinkToData'):
+        if type(C.get('symlinkToData')) == str:
             linkDataDir = os.path.join(wwwDir, C.get('symlinkToData'))
             if not os.path.isfile(linkDataDir) and not os.path.isdir(linkDataDir) and not os.path.islink(linkDataDir):
                 os.symlink(dataDir, linkDataDir)
@@ -137,7 +137,7 @@ class Workplace(object):
         else:
             track = '%s/MOODLE_%s_STABLE' % (C.get('upstreamRemote'), version)
             branch = 'MOODLE_%s_STABLE' % version
-            if not repo.createBranch(branch, track):
+            if not repo.hasBranch(branch) and not repo.createBranch(branch, track):
                 debug('Could not create branch %s tracking %s' % (branch, track))
             else:
                 repo.checkout(branch)

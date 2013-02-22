@@ -24,9 +24,12 @@ http://github.com/FMCorz/mdk
 
 import sys
 import os
+import signal
 import subprocess
 import shlex
 import re
+import threading
+import getpass
 
 
 def yesOrNo(q):
@@ -38,12 +41,17 @@ def yesOrNo(q):
             return False
 
 
-def question(q, default=None, options=None):
+def question(q, default=None, options=None, password=False):
     """Asks the user a question, and return the answer"""
     text = q
     if default != None:
         text = text + ' [%s]' % str(default)
-    i = raw_input('%s\n  ' % text)
+
+    if password:
+        i = getpass.getpass('%s\n   ' % text)
+    else:
+        i = raw_input('%s\n  ' % text)
+
     if i.strip() == '':
         return default
     else:
@@ -111,3 +119,37 @@ def stableBranch(version):
     if version == 'master':
         return 'master'
     return 'MOODLE_%d_STABLE' % int(version)
+
+
+class ProcessInThread(threading.Thread):
+    """Executes a process in a separate thread"""
+
+    cmd = None
+    cwd = None
+    stdout = None
+    stderr = None
+    _kill = False
+    _pid = None
+
+    def __init__(self, cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
+        threading.Thread.__init__(self)
+        if type(cmd) != 'list':
+            cmd = shlex.split(str(cmd))
+        self.cmd = cmd
+        self.cwd = None
+        self.stdout = stdout
+        self.stderr = stderr
+
+    def kill(self):
+        os.kill(self._pid, signal.SIGKILL)
+
+    def run(self):
+        proc = subprocess.Popen(self.cmd, cwd=self.cwd, stdout=self.stdout, stderr=self.stderr)
+        self._pid = proc.pid
+        while True:
+            if proc.poll():
+                break
+
+            # Reading the output seems to prevent the process to hang.
+            if self.stdout == subprocess.PIPE:
+                proc.stdout.read(1)

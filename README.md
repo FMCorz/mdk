@@ -33,7 +33,7 @@ Ubuntu package
     sudo apt-get install moodle-sdk
     # Most settings are probably good as they are, just configure your remote and database engines.
     sudo mdk init
-    # The next line prevents your from logging out and in again.
+    # The next line prevents you from logging out and in again.
     sudo su `whoami`
 
 You're done!
@@ -122,6 +122,13 @@ Restore the second backup of the instance stable_master
 
     mdk backup --restore stable_master_02
 
+
+behat
+-----
+
+Get the instance ready for acceptance testing (Behat).
+
+
 check
 -----
 
@@ -199,7 +206,7 @@ Run the command line installation script with all parameters set on an existing 
 phpunit
 -------
 
-Get the instance ready for PHP Unit tests.
+Get the instance ready for PHPUnit tests.
 
 
 purge
@@ -212,6 +219,18 @@ Purge the cache.
 To purge the cache of all the instances
 
     mdk purge --all
+
+
+pull
+----
+
+Pulls a patch using the information from a tracker issue.
+
+**Example**
+
+Assuming we type that command on a 2.3 instance, pulls the corresponding patch from the issue MDL-12345 in a testing branch
+
+    mdk pull --testing 12345
 
 
 push

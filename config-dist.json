@@ -71,6 +71,44 @@
         "pgsql": "PostgreSQL"
     },
 
+    // The information for integrating MDK with Jira
+    "tracker": {
+        "url": "https://tracker.moodle.org/",
+        "username": false,
+        "fieldnames" : {
+            "repositoryurl" : "Pull  from Repository",
+            "22" : {
+                "branch" : "Pull 2.2 Branch",
+                "diffurl" : "Pull 2.2 Diff URL"
+            },
+            "23" : {
+                "branch" : "Pull 2.3 Branch",
+                "diffurl" : "Pull 2.3 Diff URL"
+            },
+            "24" : {
+                "branch" : "Pull 2.4 Branch",
+                "diffurl" : "Pull 2.4 Diff URL"
+            },
+            "25" : {
+                "branch" : "Pull 2.5 Branch",
+                "diffurl" : "Pull 2.5 Diff URL"
+            },
+            "master" : {
+                "branch" : "Pull Master Branch",
+                "diffurl" : "Pull Master Diff URL"
+            }
+        }
+    },
+    // The base for diff URLs, you can use the following wildcards:
+    // - %branch%: The branch name;
+    // - %stablebranch%: The stable branch (MOODLE_23_STABLE, MOODLE_24_STABLE, master, ...);
+    // - %headcommit%: The head commit.
+    // This is used to populate the fields on the tracker issue.
+    "diffUrlTemplate": "https://github.com/YourGitHub/moodle/compare/%headcommit%...%branch%",
+
+    // The public acccess URL of your repository. It is used to populate the fields on the tracker issue.
+    "repositoryUrl": "git://github.com/YourGitHub/moodle.git",
+
     // The host name to set during an install
     "host": "moodle-sdk",
     // Path to your Moodle instances, http://host/path/ should point to dirs.www.
@@ -96,6 +134,8 @@
     "git": "/usr/bin/git",
     // Path to PHP
     "php": "/usr/bin/php",
+    // Path to Java
+    "java": "/usr/bin/java",
 
     // Experimental setting to use a local cache as your upstream remotes.
     // Can be useful to prevent fetch from a slow remote.
@@ -109,6 +149,10 @@
     "masterBranch": 25,
 
     // Aliases for MDK commands.
+    // An alias starting with a ! will be executed through the command line.
+    // Examples:
+    //   "upall": "update --all". `mdk upall` will execute `mdk update --all`
+    //   "ls": "!ls -al". `mdk ls` will execute `ls -al`
     "aliases": {
         "list": "info -l"
     }
