@@ -104,7 +104,7 @@ try:
     cmd.append('--config=%s/behat/behat.yml' % (M.get('behat_dataroot')))
     cmd = ' '.join(cmd)
 
-    phpCommand = '%s -S http://localhost:8000' % (C.get('php'))
+    phpCommand = '%s -S localhost:8000' % (C.get('php'))
     seleniumCommand = None
     if seleniumPath:
         seleniumCommand = '%s -jar %s' % (C.get('java'), seleniumPath)
