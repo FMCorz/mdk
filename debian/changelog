@@ -1,3 +1,10 @@
+moodle-sdk (0.3ubuntu1) precise; urgency=low
+
+  * Wrong echo to host file
+  * Added required PHP package for Moodle
+
+ -- Frédéric Massart <fred@moodle.com>  Wed, 27 Feb 2013 14:44:43 +0800
+
 moodle-sdk (0.3) precise; urgency=low
  
   * New command `behat` which is equivalent to `phpunit`
