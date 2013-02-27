@@ -18,7 +18,7 @@ chmod 0775 /var/lib/moodle-sdk/www
 
 # Adding moodle-sdk to host file.
 if [ -z "$(cat /etc/hosts | grep 'moodle-sdk')" ]; then
-    echo "\n\n# Moodle SDK\n127.0.0.1\tmoodle-sdk" >> /etc/hosts
+    echo -e "\n\n# Moodle SDK\n127.0.0.1\tmoodle-sdk" >> /etc/hosts
 fi
 
 # Enable the virtual host.
