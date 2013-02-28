@@ -149,8 +149,15 @@ class Git(object):
         proc.wait()
         return proc.returncode == 0
 
-    def pick(self, refs):
-        cmd = 'cherry-pick %s' % refs
+    def pick(self, refs=None, abort=None):
+        args = ''
+        if refs != None:
+            if type(refs) == list:
+                refs = ' '.join(refs)
+            args = refs
+        elif abort != None:
+            args = '--abort'
+        cmd = 'cherry-pick %s' % (args)
         return self.execute(cmd)
 
     def pull(self, remote = '', ref = ''):
