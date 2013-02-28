@@ -24,8 +24,8 @@ http://github.com/FMCorz/mdk
 
 import sys
 import argparse
-from lib import workplace, tools, jira
-from lib.tools import debug
+from lib import workplace, tools
+from lib.tools import debug, yesOrNo
 from lib.config import Conf
 
 Wp = workplace.Workplace()
@@ -34,10 +34,7 @@ C = Conf()
 # Arguments
 parser = argparse.ArgumentParser(description="Backports a branch")
 parser.add_argument('-b', '--branch', metavar='branch', help='the branch to backport if not the current one. If omitted, guessed from instance name.')
-parser.add_argument('-r', '--remote', metavar='remote', help='the remote to fetch from. Default is %s.' % C.get('myRemote'))
 parser.add_argument('-i', '--integration', action='store_true', help='backport to integration instances.', dest='integration')
-parser.add_argument('-d', '--dont-push', action='store_true', help='if name is specified, the branch is pushed to the remote (-p) before backporting. This disables this behaviour.', dest='dontpush')
-parser.add_argument('-e', '--dont-fetch', action='store_true', help='By default the upstream branch is fetched. This disables this behaviour.', dest='dontfetch')
 parser.add_argument('-p', '--push', action='store_true', help='push the branch after successful backport')
 parser.add_argument('-t', '--push-to', metavar='remote', help='the remote to push the branch to. Default is %s.' % C.get('myRemote'), dest='pushremote')
 parser.add_argument('-f', '--force-push', action='store_true', help='Force the push', dest='forcepush')
@@ -49,10 +46,7 @@ args = parser.parse_args()
 M = None
 branch = args.branch
 versions = args.versions
-remote = args.remote
 integration = args.integration
-if remote == None:
-    remote = C.get('myRemote')
 
 # If we don't have a branch, we need an instance
 M = Wp.resolve(args.name)
@@ -76,16 +70,19 @@ version = parsedbranch['version']
 # Original track
 originaltrack = tools.stableBranch(version)
 
-# Pushes the branch to the remote first
-if M and not args.dontpush:
-    debug('Pushing %s to %s' % (branch, remote))
-    if not M.git().push(remote, branch):
-        debug('Could not push %s to %s' % (branch, remote))
-        sys.exit(1)
-
 # Integration?
 if M:
     integration = M.isIntegration()
+
+
+def stashPop(stash):
+    """Small helper to pop the stash has we have to do it in some different places"""
+    if not stash[1].startswith('No local changes'):
+        pop = M2.git().stash(command='pop')
+        if pop[0] != 0:
+            debug('An error ocured while unstashing your changes')
+        else:
+            debug('Popped the stash')
 
 # Begin backport
 for v in versions:
@@ -97,7 +94,12 @@ for v in versions:
         continue
     M2 = Wp.get(name)
 
-    debug("Preparing cherry-pick of %s/%s in %s" % (remote, branch, name))
+    debug("Preparing cherry-pick of %s/%s in %s" % (M.get('identifier'), branch, name))
+
+    # Get hash list
+    cherry = '%s/%s..%s' % (C.get('upstreamRemote'), originaltrack, branch)
+    hashes = M.git().hashes(cherry)
+    hashes.reverse()
 
     # Stash
     stash = M2.git().stash(untracked=True)
@@ -108,15 +110,9 @@ for v in versions:
     elif not stash[1].startswith('No local changes'):
         debug('Stashed your local changes')
 
-    # Fetch the upstream remote for accurate reference to the branch to backport
-    # Ignoring this could lead to more commits to be pulled in.
-    if not args.dontfetch:
-        debug("Fetching remote %s..." % C.get('upstreamRemote'))
-        M2.git().fetch(C.get('upstreamRemote'))
-
     # Fetch the remote to get reference to the branch to backport
-    debug("Fetching remote %s..." % remote)
-    M2.git().fetch(remote)
+    debug("Fetching remote %s..." % (M.get('path')))
+    M2.git().fetch(M.get('path'), branch)
 
     # Creates a new branch if necessary
     newbranch = M2.generateBranchName(issue, suffix=suffix)
@@ -125,20 +121,27 @@ for v in versions:
         debug('Creating branch %s' % newbranch)
         if not M2.git().createBranch(newbranch, track=track):
             debug('Could not create branch %s tracking %s in %s' % (newbranch, track, name))
+            stashPop(stash)
             continue
         M2.git().checkout(newbranch)
     else:
         M2.git().checkout(newbranch)
-        debug('Hard reset to %s' % (track))
+        debug('Hard reset %s to %s' % (newbranch, track))
         M2.git().reset(to=track, hard=True)
 
     # Picking the diff upstream/MOODLE_23_STABLE..github/MDL-12345-master
-    cherry = '%s/%s..%s/%s' % (C.get('upstreamRemote'), originaltrack, remote, branch)
     debug('Cherry-picking %s' % (cherry))
-    result = M2.git().pick(cherry)
+    result = M2.git().pick(hashes)
     if result[0] != 0:
-        debug('Error while cherry-picking %s/%s in %s.' % (remote, branch, name))
+        debug('Error while cherry-picking %s in %s.' % (cherry, name))
         debug(result[2])
+        debug('')
+        if yesOrNo('The cherry-pick might still be in progress, would you like to abort it?'):
+            result = M2.git().pick(abort=True)
+            if result[0] > 0 and result[0] != 128:
+                debug('Could not abort the cherry-pick!')
+            else:
+                stashPop(stash)
         continue
 
     # Pushing branch
@@ -151,15 +154,10 @@ for v in versions:
         if result[0] != 0:
             debug('Error while pushing to remote %s' % (pushremote))
             debug(result[2])
+            stashPop(stash)
             continue
 
-    # Stash pop
-    if not stash[1].startswith('No local changes'):
-        pop = M2.git().stash(command='pop')
-        if pop[0] != 0:
-            debug('An error ocured while unstashing your changes')
-        else:
-            debug('Popped the stash')
+    stashPop(stash)
 
     debug('Instance %s successfully patched!' % name)
     debug('')
