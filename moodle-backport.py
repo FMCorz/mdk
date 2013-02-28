@@ -135,13 +135,13 @@ for v in versions:
     if result[0] != 0:
         debug('Error while cherry-picking %s in %s.' % (cherry, name))
         debug(result[2])
-        debug('')
         if yesOrNo('The cherry-pick might still be in progress, would you like to abort it?'):
             result = M2.git().pick(abort=True)
             if result[0] > 0 and result[0] != 128:
                 debug('Could not abort the cherry-pick!')
             else:
                 stashPop(stash)
+        debug('')
         continue
 
     # Pushing branch
