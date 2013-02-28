@@ -42,6 +42,17 @@ class Git(object):
         result = self.execute(cmd)
         return result[0] == 0
 
+    def apply(self, files):
+        if type(files) == list:
+            files = ' '.join(files)
+        cmd = 'apply --check %s' % (files)
+        result = self.execute(cmd)
+        if result[0] != 0:
+            return False
+        cmd = 'am %s' % (files)
+        result = self.execute(cmd)
+        return result[0] != 0
+
     def checkout(self, branch):
         if self.currentBranch == branch:
             return True
