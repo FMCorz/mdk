@@ -37,6 +37,7 @@ C = Conf()
 # Arguments
 parser = argparse.ArgumentParser(description="Pull a branch from a tracker issue.")
 parser.add_argument('-i', '--integration', action='store_true', help='checkout the stable branch before proceeding to the pull (Integration mode).')
+parser.add_argument('-n', '--no-merge', action='store_true', help='checkout the remote branch without merging. Also this does not work with patch files. (No merge mode)', dest='nomerge')
 parser.add_argument('-t', '--testing', action='store_true', help='checkout a testing branch before proceeding to the pull (Testing mode).')
 parser.add_argument('issue', metavar='issue', default=None, nargs='?', help='tracker issue to pull from (MDL-12345, 12345). If not specified, read from current branch.')
 args = parser.parse_args()
@@ -46,8 +47,8 @@ if not M:
     debug('This is not a Moodle instance')
     sys.exit(1)
 
-if args.testing and args.integration:
-    debug('You cannot combine --integration and --testing')
+if (args.testing and args.integration) or (args.testing and args.nomerge) or (args.integration and args.nomerge):
+    debug('You cannot combine --integration, --testing or --no-merge')
     sys.exit(1)
 
 # Tracker issue number.
@@ -75,7 +76,7 @@ remoteUrl = issueInfo.get('named').get(C.get('tracker.fieldnames.repositoryurl')
 remoteBranch = issueInfo.get('named').get(C.get('tracker.fieldnames.%s.branch' % (branch)))
 patchesToApply = []
 
-if not remoteUrl or not remoteBranch:
+if not args.nomerge and (not remoteUrl or not remoteBranch):
     mode = None
     attachments = issueInfo.get('fields').get('attachment')
     patches = {}
@@ -145,10 +146,28 @@ elif args.integration:
         debug('Could not checkout branch %s' % (M.get('stablebranch')))
     debug('Checked out branch %s' % (M.get('stablebranch')))
 
+# Create a no-merge branch
+elif args.nomerge:
+    i = 0
+    while True:
+        i += 1
+        suffix = 'nomerge' if i <= 1 else 'nomerge' + str(i)
+        newBranch = M.generateBranchName(issue, suffix=suffix, version=branch)
+        if not M.git().hasBranch(newBranch):
+            break
+    track = '%s/%s' % (C.get('upstreamRemote'), M.get('stablebranch'))
+    M.git().createBranch(newBranch, track=track)
+    if not M.git().checkout(newBranch):
+        debug('Could not checkout branch %s' % (newBranch))
+        sys.exit(1)
+    debug('Checked out branch %s' % (newBranch))
+    mode = 'nomerge'
+
 if mode == 'pull':
     # Pull branch from tracker
     debug('Pulling branch %s from %s into %s' % (remoteBranch, remoteUrl, M.currentBranch()))
     M.git().pull(remote=remoteUrl, ref=remoteBranch)
+
 elif mode == 'patch':
     # Apply a patch from tracker
     files = []
@@ -169,6 +188,13 @@ elif mode == 'patch':
             for f in files:
                 os.remove(f)
 
+elif mode == 'nomerge':
+    # Checking out the patch without merging it.
+    debug('Fetching %s %s' % (remoteUrl, remoteBranch))
+    M.git().fetch(remote=remoteUrl, ref=remoteBranch)
+    debug('Hard reset to FETCH_HEAD')
+    M.git().reset('FETCH_HEAD', hard=True)
+
 # Stash pop
 if not stash[1].startswith('No local changes'):
     pop = M.git().stash(command='pop')
@@ -178,3 +204,5 @@ if not stash[1].startswith('No local changes'):
         debug('Popped the stash')
 
 debug('Done.')
+
+# TODO Tidy up the messy logic above!
