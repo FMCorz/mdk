@@ -25,3 +25,4 @@ http://github.com/FMCorz/mdk
 from alias import AliasCommand
 from backport import BackportCommand
 from backup import BackupCommand
+from behat import BehatCommand
