@@ -76,6 +76,7 @@ remoteBranch = issueInfo.get('named').get(C.get('tracker.fieldnames.%s.branch' %
 patchesToApply = []
 
 if not remoteUrl or not remoteBranch:
+    mode = None
     attachments = issueInfo.get('fields').get('attachment')
     patches = {}
     for attachment in attachments:
