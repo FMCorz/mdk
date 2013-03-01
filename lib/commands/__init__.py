@@ -26,3 +26,5 @@ from alias import AliasCommand
 from backport import BackportCommand
 from backup import BackupCommand
 from behat import BehatCommand
+from config import ConfigCommand
+from create import CreateCommand
