@@ -23,6 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import argparse
+import sys
 
 
 class Command(object):
@@ -70,7 +71,7 @@ class RunCommand(object):
     def command(self):
         return self._command
 
-    def run(self):
+    def run(self, sysargs=sys.argv):
         parser = argparse.ArgumentParser(description=self.command.description)
         for argument in self.command.arguments:
             args = argument[0]
@@ -89,7 +90,7 @@ class RunCommand(object):
                         subparser.add_argument(*sargs, **skwargs)
             else:
                 parser.add_argument(*args, **kwargs)
-        args = parser.parse_args()
+        args = parser.parse_args(sysargs)
         self.command.run(args)
 
 
