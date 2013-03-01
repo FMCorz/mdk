@@ -75,7 +75,7 @@ remoteUrl = issueInfo.get('named').get(C.get('tracker.fieldnames.repositoryurl')
 remoteBranch = issueInfo.get('named').get(C.get('tracker.fieldnames.%s.branch' % (branch)))
 patchesToApply = []
 
-if True or not remoteUrl or not remoteBranch:
+if not remoteUrl or not remoteBranch:
     attachments = issueInfo.get('fields').get('attachment')
     patches = {}
     for attachment in attachments:
