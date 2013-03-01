@@ -229,8 +229,15 @@ class Conf(Config):
         Config.__init__(self, files)
         self.load(allowMissing=True)
 
+    def add(self, name, value):
+        """Set a new setting"""
+        super(Conf, self).add(name, value)
+        self.save()
+
     def remove(self, name):
         """Remove a setting"""
+        # We need to remove from the object we use as a reference in save().
+        self.objects[self.userFile].remove(name)
         super(Conf, self).remove(name)
         self.save()
 
