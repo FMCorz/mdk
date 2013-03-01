@@ -24,6 +24,7 @@ http://github.com/FMCorz/mdk
 
 import argparse
 import sys
+import workplace
 
 
 class Command(object):
@@ -46,19 +47,37 @@ class Command(object):
         ]
     _description = 'Undocumented command'
 
+    __C = None
+    __Wp = None
+
     def __init__(self, config):
-        self.C = config
+        self.__C = config
+        self.__Wp = workplace.Workplace()
 
     @property
     def arguments(self):
         return self._arguments
 
     @property
+    def C(self):
+        return self.__C
+
+    @property
     def description(self):
         return self._description
 
+    def resolve(self, name):
+        return self.Wp.resolve(name)
+
+    def resolveMultiple(self, names):
+        return self.Wp.resolve(names)
+
     def run(self, args):
         return True
+
+    @property
+    def Wp(self):
+        return self.__Wp
 
 
 class RunCommand(object):
