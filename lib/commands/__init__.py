@@ -28,3 +28,4 @@ from backup import BackupCommand
 from behat import BehatCommand
 from config import ConfigCommand
 from create import CreateCommand
+from fix import FixCommand
