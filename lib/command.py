@@ -90,8 +90,8 @@ class RunCommand(object):
     def command(self):
         return self._command
 
-    def run(self, sysargs=sys.argv):
-        parser = argparse.ArgumentParser(description=self.command.description)
+    def run(self, sysargs=sys.argv, prog=None):
+        parser = argparse.ArgumentParser(description=self.command.description, prog=prog)
         for argument in self.command.arguments:
             args = argument[0]
             kwargs = argument[1]
