@@ -30,3 +30,4 @@ from config import ConfigCommand
 from create import CreateCommand
 from fix import FixCommand
 from info import InfoCommand
+from init import InitCommand
