@@ -31,3 +31,4 @@ from create import CreateCommand
 from fix import FixCommand
 from info import InfoCommand
 from init import InitCommand
+from install import InstallCommand
