@@ -224,6 +224,11 @@ class Git(object):
         result = self.execute(cmd)
         return result[0] == 0
 
+    def setConfig(self, name, value):
+        cmd = 'config %s %s' % (name, value)
+        result = self.execute(cmd)
+        return result[0] == 0
+
     def setRemote(self, remote, url):
         if not self.getRemote(remote):
             cmd = 'remote add %s %s' % (remote, url)

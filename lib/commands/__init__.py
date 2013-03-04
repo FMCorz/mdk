@@ -33,6 +33,7 @@ commandsList = [
     'backport',
     'backup',
     'behat',
+    'check',
     'config',
     'create',
     'fix',
