@@ -23,9 +23,9 @@ ARGS=${@:2}
 
 # Resolve a command
 function resolve {
-    PY='moodle-$1.py'
-    if [[ $1 == 'mdk.py' ]]; then
-        PY='mdk.py'
+    PY="moodle-$1.py"
+    if [[ $1 == "mdk.py" ]]; then
+        PY="mdk.py"
     fi
     BIN=`which $PY`
     if [ -z "$BIN" ]
@@ -56,7 +56,7 @@ function resolve {
 echo "You are using a deprecated bash script."
 echo "Please update your symlink '`basename $0`'."
 MDK=`resolve 'mdk.py'`
-if [ -n "$MDK" ]; then
+if [ -n "$MDK" ] && [ -f "$MDK" ]; then
     CLI="`which python` $MDK $COMMAND $ARGS"
     echo "  ln -sf '$MDK' '$0'"
     echo ""
@@ -64,10 +64,11 @@ if [ -n "$MDK" ]; then
     $CLI
     exit $?
 fi
+echo ""
 
 # Checking if an alias exist for that command.
 BIN=`resolve "alias"`
-ALIAS=`$BIN show $COMMAND`
+ALIAS=`$BIN show $COMMAND | tail -1`
 
 if [ -n "$ALIAS" ]
 then

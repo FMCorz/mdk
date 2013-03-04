@@ -21,41 +21,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 http://github.com/FMCorz/mdk
 """
-import sys
-import argparse
-from lib import workplace
-from lib.tools import debug, process
+
+from os.path import basename
+from lib.command import CommandRunner
+from lib.commands import getCommand
 from lib.config import Conf
 
-C = Conf()
+f = basename(__file__)
+print "Do not call %s directly." % (f)
+print "This file will be removed in a later version."
+print "Please use `mdk [command] [arguments]`"
+print ""
 
-# Arguments
-parser = argparse.ArgumentParser(description='Initialize PHPUnit')
-parser.add_argument('-f', '--force', action='store_true', help='force the initialisation')
-parser.add_argument('-r', '--run', action='store_true', help='also run the tests')
-parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
-args = parser.parse_args()
-
-Wp = workplace.Workplace(C.get('dirs.storage'))
-
-# Loading instance
-M = Wp.resolve(args.name)
-if not M:
-    debug('This is not a Moodle instance')
-    sys.exit(1)
-
-# Check if installed
-if not M.get('installed'):
-    debug('This instance needs to be installed first')
-    sys.exit(1)
-
-# Run cli
-try:
-    M.initPHPUnit(force=args.force)
-    debug('PHPUnit ready!')
-    if args.run:
-        debug('Running PHPUnit')
-        process('phpunit', M.path, None, None)
-except Exception as e:
-    debug(e)
-    sys.exit(1)
+cmd = f.replace('moodle-', '').replace('.py', '')
+cls = getCommand(cmd)
+Cmd = cls(Conf())
+Runner = CommandRunner(Cmd)
+Runner.run(None, prog='%s %s' % ('mdk', cmd))

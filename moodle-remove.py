@@ -22,42 +22,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-import os
-import sys
-import argparse
-
-from lib import tools, workplace
-from lib.tools import debug
+from os.path import basename
+from lib.command import CommandRunner
+from lib.commands import getCommand
 from lib.config import Conf
 
-C = Conf()
+f = basename(__file__)
+print "Do not call %s directly." % (f)
+print "This file will be removed in a later version."
+print "Please use `mdk [command] [arguments]`"
+print ""
 
-# Arguments
-parser = argparse.ArgumentParser(description='Completely remove an instance')
-parser.add_argument('name', help='name of the instance')
-parser.add_argument('-y', action='store_true', help='do not ask for confirmation', dest='do')
-args = parser.parse_args()
-
-Wp = workplace.Workplace()
-try:
-	M = Wp.get(args.name)
-except:
-	debug('This is not a Moodle instance')
-	sys.exit(1)
-
-if not args.do:
-	confirm = raw_input('Are you sure? (Y/n) ')
-	if confirm != 'Y':
-		debug('Exiting...')
-		sys.exit(0)
-
-debug('Removing %s...' % args.name)
-try:
-    Wp.delete(args.name)
-except OSError:
-    debug('Error while deleting the instance.')
-    debug('This is probably a permission issue.')
-    debug('Run: sudo chmod -R 0777 %s' % Wp.getPath(args.name))
-    sys.exit(1)
-
-debug('Instance removed')
+cmd = f.replace('moodle-', '').replace('.py', '')
+cls = getCommand(cmd)
+Cmd = cls(Conf())
+Runner = CommandRunner(Cmd)
+Runner.run(None, prog='%s %s' % ('mdk', cmd))

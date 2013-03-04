@@ -22,48 +22,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-import os
-import sys
-import argparse
-import re
-
-from lib import git, tools, moodle, workplace
-from lib.tools import debug
+from os.path import basename
+from lib.command import CommandRunner
+from lib.commands import getCommand
 from lib.config import Conf
 
-C = Conf()
+f = basename(__file__)
+print "Do not call %s directly." % (f)
+print "This file will be removed in a later version."
+print "Please use `mdk [command] [arguments]`"
+print ""
 
-# Arguments
-parser = argparse.ArgumentParser(description='Creates a branch associated to an MDL issue')
-parser.add_argument('issue', help='issue number')
-parser.add_argument('suffix', nargs='?', default='', help='suffix of the branch')
-parser.add_argument('-n', '--name', metavar='name', default=None, help='name of the instance')
-args = parser.parse_args()
-
-Wp = workplace.Workplace()
-
-# Loading instance
-M = Wp.resolve(args.name)
-if not M:
-    debug('This is not a Moodle instance')
-    sys.exit(1)
-
-# Branch name
-branch = M.generateBranchName(args.issue, suffix=args.suffix)
-
-# Track
-track = '%s/%s' % (C.get('upstreamRemote'), M.get('stablebranch'))
-
-# Git repo
-repo = M.git()
-
-# Creating and checking out the new branch
-if not repo.hasBranch(branch):
-	if not repo.createBranch(branch, track):
-		debug('Could not create branch %s' % branch)
-		sys.exit(1)
-if not repo.checkout(branch):
-	debug('Error while checkout out branch %s' % branch)
-	sys.exit(1)
-
-debug('Branch %s checked out' % branch)
+cmd = f.replace('moodle-', '').replace('.py', '')
+cls = getCommand(cmd)
+Cmd = cls(Conf())
+Runner = CommandRunner(Cmd)
+Runner.run(None, prog='%s %s' % ('mdk', cmd))

@@ -27,18 +27,12 @@ import argparse
 import os
 import re
 from lib.command import CommandRunner
-from lib.commands import commandsList
+from lib.commands import getCommand, commandsList
 from lib.config import Conf
 from lib.tools import process
 from version import __version__
 
 C = Conf()
-
-
-def getCommand(cmd):
-    """Lazy loading of a command class. Millseconds saved, hurray!"""
-    cls = cmd.capitalize() + 'Command'
-    return getattr(getattr(getattr(__import__('lib.%s.%s' % ('commands', cmd)), 'commands'), cmd), cls)
 
 availaliases = [str(x) for x in C.get('aliases').keys()]
 choices = sorted(commandsList + availaliases)

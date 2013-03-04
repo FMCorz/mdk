@@ -22,6 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+
+def getCommand(cmd):
+    """Lazy loading of a command class. Millseconds saved, hurray!"""
+    cls = cmd.capitalize() + 'Command'
+    return getattr(getattr(getattr(__import__('lib.%s.%s' % ('commands', cmd)), 'commands'), cmd), cls)
+
 commandsList = [
     'alias',
     'backport',
