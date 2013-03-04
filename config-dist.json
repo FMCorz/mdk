@@ -109,6 +109,8 @@
     // The public acccess URL of your repository. It is used to populate the fields on the tracker issue.
     "repositoryUrl": "git://github.com/YourGitHub/moodle.git",
 
+    // The scheme to set during an install (http or https)
+    "scheme": "http",
     // The host name to set during an install
     "host": "localhost",
     // Path to your Moodle instances, http://host/path/ should point to dirs.www.

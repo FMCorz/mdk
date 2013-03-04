@@ -386,7 +386,7 @@ class Moodle(object):
         db.selectdb(dbname)
 
         # Defining wwwroot.
-        wwwroot = 'http://%s/' % C.get('host')
+        wwwroot = '%s://%s/' % (C.get('scheme'), C.get('host'))
         if C.get('path') != '' and C.get('path') != None:
             wwwroot = wwwroot + C.get('path') + '/'
         wwwroot = wwwroot + self.identifier
