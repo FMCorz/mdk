@@ -26,7 +26,7 @@ import sys
 import argparse
 import os
 import re
-from lib.command import RunCommand
+from lib.command import CommandRunner
 from lib.commands import *
 from lib.config import Conf
 from lib.tools import process
@@ -82,5 +82,5 @@ if alias != None:
 classname = '%sCommand' % (cmd.capitalize())
 cls = globals().get(classname)
 Cmd = cls(C)
-Runner = RunCommand(Cmd)
+Runner = CommandRunner(Cmd)
 Runner.run(args, prog='%s %s' % (os.path.basename(sys.argv[0]), cmd))

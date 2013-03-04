@@ -80,7 +80,7 @@ class Command(object):
         return self.__Wp
 
 
-class RunCommand(object):
+class CommandRunner(object):
     """Executes a command"""
 
     def __init__(self, command):
