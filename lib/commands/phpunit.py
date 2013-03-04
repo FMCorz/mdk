@@ -22,8 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 from lib.command import Command
-from lib.tools import debug, process
+from lib.tools import process
 
 
 class PhpunitCommand(Command):
@@ -69,9 +70,9 @@ class PhpunitCommand(Command):
         # Run cli
         try:
             M.initPHPUnit(force=args.force)
-            debug('PHPUnit ready!')
+            logging.info('PHPUnit ready!')
             if args.run:
-                debug('Running PHPUnit')
+                logging.info('Running PHPUnit')
                 process('phpunit', M.path, None, None)
         except Exception as e:
             raise e

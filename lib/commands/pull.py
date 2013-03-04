@@ -24,10 +24,11 @@ http://github.com/FMCorz/mdk
 
 import re
 import os
+import logging
 from datetime import datetime
 from lib import tools, jira
 from lib.command import Command
-from lib.tools import debug, question
+from lib.tools import question
 
 
 class PullCommand(Command):
@@ -91,7 +92,7 @@ class PullCommand(Command):
         branch = M.get('branch')
 
         # Get information from Tracker
-        debug('Retrieving information about %s from Moodle Tracker' % (mdl))
+        logging.info('Retrieving information about %s from Moodle Tracker' % (mdl))
         J = jira.Jira()
         issueInfo = J.getIssue(mdl)
 
@@ -144,7 +145,7 @@ class PullCommand(Command):
         if stash[0] != 0:
             raise Exception('Error while trying to stash your changes. Exiting...')
         elif not stash[1].startswith('No local changes'):
-            debug('Stashed your local changes')
+            logging.info('Stashed your local changes')
 
         # Create a testing branch
         if args.testing:
@@ -159,13 +160,13 @@ class PullCommand(Command):
             M.git().createBranch(newBranch, track=track)
             if not M.git().checkout(newBranch):
                 raise Exception('Could not checkout branch %s' % (newBranch))
-            debug('Checked out branch %s' % (newBranch))
+            logging.info('Checked out branch %s' % (newBranch))
 
         # Checkout the stable branch
         elif args.integration:
             if not M.git().checkout(M.get('stablebranch')):
-                debug('Could not checkout branch %s' % (M.get('stablebranch')))
-            debug('Checked out branch %s' % (M.get('stablebranch')))
+                logging.error('Could not checkout branch %s' % (M.get('stablebranch')))
+            logging.info('Checked out branch %s' % (M.get('stablebranch')))
 
         # Create a no-merge branch
         elif args.nomerge:
@@ -180,12 +181,12 @@ class PullCommand(Command):
             M.git().createBranch(newBranch, track=track)
             if not M.git().checkout(newBranch):
                 raise Exception('Could not checkout branch %s' % (newBranch))
-            debug('Checked out branch %s' % (newBranch))
+            logging.info('Checked out branch %s' % (newBranch))
             mode = 'nomerge'
 
         if mode == 'pull':
             # Pull branch from tracker
-            debug('Pulling branch %s from %s into %s' % (remoteBranch, remoteUrl, M.currentBranch()))
+            logging.info('Pulling branch %s from %s into %s' % (remoteBranch, remoteUrl, M.currentBranch()))
             M.git().pull(remote=remoteUrl, ref=remoteBranch)
 
         elif mode == 'patch':
@@ -193,36 +194,36 @@ class PullCommand(Command):
             files = []
             for patch in patchesToApply:
                 dest = patch['mdk-filename']
-                debug('Downloading %s' % (patch['filename']))
+                logging.info('Downloading %s' % (patch['filename']))
                 if not J.download(patch['content'], dest):
-                    debug('Failed to download. Aborting...')
+                    logging.error('Failed to download. Aborting...')
                     files = []
                     break
                 files.append(dest)
 
             if len(files) > 0:
-                debug('Applying patch(es)...')
+                logging.info('Applying patch(es)...')
                 if not M.git().apply(files):
-                    debug('Could not apply the patch(es), please apply manually')
+                    logging.warning('Could not apply the patch(es), please apply manually')
                 else:
                     for f in files:
                         os.remove(f)
 
         elif mode == 'nomerge':
             # Checking out the patch without merging it.
-            debug('Fetching %s %s' % (remoteUrl, remoteBranch))
+            logging.info('Fetching %s %s' % (remoteUrl, remoteBranch))
             M.git().fetch(remote=remoteUrl, ref=remoteBranch)
-            debug('Hard reset to FETCH_HEAD')
+            logging.info('Hard reset to FETCH_HEAD')
             M.git().reset('FETCH_HEAD', hard=True)
 
         # Stash pop
         if not stash[1].startswith('No local changes'):
             pop = M.git().stash(command='pop')
             if pop[0] != 0:
-                debug('An error ocured while unstashing your changes')
+                logging.error('An error ocured while unstashing your changes')
             else:
-                debug('Popped the stash')
+                logging.info('Popped the stash')
 
-        debug('Done.')
+        logging.info('Done.')
 
         # TODO Tidy up the messy logic above!

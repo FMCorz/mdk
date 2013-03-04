@@ -24,10 +24,11 @@ http://github.com/FMCorz/mdk
 
 import sys
 import re
+import logging
 
 from lib.db import DB
 from lib.command import Command
-from lib.tools import debug, yesOrNo
+from lib.tools import yesOrNo
 
 
 class CreateCommand(Command):
@@ -112,7 +113,7 @@ class CreateCommand(Command):
             fullname += ' ' + args.suffix.replace('-', ' ').replace('_', ' ').title()
 
         # Create the instance
-        debug('Creating instance %s...' % name)
+        logging.info('Creating instance %s...' % name)
         kwargs = {
             'name': name,
             'version': version,
@@ -122,8 +123,7 @@ class CreateCommand(Command):
         try:
             M = self.Wp.create(**kwargs)
         except Exception as e:
-            debug(e)
-            sys.exit(1)
+            logging.exception('Error creating %s' % name)
 
         # Run the install script
         if args.install:
@@ -133,7 +133,7 @@ class CreateCommand(Command):
             db = DB(engine, self.C.get('db.%s' % engine))
             dropDb = False
             if db.dbexists(dbname):
-                debug('Database already exists (%s)' % dbname)
+                logging.info('Database already exists (%s)' % dbname)
                 dropDb = yesOrNo('Do you want to remove it?')
 
             # Install
@@ -149,11 +149,10 @@ class CreateCommand(Command):
             # Running scripts
             if M.isInstalled() and type(args.run) == list:
                 for script in args.run:
-                    debug('Running script \'%s\'' % (script))
+                    logging.info('Running script \'%s\'' % (script))
                     try:
                         M.runScript(script)
                     except Exception as e:
-                        debug('Error while running the script')
-                        debug(e)
+                        logging.warning('Error while running the script: %s' % e)
 
-        debug('Process complete!')
+        logging.info('Process complete!')

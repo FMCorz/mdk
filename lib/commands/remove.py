@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 from lib.command import Command
-from lib.tools import debug
 
 
 class RemoveCommand(Command):
@@ -56,10 +56,10 @@ class RemoveCommand(Command):
         if not args.do:
             confirm = raw_input('Are you sure? (Y/n) ')
             if confirm != 'Y':
-                debug('Aborting...')
+                logging.info('Aborting...')
                 return
 
-        debug('Removing %s...' % args.name)
+        logging.info('Removing %s...' % args.name)
         try:
             self.Wp.delete(args.name)
         except OSError:
@@ -67,4 +67,4 @@ class RemoveCommand(Command):
                 'This is probably a permission issue.\n' +
                 'Run: sudo chmod -R 0777 %s' % self.Wp.getPath(args.name))
 
-        debug('Instance removed')
+        logging.info('Instance removed')

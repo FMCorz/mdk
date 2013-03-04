@@ -23,8 +23,8 @@ http://github.com/FMCorz/mdk
 """
 
 import sys
+import logging
 from lib.command import Command
-from lib.tools import debug
 
 
 class UpgradeCommand(Command):
@@ -103,29 +103,29 @@ class UpgradeCommand(Command):
 
         for M in Mlist:
             if args.update:
-                debug('Updating %s...' % M.get('identifier'))
+                logging.info('Updating %s...' % M.get('identifier'))
                 try:
                     M.update()
                 except Exception as e:
                     errors.append(M)
-                    debug('Error during update. Skipping...')
-                    debug(e)
+                    logging.warning('Error during update. Skipping...')
+                    logging.debug(e)
                     continue
-            debug('Upgrading %s...' % M.get('identifier'))
+            logging.info('Upgrading %s...' % M.get('identifier'))
 
             try:
                 M.upgrade(args.nocheckout)
             except Exception as e:
                 errors.append(M)
-                debug('Error during the upgrade of %s' % M.get('identifier'))
-                debug(e)
-            debug('')
-        debug('Done.')
+                logging.warning('Error during the upgrade of %s' % M.get('identifier'))
+                logging.debug(e)
+            logging.info('')
+        logging.info('Done.')
 
         if errors and len(Mlist) > 1:
-            debug('')
-            debug('/!\ Some errors occurred on the following instances:')
+            logging.info('')
+            logging.warning('/!\ Some errors occurred on the following instances:')
             for M in errors:
-                debug('- %s' % M.get('identifier'))
+                logging.warning('- %s' % M.get('identifier'))
             # TODO Do not use sys.exit() but handle error code
             sys.exit(1)

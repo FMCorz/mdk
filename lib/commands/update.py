@@ -23,8 +23,8 @@ http://github.com/FMCorz/mdk
 """
 
 import sys
+import logging
 from lib.command import Command
-from lib.tools import debug
 
 
 class UpdateCommand(Command):
@@ -94,28 +94,28 @@ class UpdateCommand(Command):
         errors = []
 
         for M in Mlist:
-            debug('Updating %s...' % M.get('identifier'))
+            logging.info('Updating %s...' % M.get('identifier'))
             try:
                 M.update()
             except Exception as e:
                 errors.append(M)
-                debug('Error during the update of %s' % M.get('identifier'))
-                debug(e)
+                logging.warning('Error during the update of %s' % M.get('identifier'))
+                logging.debug(e)
             else:
                 if args.upgrade:
                     try:
                         M.upgrade()
                     except Exception as e:
                         errors.append(M)
-                        debug('Error during the upgrade of %s' % M.get('identifier'))
+                        logging.warning('Error during the upgrade of %s' % M.get('identifier'))
                         pass
-            debug('')
-        debug('Done.')
+            logging.info('')
+        logging.info('Done.')
 
         if errors and len(Mlist) > 1:
-            debug('')
-            debug('/!\ Some errors occurred on the following instances:')
+            logging.info('')
+            logging.warning('/!\ Some errors occurred on the following instances:')
             for M in errors:
-                debug('- %s' % M.get('identifier'))
+                logging.warning('- %s' % M.get('identifier'))
             # Remove sys.exit and handle error code
             sys.exit(1)

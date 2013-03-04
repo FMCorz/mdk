@@ -86,11 +86,6 @@ def get_current_user():
     return username
 
 
-def debug(str):
-    print str
-    sys.stdout.flush()
-
-
 def parseBranch(branch, pattern):
     pattern = re.compile(pattern, flags=re.I)
     result = pattern.search(branch)

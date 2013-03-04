@@ -114,4 +114,4 @@ class CommandRunner(object):
 
 
 if __name__ == "__main__":
-    RunCommand(Command()).run()
+    CommandRunner(Command()).run()

@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 from lib.command import Command
-from lib.tools import debug
 
 
 class PurgeCommand(Command):
@@ -80,15 +80,15 @@ class PurgeCommand(Command):
             raise Exception('No instances to work on. Exiting...')
 
         for M in Mlist:
-            debug('Purging cache on %s' % (M.get('identifier')))
+            logging.info('Purging cache on %s' % (M.get('identifier')))
 
             try:
                 M.purge()
             except Exception as e:
-                debug(e)
+                logging.error('Could not purge cache: %s' % e)
             else:
-                debug('Cache purged!')
+                logging.debug('Cache purged!')
 
-            debug('')
+            logging.info('')
 
-        debug('Done.')
+        logging.info('Done.')

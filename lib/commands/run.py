@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 from lib.command import Command
-from lib.tools import debug
 
 
 class RunCommand(Command):
@@ -84,13 +84,13 @@ class RunCommand(Command):
             raise Exception('No instances to work on. Exiting...')
 
         for M in Mlist:
-            debug('Running \'%s\' on \'%s\'' % (args.script, M.get('identifier')))
+            logging.info('Running \'%s\' on \'%s\'' % (args.script, M.get('identifier')))
             try:
                 M.runScript(args.script, stderr=None, stdout=None)
             except Exception as e:
-                debug('Error while running the script on %s' % M.get('identifier'))
-                debug(e)
+                logging.warning('Error while running the script on %s' % M.get('identifier'))
+                logging.debug(e)
             else:
-                debug('')
+                logging.info('')
 
-        debug('Done.')
+        logging.info('Done.')

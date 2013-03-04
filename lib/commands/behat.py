@@ -25,9 +25,10 @@ http://github.com/FMCorz/mdk
 import os
 import urllib
 import re
+import logging
 from time import sleep
 from lib.command import Command
-from lib.tools import debug, process, ProcessInThread
+from lib.tools import process, ProcessInThread
 
 
 class BehatCommand(Command):
@@ -101,11 +102,11 @@ class BehatCommand(Command):
         nojavascript = args.nojavascript
         if not nojavascript and not self.C.get('java') or not os.path.isfile(os.path.abspath(self.C.get('java'))):
             nojavascript = True
-            debug('Disabling Javascript because Java is required to run Selenium and could not be found.')
+            logging.info('Disabling Javascript because Java is required to run Selenium and could not be found.')
 
         # If not composer.phar, install Composer
         if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
-            debug('Installing Composer')
+            logging.info('Installing Composer')
             cliFile = 'behat_install_composer.php'
             cliPath = os.path.join(M.get('path'), 'behat_install_composer.php')
             urllib.urlretrieve('http://getcomposer.org/installer', cliPath)
@@ -118,15 +119,15 @@ class BehatCommand(Command):
         if args.selenium:
             seleniumPath = args.selenium
         elif not nojavascript and not os.path.isfile(seleniumPath):
-            debug('Attempting to find a download for Selenium')
+            logging.info('Attempting to find a download for Selenium')
             url = urllib.urlopen('http://docs.seleniumhq.org/download/')
             content = url.read()
             selenium = re.search(r'http:[a-z0-9/._-]+selenium-server-standalone-[0-9.]+\.jar', content, re.I)
             if selenium:
-                debug('Downloading Selenium from %s' % (selenium.group(0)))
+                logging.info('Downloading Selenium from %s' % (selenium.group(0)))
                 urllib.urlretrieve(selenium.group(0), seleniumPath)
             else:
-                debug('Could not locate Selenium server to download')
+                logging.warning('Could not locate Selenium server to download')
 
         if not os.path.isfile(seleniumPath):
             raise Exception('Selenium file %s does not exist')
@@ -134,7 +135,7 @@ class BehatCommand(Command):
         # Run cli
         try:
             M.initBehat(switchcompletely=args.switchcompletely)
-            debug('Behat ready!')
+            logging.info('Behat ready!')
 
             # Preparing Behat command
             cmd = ['vendor/bin/behat']
@@ -149,12 +150,12 @@ class BehatCommand(Command):
                 seleniumCommand = '%s -jar %s' % (self.C.get('java'), seleniumPath)
 
             if args.run:
-                debug('Preparing Behat testing')
+                logging.info('Preparing Behat testing')
 
                 # Preparing PHP Server
                 phpServer = None
                 if not M.get('behat_switchcompletely'):
-                    debug('Starting standalone PHP server')
+                    logging.info('Starting standalone PHP server')
                     kwargs = {}
                     kwargs['cwd'] = M.get('path')
                     phpServer = ProcessInThread(phpCommand, **kwargs)
@@ -163,7 +164,7 @@ class BehatCommand(Command):
                 # Launching Selenium
                 seleniumServer = None
                 if seleniumPath and not nojavascript:
-                    debug('Starting Selenium server')
+                    logging.info('Starting Selenium server')
                     kwargs = {}
                     if args.seleniumverbose:
                         kwargs['stdout'] = None
@@ -171,7 +172,7 @@ class BehatCommand(Command):
                     seleniumServer = ProcessInThread(seleniumCommand, **kwargs)
                     seleniumServer.start()
 
-                debug('Running Behat tests')
+                logging.info('Running Behat tests')
 
                 # Sleep for a few seconds before starting Behat
                 if phpServer or seleniumServer:
@@ -191,10 +192,10 @@ class BehatCommand(Command):
                     M.removeConfig('behat_switchcompletely')
 
             else:
-                debug('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
+                logging.info('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
                 if seleniumCommand:
-                    debug('Launch Selenium (optional):\n %s' % (seleniumCommand))
-                debug('Launch Behat:\n %s' % (cmd))
+                    logging.info('Launch Selenium (optional):\n %s' % (seleniumCommand))
+                logging.info('Launch Behat:\n %s' % (cmd))
 
         except Exception as e:
             raise e

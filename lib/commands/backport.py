@@ -22,9 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 from lib import tools
 from lib.command import Command
-from lib.tools import debug, yesOrNo
+from lib.tools import yesOrNo
 
 
 class BackportCommand(Command):
@@ -127,9 +128,9 @@ class BackportCommand(Command):
             if not stash[1].startswith('No local changes'):
                 pop = M2.git().stash(command='pop')
                 if pop[0] != 0:
-                    debug('An error ocured while unstashing your changes')
+                    logging.error('An error ocured while unstashing your changes')
                 else:
-                    debug('Popped the stash')
+                    logging.info('Popped the stash')
 
         # Begin backport
         for v in versions:
@@ -137,11 +138,11 @@ class BackportCommand(Command):
             # Gets the instance to cherry-pick to
             name = self.Wp.generateInstanceName(v, integration=integration)
             if not self.Wp.isMoodle(name):
-                debug('Could not find instance %s for version %s' % (name, v))
+                logging.warning('Could not find instance %s for version %s' % (name, v))
                 continue
             M2 = self.Wp.get(name)
 
-            debug("Preparing cherry-pick of %s/%s in %s" % (M.get('identifier'), branch, name))
+            logging.info("Preparing cherry-pick of %s/%s in %s" % (M.get('identifier'), branch, name))
 
             # Get hash list
             cherry = '%s/%s..%s' % (self.C.get('upstreamRemote'), originaltrack, branch)
@@ -151,44 +152,44 @@ class BackportCommand(Command):
             # Stash
             stash = M2.git().stash(untracked=False)
             if stash[0] != 0:
-                debug('Error while trying to stash your changes. Skipping %s.' % M2.get('identifier'))
-                debug(stash[2])
+                logging.error('Error while trying to stash your changes. Skipping %s.' % M2.get('identifier'))
+                logging.debug(stash[2])
                 continue
             elif not stash[1].startswith('No local changes'):
-                debug('Stashed your local changes')
+                logging.info('Stashed your local changes')
 
             # Fetch the remote to get reference to the branch to backport
-            debug("Fetching remote %s..." % (M.get('path')))
+            logging.info("Fetching remote %s..." % (M.get('path')))
             M2.git().fetch(M.get('path'), branch)
 
             # Creates a new branch if necessary
             newbranch = M2.generateBranchName(issue, suffix=suffix)
             track = '%s/%s' % (self.C.get('upstreamRemote'), M2.get('stablebranch'))
             if not M2.git().hasBranch(newbranch):
-                debug('Creating branch %s' % newbranch)
+                logging.info('Creating branch %s' % newbranch)
                 if not M2.git().createBranch(newbranch, track=track):
-                    debug('Could not create branch %s tracking %s in %s' % (newbranch, track, name))
+                    logging.error('Could not create branch %s tracking %s in %s' % (newbranch, track, name))
                     stashPop(stash)
                     continue
                 M2.git().checkout(newbranch)
             else:
                 M2.git().checkout(newbranch)
-                debug('Hard reset %s to %s' % (newbranch, track))
+                logging.info('Hard reset %s to %s' % (newbranch, track))
                 M2.git().reset(to=track, hard=True)
 
             # Picking the diff upstream/MOODLE_23_STABLE..github/MDL-12345-master
-            debug('Cherry-picking %s' % (cherry))
+            logging.info('Cherry-picking %s' % (cherry))
             result = M2.git().pick(hashes)
             if result[0] != 0:
-                debug('Error while cherry-picking %s in %s.' % (cherry, name))
-                debug(result[2])
+                logging.error('Error while cherry-picking %s in %s.' % (cherry, name))
+                logging.debug(result[2])
                 if yesOrNo('The cherry-pick might still be in progress, would you like to abort it?'):
                     result = M2.git().pick(abort=True)
                     if result[0] > 0 and result[0] != 128:
-                        debug('Could not abort the cherry-pick!')
+                        logging.error('Could not abort the cherry-pick!')
                     else:
                         stashPop(stash)
-                debug('')
+                logging.info('')
                 continue
 
             # Pushing branch
@@ -196,17 +197,17 @@ class BackportCommand(Command):
                 pushremote = args.pushremote
                 if pushremote == None:
                     pushremote = self.C.get('myRemote')
-                debug('Pushing %s to %s' % (newbranch, pushremote))
+                logging.info('Pushing %s to %s' % (newbranch, pushremote))
                 result = M2.git().push(remote=pushremote, branch=newbranch, force=args.forcepush)
                 if result[0] != 0:
-                    debug('Error while pushing to remote %s' % (pushremote))
-                    debug(result[2])
+                    logging.warning('Error while pushing to remote %s' % (pushremote))
+                    logging.debug(result[2])
                     stashPop(stash)
                     continue
 
             stashPop(stash)
 
-            debug('Instance %s successfully patched!' % name)
-            debug('')
+            logging.info('Instance %s successfully patched!' % name)
+            logging.info('')
 
-        debug('Done.')
+        logging.info('Done.')

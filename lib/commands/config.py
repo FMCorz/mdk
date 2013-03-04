@@ -23,7 +23,6 @@ http://github.com/FMCorz/mdk
 """
 
 from lib.command import Command
-from lib.tools import debug
 
 
 class ConfigCommand(Command):
@@ -111,7 +110,7 @@ class ConfigCommand(Command):
         elif args.action == 'show':
             setting = self.C.get(args.setting)
             if setting != None:
-                debug(setting)
+                print setting
 
         elif args.action == 'set':
             setting = args.setting

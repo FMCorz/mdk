@@ -24,11 +24,9 @@ http://github.com/FMCorz/mdk
 
 import os
 import shutil
-from distutils.dir_util import copy_tree
-
-from tools import debug, process, stableBranch
+import logging
+from tools import process, stableBranch
 from config import Conf
-import db
 import git
 import moodle
 
@@ -37,7 +35,7 @@ C = Conf()
 
 class Workplace(object):
 
-    def __init__(self, path = None, wwwDir = None, dataDir = None):
+    def __init__(self, path=None, wwwDir=None, dataDir=None):
         if path == None:
             path = C.get('dirs.storage')
         if wwwDir == None:
@@ -62,19 +60,14 @@ class Workplace(object):
         cacheStable = os.path.join(self.cache, 'moodle.git')
         cacheIntegration = os.path.join(self.cache, 'integration.git')
         if not os.path.isdir(cacheStable) and stable:
-            debug('Cloning stable repository into cache...')
-            debug('That\'s going to take a while...')
+            logging.info('Cloning stable repository into cache...')
+            logging.info('That\'s going to take a while...')
             process('%s clone --mirror %s %s' % (C.get('git'), C.get('remotes.stable'), cacheStable))
-        else:
-            # TODO Ensure mirror repo
-            pass
+
         if not os.path.isdir(cacheIntegration) and integration:
-            debug('Cloning integration repository into cache...')
-            debug('Have a break, this operation is slow...')
+            logging.info('Cloning integration repository into cache...')
+            logging.info('Have a break, this operation is slow...')
             process('%s clone --mirror %s %s' % (C.get('git'), C.get('remotes.integration'), cacheIntegration))
-        else:
-            # TODO Ensure mirror repo
-            pass
 
     def create(self, name=None, version='master', integration=False, useCacheAsRemote=False):
         """Creates a new instance of Moodle.
@@ -105,15 +98,14 @@ class Workplace(object):
             repository = os.path.join(self.cache, 'moodle.git')
 
         # Clone the instances
-        debug('Cloning repository...')
+        logging.info('Cloning repository...')
         process('%s clone %s %s' % (C.get('git'), repository, wwwDir))
 
         # Symbolic link
         if os.path.islink(linkDir):
             os.remove(linkDir)
         if os.path.isfile(linkDir) or os.path.isdir(linkDir):  # No elif!
-            debug('Could not create symbolic link')
-            debug('Please manually create: ln -s %s %s' (wwwDir, linkDir))
+            logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' (wwwDir, linkDir))
         else:
             os.symlink(wwwDir, linkDir)
 
@@ -123,7 +115,7 @@ class Workplace(object):
             if not os.path.isfile(linkDataDir) and not os.path.isdir(linkDataDir) and not os.path.islink(linkDataDir):
                 os.symlink(dataDir, linkDataDir)
 
-        debug('Checking out branch...')
+        logging.info('Checking out branch...')
         repo = git.Git(wwwDir, C.get('git'))
 
         # Setting up the correct remote names
@@ -135,7 +127,7 @@ class Workplace(object):
         branch = stableBranch(version)
         track = '%s/%s' % (C.get('upstreamRemote'), branch)
         if not repo.hasBranch(branch) and not repo.createBranch(branch, track):
-            debug('Could not create branch %s tracking %s' % (branch, track))
+            logging.error('Could not create branch %s tracking %s' % (branch, track))
         else:
             repo.checkout(branch)
         repo.pull(remote=C.get('upstreamRemote'))
@@ -157,7 +149,7 @@ class Workplace(object):
         if os.path.islink(link):
             try:
                 os.remove(link)
-            except Exception as e:
+            except Exception:
                 pass
 
         # Delete db
@@ -198,9 +190,9 @@ class Workplace(object):
 
         if not self.isMoodle(name):
             raise Exception('Could not find Moodle instance %s' % name)
-        return moodle.Moodle(os.path.join(self.path, name, self.wwwDir), identifier = name)
+        return moodle.Moodle(os.path.join(self.path, name, self.wwwDir), identifier=name)
 
-    def getPath(self, name, mode = None):
+    def getPath(self, name, mode=None):
         """Returns the path of an instance base on its name"""
         base = os.path.join(self.path, name)
         if mode == 'www':
@@ -226,7 +218,7 @@ class Workplace(object):
 
         return True
 
-    def list(self, integration = None, stable = None):
+    def list(self, integration=None, stable=None):
         """Return the list of Moodle instances"""
         dirs = os.listdir(self.path)
         names = []
@@ -241,7 +233,7 @@ class Workplace(object):
             names.append(d)
         return names
 
-    def resolve(self, name = None, path = None):
+    def resolve(self, name=None, path=None):
         """Try to find a Moodle instance based on its name, a path or the working directory"""
 
         if name != None:
@@ -263,7 +255,7 @@ class Workplace(object):
 
         return False
 
-    def resolveMultiple(self, names = []):
+    def resolveMultiple(self, names=[]):
         """Return multiple instances"""
         if type(names) != list:
             if type(names) == str:
@@ -275,18 +267,18 @@ class Workplace(object):
         if len(names) < 1:
             M = self.resolve()
             if M:
-                return [ M ]
+                return [M]
             else:
-                return [ ]
+                return []
 
         # Try to resolve each instance
         result = []
         for name in names:
-            M = self.resolve(name = name)
+            M = self.resolve(name=name)
             if M:
                 result.append(M)
             else:
-                debug('Could not find instance called %s' % name)
+                logging.info('Could not find instance called %s' % name)
         return result
 
     def updateCachedClones(self, integration=True, stable=True, verbose=True):
@@ -305,8 +297,7 @@ class Workplace(object):
 
             repo = git.Git(cache, C.get('git'))
 
-            verbose and debug('Working on %s...' % cache)
-            verbose and debug('Fetching...')
+            logging.info('Fetching cached repository %s...' % os.path.basename(cache))
             if not repo.fetch():
                 raise Exception('Could not fetch in repository %s' % (cache))
 

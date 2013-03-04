@@ -23,11 +23,11 @@ http://github.com/FMCorz/mdk
 """
 
 import time
+import logging
 from distutils.errors import DistutilsFileError
 from lib.command import Command
 from lib import backup
 from lib.exceptions import *
-from lib.tools import debug
 
 
 class BackupCommand(Command):
@@ -92,9 +92,9 @@ class BackupCommand(Command):
             # Restore process
             B = BackupManager.get(name)
             infos = B.infos
-            debug('Displaying information about %s' % name)
+            print 'Displaying information about %s' % name
             for key in sorted(infos.keys()):
-                debug('{0:<20}: {1}'.format(key, infos[key]))
+                print '{0:<20}: {1}'.format(key, infos[key])
 
         # Restore
         elif args.restore:
@@ -117,15 +117,15 @@ class BackupCommand(Command):
                     'This command could help: moodle remove %s' % B.get('identifier'))
 
             # Loads M object and display information
-            debug('')
-            debug('Restored instance information')
-            debug('')
+            logging.info('')
+            logging.info('Restored instance information')
+            logging.info('')
             infos = M.info()
             for key in sorted(infos.keys()):
                 print '{0:<20}: {1}'.format(key, infos[key])
-            debug('')
+            logging.info('')
 
-            debug('Done.')
+            logging.info('Done.')
 
         # Backup the instance
         else:
@@ -142,4 +142,4 @@ class BackupCommand(Command):
                 raise Exception('Error while copying files. Check the permissions on the data directory.' +
                     'Or run: sudo chmod -R 0777 %s' % M.get('dataroot'))
 
-            debug('Done.')
+            logging.info('Done.')

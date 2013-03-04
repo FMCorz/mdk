@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 from lib.command import Command
-from lib.tools import debug
 
 
 class InfoCommand(Command):
@@ -126,7 +126,7 @@ class InfoCommand(Command):
                             # Not a valid int, let's consider it a string.
                             pass
                     M.updateConfig(args.var, val)
-                    debug('Set $CFG->%s to %s on %s' % (args.var, str(val), M.get('identifier')))
+                    logging.info('Set $CFG->%s to %s on %s' % (args.var, str(val), M.get('identifier')))
                 else:
                     print M.get(args.var)
 

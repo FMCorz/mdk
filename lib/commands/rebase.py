@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 from lib.command import Command
-from lib.tools import debug
 
 
 class RebaseCommand(Command):
@@ -112,12 +112,12 @@ class RebaseCommand(Command):
         Mlist = self.Wp.resolveMultiple(names)
 
         # Updating cache remotes
-        print 'Updating cached repositories'
+        logging.info('Updating cached repositories')
         self.Wp.updateCachedClones()
 
         # Loops over instances to rebase
         for M in Mlist:
-            debug('Working on %s' % (M.get('identifier')))
+            logging.info('Working on %s' % (M.get('identifier')))
             M.git().fetch(self.C.get('upstreamRemote'))
 
             # Test if currently in a detached branch
@@ -125,58 +125,58 @@ class RebaseCommand(Command):
                 result = M.git().checkout(M.get('stablebranch'))
                 # If we can't checkout the stable branch, that is probably because we are in an unmerged situation
                 if not result:
-                    debug('Error. The repository seem to be on a detached branch. Skipping.')
+                    logging.warning('Error. The repository seem to be on a detached branch. Skipping.')
                     continue
 
             # Stash
             stash = M.git().stash(untracked=True)
             if stash[0] != 0:
-                debug('Error while trying to stash your changes. Skipping %s.' % M.get('identifier'))
-                debug(stash[2])
+                logging.error('Error while trying to stash your changes. Skipping %s.' % M.get('identifier'))
+                logging.debug(stash[2])
                 continue
             elif not stash[1].startswith('No local changes'):
-                debug('Stashed your local changes')
+                logging.info('Stashed your local changes')
 
             # Looping over each issue to rebase
             for issue in issues:
                 branch = M.generateBranchName(issue, suffix=args.suffix)
                 if not M.git().hasBranch(branch):
-                    debug('Could not find branch %s' % (branch))
+                    logging.warning('Could not find branch %s' % (branch))
                     continue
 
                 # Rebase
-                debug('> Rebasing %s...' % (branch))
+                logging.info('> Rebasing %s...' % (branch))
                 base = '%s/%s' % (self.C.get('upstreamRemote'), M.get('stablebranch'))
                 result = M.git().rebase(branch=branch, base=base)
                 if result[0] != 0:
-                    debug('Error while rebasing branch %s on top of %s' % (branch, base))
+                    logging.warning('Error while rebasing branch %s on top of %s' % (branch, base))
                     if result[0] == 1 and result[2].strip() == '':
-                        debug('There must be conflicts.')
-                        debug('Aborting... Please rebase manually.')
+                        logging.debug('There must be conflicts.')
+                        logging.info('Aborting... Please rebase manually.')
                         M.git().rebase(abort=True)
                     else:
-                        debug(result[2])
+                        logging.debug(result[2])
                     continue
 
                 # Pushing branch
                 if args.push:
                     remote = args.remote
-                    debug('Pushing %s to %s' % (branch, remote))
+                    logging.info('Pushing %s to %s' % (branch, remote))
                     result = M.git().push(remote=remote, branch=branch, force=args.forcepush)
                     if result[0] != 0:
-                        debug('Error while pushing to remote')
-                        debug(result[2])
+                        logging.warning('Error while pushing to remote')
+                        logging.debug(result[2])
                         continue
 
             # Stash pop
             if not stash[1].startswith('No local changes'):
                 pop = M.git().stash(command='pop')
                 if pop[0] != 0:
-                    debug('An error ocured while unstashing your changes')
-                    debug(pop[2])
+                    logging.error('An error ocured while unstashing your changes')
+                    logging.debug(pop[2])
                 else:
-                    debug('Popped the stash')
+                    logging.info('Popped the stash')
 
-            debug('')
+            logging.info('')
 
-        debug('Done.')
+        logging.info('Done.')

@@ -26,6 +26,7 @@ import sys
 import argparse
 import os
 import re
+import logging
 from lib.command import CommandRunner
 from lib.commands import getCommand, commandsList
 from lib.config import Conf
@@ -33,6 +34,13 @@ from lib.tools import process
 from version import __version__
 
 C = Conf()
+
+try:
+    debuglevel = getattr(logging, C.get('debug').upper())
+except AttributeError:
+    debuglevel = logging.WARNING
+
+logging.basicConfig(format='%(message)s', level=debuglevel)
 
 availaliases = [str(x) for x in C.get('aliases').keys()]
 choices = sorted(commandsList + availaliases)
@@ -80,4 +88,10 @@ if alias != None:
 cls = getCommand(cmd)
 Cmd = cls(C)
 Runner = CommandRunner(Cmd)
-Runner.run(args, prog='%s %s' % (os.path.basename(sys.argv[0]), cmd))
+try:
+    Runner.run(args, prog='%s %s' % (os.path.basename(sys.argv[0]), cmd))
+except Exception as e:
+    import traceback
+    info = sys.exc_info()
+    logging.error('%s: %s', e.__class__.__name__, e)
+    logging.debug(''.join(traceback.format_tb(info[2])))

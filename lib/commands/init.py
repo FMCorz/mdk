@@ -27,9 +27,10 @@ import grp
 import re
 import pwd
 import subprocess
+import logging
 
 from lib.command import Command
-from lib.tools import debug, question, get_current_user
+from lib.tools import question, get_current_user
 
 
 class InitCommand(Command):
@@ -63,13 +64,13 @@ class InitCommand(Command):
             try:
                 user = pwd.getpwnam(username)
             except:
-                debug('Error while getting information for user %s' % (username))
+                logging.warning('Error while getting information for user %s' % (username))
                 continue
 
             try:
                 usergroup = grp.getgrgid(user.pw_gid)
             except:
-                debug('Error while getting the group of user %s' % (username))
+                logging.warning('Error while getting the group of user %s' % (username))
                 continue
 
             break
@@ -80,19 +81,19 @@ class InitCommand(Command):
 
         # Create the main MDK folder.
         if not os.path.isdir(userdir):
-            debug('Creating directory %s.' % userdir)
+            logging.info('Creating directory %s.' % userdir)
             os.mkdir(userdir, 0755)
             os.chown(userdir, user.pw_uid, usergroup.gr_gid)
 
         # Checking if the config file exists.
         userconfigfile = os.path.join(userdir, 'config.json')
         if os.path.isfile(userconfigfile):
-            debug('Config file %s already in place.' % userconfigfile)
+            logging.info('Config file %s already in place.' % userconfigfile)
             if not args.force:
                 raise Exception('Aborting. Use --force to continue.')
 
         elif not os.path.isfile(userconfigfile):
-            debug('Creating user config file in %s.' % userconfigfile)
+            logging.info('Creating user config file in %s.' % userconfigfile)
             open(userconfigfile, 'w')
             os.chown(userconfigfile, user.pw_uid, usergroup.gr_gid)
 
@@ -100,7 +101,7 @@ class InitCommand(Command):
         try:
             group = grp.getgrnam('moodle-sdk')
             if not username in group.gr_mem:
-                debug('Adding user %s to group %s.' % (username, group.gr_name))
+                logging.info('Adding user %s to group %s.' % (username, group.gr_name))
                 # This command does not work for some reason...
                 # os.initgroups(username, group.gr_gid)
                 chgrp = subprocess.Popen(['usermod', '-a', '-G', 'moodle-sdk', username])
@@ -123,7 +124,7 @@ class InitCommand(Command):
                     os.mkdir(www, 0775)
                     os.chown(www, user.pw_uid, usergroup.gr_gid)
             except:
-                debug('Error while creating directory %s' % www)
+                logging.error('Error while creating directory %s' % www)
                 continue
             else:
                 C.set('dirs.www', www)
@@ -138,10 +139,10 @@ class InitCommand(Command):
                         os.mkdir(storage, 0775)
                         os.chown(storage, user.pw_uid, usergroup.gr_gid)
                     else:
-                        debug('Error! dirs.www and dirs.storage must be different!')
+                        logging.error('Error! dirs.www and dirs.storage must be different!')
                         continue
             except:
-                debug('Error while creating directory %s' % storage)
+                logging.error('Error while creating directory %s' % storage)
                 continue
             else:
                 C.set('dirs.storage', storage)
@@ -153,11 +154,11 @@ class InitCommand(Command):
         mdkdir = self.resolve_directory(mdkdir, username)
         if not os.path.isdir(mdkdir):
             try:
-                debug('Creating MDK directory %s' % mdkdir)
+                logging.info('Creating MDK directory %s' % mdkdir)
                 os.mkdir(mdkdir, 0775)
                 os.chown(mdkdir, user.pw_uid, usergroup.gr_gid)
             except:
-                debug('Error while creating %s, please fix manually.' % mdkdir)
+                logging.error('Error while creating %s, please fix manually.' % mdkdir)
 
         # Git repository.
         github = question('What is your Github username? (Leave blank if not using Github)')
@@ -178,13 +179,13 @@ class InitCommand(Command):
         C.set('db.pgsql.user', question('What is your PostgreSQL user?', C.get('db.pgsql.user')))
         C.set('db.pgsql.passwd', question('What is your PostgreSQL password?', C.get('db.pgsql.passwd'), password=True))
 
-        debug('')
-        debug('MDK has been initialised with minimal configuration.')
-        debug('For more settings, edit your config file: %s.' % userconfigfile)
-        debug('Use %s as documentation.' % os.path.join(scriptdir, 'config-dist.json'))
-        debug('')
-        debug('Type the following command to create your first instance:')
-        debug('  mdk create')
-        debug('(This will take some time, but don\'t worry, that\'s because the cache is still empty)')
-        debug('')
-        debug('/!\ Please logout/login before to avoid permission issues: sudo su `whoami`')
+        print ''
+        print 'MDK has been initialised with minimal configuration.'
+        print 'For more settings, edit your config file: %s.' % userconfigfile
+        print 'Use %s as documentation.' % os.path.join(scriptdir, 'config-dist.json')
+        print ''
+        print 'Type the following command to create your first instance:'
+        print '  mdk create'
+        print '(This will take some time, but don\'t worry, that\'s because the cache is still empty)'
+        print ''
+        print '/!\ Please logout/login before to avoid permission issues: sudo su `whoami`'

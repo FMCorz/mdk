@@ -23,8 +23,8 @@ http://github.com/FMCorz/mdk
 """
 
 
+import logging
 from lib.command import Command
-from lib.tools import debug
 
 
 class FixCommand(Command):
@@ -79,4 +79,4 @@ class FixCommand(Command):
         if not repo.checkout(branch):
             raise Exception('Error while checkout out branch %s' % branch)
 
-        debug('Branch %s checked out' % branch)
+        logging.info('Branch %s checked out' % branch)

@@ -23,9 +23,9 @@ http://github.com/FMCorz/mdk
 """
 
 import os
+import logging
 from lib import db
 from lib.command import Command
-from lib.tools import debug
 
 DB = db.DB
 
@@ -99,9 +99,8 @@ class InstallCommand(Command):
         # Running scripts
         if M.isInstalled() and type(args.run) == list:
             for script in args.run:
-                debug('Running script \'%s\'' % (script))
+                logging.info('Running script \'%s\'' % (script))
                 try:
                     M.runScript(script)
                 except Exception as e:
-                    debug('Error while running the script')
-                    debug(e)
+                    logging.warning('Error while running the script: %s' % e)

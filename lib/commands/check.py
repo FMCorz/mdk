@@ -26,7 +26,6 @@ import os
 import shutil
 from lib import git
 from lib.command import Command
-from lib.tools import debug
 
 
 class CheckCommand(Command):
@@ -53,7 +52,7 @@ class CheckCommand(Command):
     def cachedRepositories(self, args):
         """Ensure that the cached repositories are valid"""
 
-        debug('Checking cached repositories')
+        print 'Checking cached repositories'
         cache = os.path.abspath(os.path.realpath(os.path.expanduser(self.C.get('dirs.mdk'))))
 
         dirs = [
@@ -73,40 +72,40 @@ class CheckCommand(Command):
 
             if os.path.isdir(directory):
                 if os.path.isdir(os.path.join(directory, '.git')):
-                    debug('  %s is not a bare repository' % name)
+                    print '  %s is not a bare repository' % name
                     if args.fix:
-                        debug('    Renaming %s/.git directory to %s' % (directory, directory))
+                        print '    Renaming %s/.git directory to %s' % (directory, directory)
                         os.rename(directory, directory + '.tmp')
                         os.rename(os.path.join(directory + '.tmp', '.git'), directory)
                         shutil.rmtree(directory + '.tmp')
 
                 repo = git.Git(directory, self.C.get('git'))
                 if repo.getConfig('core.bare') != 'true':
-                    debug('  %s core.bare is not set to true' % name)
+                    print '  %s core.bare is not set to true' % name
                     if args.fix:
-                        debug('    Setting core.bare to true')
+                        print '    Setting core.bare to true'
                         repo.setConfig('core.bare', 'true')
 
                 if repo.getConfig('remote.origin.url') != d['url']:
-                    debug('  %s uses an different origin (%s)' % (name, repo.getConfig('remote.origin.url')))
+                    print '  %s uses an different origin (%s)' % (name, repo.getConfig('remote.origin.url'))
                     if args.fix:
-                        debug('    Setting remote.origin.url to %s' % d['url'])
+                        print '    Setting remote.origin.url to %s' % d['url']
                         repo.setConfig('remote.origin.url', d['url'])
 
                 if repo.getConfig('remote.origin.fetch') != '+refs/*:refs/*':
-                    debug('  %s fetch value is invalid (%s)' % (name, repo.getConfig('remote.origin.fetch')))
+                    print '  %s fetch value is invalid (%s)' % (name, repo.getConfig('remote.origin.fetch'))
                     if args.fix:
-                        debug('    Setting remote.origin.fetch to %s' % '+refs/*:refs/*')
+                        print '    Setting remote.origin.fetch to %s' % '+refs/*:refs/*'
                         repo.setConfig('remote.origin.fetch', '+refs/*:refs/*')
 
     def directories(self, args):
         """Check that the directories are valid"""
 
-        debug('Checking directories')
+        print 'Checking directories'
         for k, d in self.C.get('dirs').items():
             d = os.path.abspath(os.path.realpath(os.path.expanduser(d)))
             if not os.path.isdir(d):
-                debug('  %s does not exist' % d)
+                print '  %s does not exist' % d
                 if args.fix:
-                    debug('    Creating %s' % d)
+                    print '    Creating %s' % d
                     os.mkdir(d, 0777)

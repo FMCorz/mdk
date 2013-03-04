@@ -22,9 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 from lib import tools, jira
 from lib.command import Command
-from lib.tools import debug
 
 
 class PushCommand(Command):
@@ -109,7 +109,7 @@ class PushCommand(Command):
             branch = args.branch
 
         # Pushing current branch
-        debug('Pushing branch %s to remote %s...' % (branch, remote))
+        logging.info('Pushing branch %s to remote %s...' % (branch, remote))
         result = M.git().push(remote, branch, force=args.force)
         if result[0] != 0:
             raise Exception(result[2])
@@ -141,10 +141,10 @@ class PushCommand(Command):
             fielddiffurl = self.C.get('tracker.fieldnames.%s.diffurl' % version)
 
             if not (fieldrepositoryurl or fieldbranch or fielddiffurl):
-                debug('Cannot set tracker fields for this version (%s) as the field names are not configured in the config file.', version)
+                logging.error('Cannot set tracker fields for this version (%s) as the field names are not configured in the config file.', version)
 
             else:
-                debug('Setting tracker fields: \n\t%s: %s \n\t%s: %s \n\t%s: %s\n' % (fieldrepositoryurl, repositoryurl,
+                logging.info('Setting tracker fields: \n\t%s: %s \n\t%s: %s \n\t%s: %s\n' % (fieldrepositoryurl, repositoryurl,
                                                                                    fieldbranch, branch,
                                                                                    fielddiffurl, diffurl))
                 J.setCustomFields(issue, {fieldrepositoryurl: repositoryurl,
@@ -154,9 +154,9 @@ class PushCommand(Command):
         # Pushing stable branch
         if args.includestable:
             branch = M.get('stablebranch')
-            debug('Pushing branch %s to remote %s...' % (branch, remote))
+            logging.info('Pushing branch %s to remote %s...' % (branch, remote))
             result = M.git().push(remote, branch, force=args.forcestable)
             if result[0] != 0:
                 raise Exception(result[2])
 
-        debug('Done.')
+        logging.info('Done.')

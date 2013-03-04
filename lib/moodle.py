@@ -24,9 +24,10 @@ http://github.com/FMCorz/mdk
 
 import os
 import re
+import logging
 import shutil
 
-from tools import debug, process
+from tools import process
 from db import DB
 from config import Conf
 from git import Git
@@ -112,7 +113,7 @@ class Moodle(object):
 
         self.reload()
 
-    def branch_compare(self, branch, compare = '>='):
+    def branch_compare(self, branch, compare='>='):
         """Compare the branch of the current instance with the one passed"""
         try:
             branch = int(branch)
@@ -136,7 +137,7 @@ class Moodle(object):
             return b < branch
         return False
 
-    def checkout_stable(self, checkout = True):
+    def checkout_stable(self, checkout=True):
         """Checkout the stable branch, do a stash if required. Needs to be called again to pop the stash!"""
 
         # Checkout the branch
@@ -292,7 +293,7 @@ class Moodle(object):
         def drop():
             result = (None, None, None)
             try:
-                debug('Dropping database')
+                logging.info('Dropping database')
                 result = self.cli('/admin/tool/behat/cli/util.php', args='--drop', stdout=None, stderr=None)
             except:
                 pass
@@ -302,7 +303,7 @@ class Moodle(object):
         def enable():
             result = (None, None, None)
             try:
-                debug('Enabling Behat')
+                logging.info('Enabling Behat')
                 result = self.cli('/admin/tool/behat/cli/util.php', args='--enable')
             except:
                 pass
@@ -312,7 +313,7 @@ class Moodle(object):
         def install():
             result = (None, None, None)
             try:
-                debug('Installing Behat tables')
+                logging.info('Installing Behat tables')
                 result = self.cli('/admin/tool/behat/cli/util.php', args='--install', stdout=None, stderr=None)
             except:
                 pass
@@ -357,7 +358,7 @@ class Moodle(object):
             info[k] = v
         return info
 
-    def install(self, dbname = None, engine = None, dataDir = None, fullname = None, dropDb = False):
+    def install(self, dbname=None, engine=None, dataDir=None, fullname=None, dropDb=False):
         """Launch the install script of an Instance"""
 
         if self.isInstalled():
@@ -373,7 +374,7 @@ class Moodle(object):
             fullname = self.identifier.replace('-', ' ').replace('_', ' ').title()
             fullname = fullname + ' ' + C.get('wording.%s' % engine)
 
-        debug('Creating database...')
+        logging.info('Creating database...')
         db = DB(engine, C.get('db.%s' % engine))
         if db.dbexists(dbname):
             if dropDb:
@@ -391,7 +392,7 @@ class Moodle(object):
             wwwroot = wwwroot + C.get('path') + '/'
         wwwroot = wwwroot + self.identifier
 
-        debug('Installing %s...' % self.identifier)
+        logging.info('Installing %s...' % self.identifier)
         cli = 'admin/cli/install.php'
         params = (wwwroot, dataDir, engine, dbname, C.get('db.%s.user' % engine), C.get('db.%s.passwd' % engine), C.get('db.%s.host' % engine), fullname, self.identifier, C.get('login'), C.get('passwd'))
         args = '--wwwroot="%s" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
@@ -403,8 +404,8 @@ class Moodle(object):
         os.chmod(configFile, 0666)
         try:
             self.addConfig('sessioncookiepath', '/%s/' % self.identifier)
-        except Exception as e:
-            debug('Could not append $CFG->sessioncookiepath to config.php')
+        except Exception:
+            logging.warning('Could not append $CFG->sessioncookiepath to config.php')
 
         self.reload()
 
@@ -532,8 +533,8 @@ class Moodle(object):
 
                 f.close()
 
-            except Exception as e:
-                debug('Error while reading config file')
+            except Exception:
+                logging.exception('Error while reading config file')
         else:
             self.installed = False
 
@@ -549,7 +550,7 @@ class Moodle(object):
 
         try:
             self.cli('admin/cli/purge_caches.php', stderr=None, stdout=None)
-        except Exception as e:
+        except Exception:
             raise Exception('Error while purging cache!')
 
     def reload(self):
@@ -619,7 +620,7 @@ class Moodle(object):
             os.remove(dest)
             return result[0]
 
-    def update(self, remote = None):
+    def update(self, remote=None):
         """Update the instance from the remote"""
 
         if remote == None:
@@ -634,7 +635,7 @@ class Moodle(object):
 
         # Reset HARD
         upstream = '%s/%s' % (remote, self.get('stablebranch'))
-        if not self.git().reset(to = upstream, hard = True):
+        if not self.git().reset(to=upstream, hard=True):
             raise Exception('Error while executing git reset.')
 
         # Return to previous branch
@@ -645,7 +646,7 @@ class Moodle(object):
         self.removeConfig(name)
         self.addConfig(name, value)
 
-    def upgrade(self, nocheckout = False):
+    def upgrade(self, nocheckout=False):
         """Calls the upgrade script"""
         if not self.isInstalled():
             raise Exception('Cannot upgrade an instance which is not installed.')
@@ -658,7 +659,7 @@ class Moodle(object):
 
         cli = '/admin/cli/upgrade.php'
         args = '--non-interactive --allow-unstable'
-        result = self.cli(cli, args, stdout = None, stderr = None)
+        result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
             raise Exception('Error while running the upgrade.')
 
