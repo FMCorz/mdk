@@ -38,3 +38,4 @@ from purge import PurgeCommand
 from push import PushCommand
 from rebase import RebaseCommand
 from remove import RemoveCommand
+from run import RunCommand
