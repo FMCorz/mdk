@@ -33,3 +33,4 @@ from info import InfoCommand
 from init import InitCommand
 from install import InstallCommand
 from phpunit import PhpunitCommand
+from pull import PullCommand
