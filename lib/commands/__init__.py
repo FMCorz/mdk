@@ -39,3 +39,4 @@ from push import PushCommand
 from rebase import RebaseCommand
 from remove import RemoveCommand
 from run import RunCommand
+from update import UpdateCommand
