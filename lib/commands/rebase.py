@@ -111,6 +111,10 @@ class RebaseCommand(Command):
         # Getting instances
         Mlist = self.Wp.resolveMultiple(names)
 
+        # Updating cache remotes
+        print 'Updating cached repositories'
+        self.Wp.updateCachedClones()
+
         # Loops over instances to rebase
         for M in Mlist:
             debug('Working on %s' % (M.get('identifier')))

@@ -63,22 +63,6 @@ class UpdateCommand(Command):
             }
         ),
         (
-            ['-c', '--update-cache'],
-            {
-                'action': 'store_true',
-                'dest': 'updatecache',
-                'help': 'update the cached remotes. Useful when useCacheAsRemote is enabled.'
-            }
-        ),
-        (
-            ['-p', '--proceed'],
-            {
-                'action': 'store_true',
-                'dest': 'process',
-                'help': 'do not exit the process after updating the cache'
-            }
-        ),
-        (
             ['names'],
             {
                 'default': None,
@@ -92,15 +76,6 @@ class UpdateCommand(Command):
 
     def run(self, args):
 
-        # Updating cache only
-        if args.updatecache:
-            debug('Updating cached remote')
-            self.Wp.updateCachedClones()
-            debug('Done.')
-            if not args.process:
-                return
-            debug('')
-
         # Updating instances
         names = args.names
         if args.all:
@@ -111,6 +86,10 @@ class UpdateCommand(Command):
         Mlist = self.Wp.resolveMultiple(names)
         if len(Mlist) < 1:
             raise Exception('No instances to work on. Exiting...')
+
+        # Updating cache
+        print 'Updating cached repositories'
+        self.Wp.updateCachedClones(verbose=False)
 
         errors = []
 

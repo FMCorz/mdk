@@ -137,10 +137,6 @@
     // Path to Java
     "java": "/usr/bin/java",
 
-    // Experimental setting to use a local cache as your upstream remotes.
-    // Can be useful to prevent fetch from a slow remote.
-    "useCacheAsRemote": false,
-
     // Name of the symlink pointing to the data directory to create in the www directory
     // during an instance creation. If false, the symlink won't be created.
     "symlinkToData": false,

@@ -94,6 +94,11 @@ class UpgradeCommand(Command):
         if len(Mlist) < 1:
             raise Exception('No instances to work on. Exiting...')
 
+        # Updating cache if required
+        if args.update:
+            print 'Updating cached repositories'
+            self.Wp.updateCachedClones(verbose=False)
+
         errors = []
 
         for M in Mlist:
