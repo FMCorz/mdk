@@ -50,7 +50,19 @@ class Moodle(object):
     _cos_hasstash = False
     _cos_oldbranch = None
 
-    def __init__(self, path, identifier = None):
+    _reservedKeywords = [
+        'branch',
+        'identifier',
+        'installed',
+        'integration',
+        'maturity',
+        'path',
+        'release',
+        'stablebranch',
+        'version'
+    ]
+
+    def __init__(self, path, identifier=None):
         self.path = path
         self.identifier = identifier
         self.version = {}
@@ -63,6 +75,9 @@ class Moodle(object):
         configFile = os.path.join(self.path, 'config.php')
         if not os.path.isfile(configFile):
             return None
+
+        if name in self._reservedKeywords:
+            raise Exception('Cannot use reserved keywords for settings in config.php')
 
         if type(value) == bool:
             value = 'true' if value else 'false'
