@@ -65,7 +65,7 @@ class PullCommand(Command):
             }
         )
     ]
-    description = 'Pull a branch from a tracker issue'
+    _description = 'Pull a branch from a tracker issue'
 
     def run(self, args):
 
