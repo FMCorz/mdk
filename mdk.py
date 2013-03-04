@@ -27,16 +27,21 @@ import argparse
 import os
 import re
 from lib.command import CommandRunner
-from lib.commands import *
+from lib.commands import commandsList
 from lib.config import Conf
 from lib.tools import process
 from version import __version__
 
 C = Conf()
 
-availcmds = [x.replace('Command', '').lower() for x in globals().keys() if x.endswith('Command')]
+
+def getCommand(cmd):
+    """Lazy loading of a command class. Millseconds saved, hurray!"""
+    cls = cmd.capitalize() + 'Command'
+    return getattr(getattr(getattr(__import__('lib.%s.%s' % ('commands', cmd)), 'commands'), cmd), cls)
+
 availaliases = [str(x) for x in C.get('aliases').keys()]
-choices = sorted(availcmds + availaliases)
+choices = sorted(commandsList + availaliases)
 
 parser = argparse.ArgumentParser(description='Moodle Development Kit', add_help=False)
 parser.add_argument('-h', '--help', action='store_true', help='show this help message and exit')
@@ -54,8 +59,8 @@ if not cmd:
     if parsedargs.version:
         print 'MDK version %s' % __version__
     elif parsedargs.list:
-        for c in sorted(availcmds):
-            print '  %s' % c
+        for c in sorted(commandsList):
+            print '{0:<15} {1}'.format(c, getCommand(c)._description)
     else:
         parser.print_help()
     sys.exit(0)
@@ -78,9 +83,7 @@ if alias != None:
         cmd = alias.split(' ')[0]
         args = alias.split(' ')[1:] + args
 
-# Calling the command
-classname = '%sCommand' % (cmd.capitalize())
-cls = globals().get(classname)
+cls = getCommand(cmd)
 Cmd = cls(C)
 Runner = CommandRunner(Cmd)
 Runner.run(args, prog='%s %s' % (os.path.basename(sys.argv[0]), cmd))

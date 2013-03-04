@@ -22,22 +22,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-from alias import AliasCommand
-from backport import BackportCommand
-from backup import BackupCommand
-from behat import BehatCommand
-from config import ConfigCommand
-from create import CreateCommand
-from fix import FixCommand
-from info import InfoCommand
-from init import InitCommand
-from install import InstallCommand
-from phpunit import PhpunitCommand
-from pull import PullCommand
-from purge import PurgeCommand
-from push import PushCommand
-from rebase import RebaseCommand
-from remove import RemoveCommand
-from run import RunCommand
-from update import UpdateCommand
-from upgrade import UpgradeCommand
+commandsList = [
+    'alias',
+    'backport',
+    'backup',
+    'behat',
+    'config',
+    'create',
+    'fix',
+    'info',
+    'init',
+    'install',
+    'phpunit',
+    'pull',
+    'purge',
+    'push',
+    'rebase',
+    'remove',
+    'run',
+    'update',
+    'upgrade'
+]
