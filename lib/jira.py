@@ -25,18 +25,18 @@ http://github.com/FMCorz/mdk
 import json
 from tools import debug, question
 from config import Conf
-from urllib import urlencode, urlretrieve
+from urllib import urlencode
 from urlparse import urlparse
 from base64 import b64encode
 from datetime import datetime
 import os
 import httplib
-import getpass
 try:
     import keyring
 except:
-    debug('Could not load module keyring. You might want to install it.')
-    debug('Try `apt-get install python-keyring`, or visit http://pypi.python.org/pypi/keyring')
+    # TODO Find a better way of suggesting this
+    # debug('Could not load module keyring. You might want to install it.')
+    # debug('Try `apt-get install python-keyring`, or visit http://pypi.python.org/pypi/keyring')
     pass
 
 C = Conf()
