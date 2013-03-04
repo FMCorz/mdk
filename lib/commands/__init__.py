@@ -36,3 +36,4 @@ from phpunit import PhpunitCommand
 from pull import PullCommand
 from purge import PurgeCommand
 from push import PushCommand
+from rebase import RebaseCommand
