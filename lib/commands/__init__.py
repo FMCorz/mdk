@@ -34,3 +34,4 @@ from init import InitCommand
 from install import InstallCommand
 from phpunit import PhpunitCommand
 from pull import PullCommand
+from purge import PurgeCommand
