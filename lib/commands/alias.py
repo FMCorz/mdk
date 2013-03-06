@@ -58,22 +58,6 @@ class AliasCommand(Command):
                                 )
                             ]
                         ),
-                        'show': (
-                            {
-                                'help': 'display an alias'
-                            },
-                            [
-                                (
-                                    ['alias'],
-                                    {
-                                        'type': str,
-                                        'metavar': 'alias',
-                                        'default': None,
-                                        'help': 'alias to display'
-                                    }
-                                )
-                            ]
-                        ),
                         'add': (
                             {
                                 'help': 'adds an alias'
@@ -85,7 +69,7 @@ class AliasCommand(Command):
                                         'type': str,
                                         'metavar': 'alias',
                                         'default': None,
-                                        'help': 'alias to display'
+                                        'help': 'alias name'
                                     }
                                 ),
                                 (
@@ -115,6 +99,32 @@ class AliasCommand(Command):
                                     }
                                 )
                             ]
+                        ),
+                        'set': (
+                            {
+                                'help': 'update/add an alias'
+                            },
+                            [
+                                (
+                                    ['alias'],
+                                    {
+                                        'type': str,
+                                        'metavar': 'alias',
+                                        'default': None,
+                                        'help': 'alias name'
+                                    }
+                                ),
+                                (
+                                    ['definition'],
+                                    {
+                                        'type': str,
+                                        'metavar': 'command',
+                                        'default': None,
+                                        'nargs': argparse.REMAINDER,
+                                        'help': 'alias definition'
+                                    }
+                                )
+                            ]
                         )
                     }
             }
@@ -135,6 +145,9 @@ class AliasCommand(Command):
 
         elif args.action == 'add':
             self.C.add('aliases.%s' % args.alias, ' '.join(args.definition))
+
+        elif args.action == 'set':
+            self.C.set('aliases.%s' % args.alias, ' '.join(args.definition))
 
         elif args.action == 'remove':
             self.C.remove('aliases.%s' % args.alias)
