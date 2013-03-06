@@ -57,7 +57,7 @@ class PullCommand(Command):
             }
         ),
         (
-            ['name'],
+            ['issue'],
             {
                 'default': None,
                 'help': 'tracker issue to pull from (MDL-12345, 12345). If not specified, read from current branch.',
