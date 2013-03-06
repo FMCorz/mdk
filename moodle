@@ -92,11 +92,11 @@ BIN=`resolve $COMMAND`
 
 if [ $? == 1 ]
 then
-    echo "Unknown Moodle command $1..."
+    echo "Unknown Moodle command '$1'..."
     exit 1
 elif [ ! -x "$BIN" ]
 then
-    echo "Permission denied. $BIN is not executable."
+    echo "Permission denied. '$BIN' is not executable."
     exit 1
 fi
 
