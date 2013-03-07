@@ -47,5 +47,13 @@ class ConfigFileCouldNotBeSaved(Exception):
     pass
 
 
+class CreateException(Exception):
+    pass
+
+
+class InstallException(Exception):
+    pass
+
+
 class ScriptNotFound(Exception):
     pass

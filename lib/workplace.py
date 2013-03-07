@@ -26,6 +26,7 @@ import os
 import shutil
 import logging
 from tools import process, stableBranch
+from exceptions import CreateException
 from config import Conf
 import git
 import moodle
@@ -82,9 +83,9 @@ class Workplace(object):
         linkDir = os.path.join(self.www, name)
 
         if self.isMoodle(name):
-            raise Exception('The Moodle instance %s already exists' % name)
+            raise CreateException('The Moodle instance %s already exists' % name)
         elif os.path.isdir(installDir):
-            raise Exception('Installation path exists: %s' % installDir)
+            raise CreateException('Installation path exists: %s' % installDir)
 
         self.checkCachedClones(not integration, integration)
         self.updateCachedClones(stable=not integration, integration=integration, verbose=False)

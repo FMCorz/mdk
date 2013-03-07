@@ -31,7 +31,7 @@ from tools import process
 from db import DB
 from config import Conf
 from git import Git
-from exceptions import ScriptNotFound
+from exceptions import ScriptNotFound, InstallException
 
 C = Conf()
 
@@ -362,10 +362,10 @@ class Moodle(object):
         """Launch the install script of an Instance"""
 
         if self.isInstalled():
-            raise Exception('Instance already installed!')
+            raise InstallException('Instance already installed!')
 
         if dataDir == None or not os.path.isdir(dataDir):
-            raise Exception('Cannot install instance without knowing where the data directory is')
+            raise InstallException('Cannot install instance without knowing where the data directory is')
         if dbname == None:
             dbname = re.sub(r'[^a-zA-Z0-9]', '', self.identifier).lower()[:28]
         if engine == None:
@@ -381,7 +381,7 @@ class Moodle(object):
                 db.dropdb(dbname)
                 db.createdb(dbname)
             else:
-                raise Exception('Cannot install an instance on an existing database (%s)' % dbname)
+                raise InstallException('Cannot install an instance on an existing database (%s)' % dbname)
         else:
             db.createdb(dbname)
         db.selectdb(dbname)
@@ -398,13 +398,13 @@ class Moodle(object):
         args = '--wwwroot="%s" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
         result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
-            raise Exception('Error while running the install, please manually fix the problem.\n- Command was: %s %s %s' % (C.get('php'), cli, args))
+            raise InstallException('Error while running the install, please manually fix the problem.\n- Command was: %s %s %s' % (C.get('php'), cli, args))
 
         configFile = os.path.join(self.path, 'config.php')
         os.chmod(configFile, 0666)
         try:
             self.addConfig('sessioncookiepath', '/%s/' % self.identifier)
-        except Exception:
+        except InstallException:
             logging.warning('Could not append $CFG->sessioncookiepath to config.php')
 
         self.reload()
