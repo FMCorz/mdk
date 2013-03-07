@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-import sys
 import re
 import logging
 
@@ -84,9 +83,10 @@ class CreateCommand(Command):
                 ['-v', '--version'],
                 {
                     'choices': [str(x) for x in range(13, int(self.C.get('masterBranch')))] + ['master'],
-                    'default': 'master',
+                    'default': ['master'],
                     'help': 'version of Moodle',
-                    'metavar': 'version'
+                    'metavar': 'version',
+                    'nargs': '*'
                 }
             ),
         ]
@@ -94,65 +94,67 @@ class CreateCommand(Command):
     def run(self, args):
 
         engine = args.engine
-        version = args.version
-        name = self.Wp.generateInstanceName(version, integration=args.integration, suffix=args.suffix)
+        versions = args.version
 
-        # Wording version
-        versionNice = version
-        if version == 'master':
-            versionNice = self.C.get('wording.master')
+        for version in versions:
+            name = self.Wp.generateInstanceName(version, integration=args.integration, suffix=args.suffix)
 
-        # Generating names
-        if args.integration:
-            fullname = self.C.get('wording.integration') + ' ' + versionNice + ' ' + self.C.get('wording.%s' % engine)
-        else:
-            fullname = self.C.get('wording.stable') + ' ' + versionNice + ' ' + self.C.get('wording.%s' % engine)
+            # Wording version
+            versionNice = version
+            if version == 'master':
+                versionNice = self.C.get('wording.master')
 
-        # Append the suffix
-        if args.suffix:
-            fullname += ' ' + args.suffix.replace('-', ' ').replace('_', ' ').title()
+            # Generating names
+            if args.integration:
+                fullname = self.C.get('wording.integration') + ' ' + versionNice + ' ' + self.C.get('wording.%s' % engine)
+            else:
+                fullname = self.C.get('wording.stable') + ' ' + versionNice + ' ' + self.C.get('wording.%s' % engine)
 
-        # Create the instance
-        logging.info('Creating instance %s...' % name)
-        kwargs = {
-            'name': name,
-            'version': version,
-            'integration': args.integration,
-            'useCacheAsRemote': self.C.get('useCacheAsRemote')
-        }
-        try:
-            M = self.Wp.create(**kwargs)
-        except Exception as e:
-            logging.exception('Error creating %s' % name)
+            # Append the suffix
+            if args.suffix:
+                fullname += ' ' + args.suffix.replace('-', ' ').replace('_', ' ').title()
 
-        # Run the install script
-        if args.install:
-
-            # Checking database
-            dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()[:28]
-            db = DB(engine, self.C.get('db.%s' % engine))
-            dropDb = False
-            if db.dbexists(dbname):
-                logging.info('Database already exists (%s)' % dbname)
-                dropDb = yesOrNo('Do you want to remove it?')
-
-            # Install
+            # Create the instance
+            logging.info('Creating instance %s...' % name)
             kwargs = {
-                'engine': engine,
-                'dbname': dbname,
-                'dropDb': dropDb,
-                'fullname': fullname,
-                'dataDir': self.Wp.getPath(name, 'data')
+                'name': name,
+                'version': version,
+                'integration': args.integration,
+                'useCacheAsRemote': self.C.get('useCacheAsRemote')
             }
-            M.install(**kwargs)
+            try:
+                M = self.Wp.create(**kwargs)
+            except Exception as e:
+                logging.exception('Error creating %s' % name)
 
-            # Running scripts
-            if M.isInstalled() and type(args.run) == list:
-                for script in args.run:
-                    logging.info('Running script \'%s\'' % (script))
-                    try:
-                        M.runScript(script)
-                    except Exception as e:
-                        logging.warning('Error while running the script: %s' % e)
+            # Run the install script
+            if args.install:
+
+                # Checking database
+                dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()[:28]
+                db = DB(engine, self.C.get('db.%s' % engine))
+                dropDb = False
+                if db.dbexists(dbname):
+                    logging.info('Database already exists (%s)' % dbname)
+                    dropDb = yesOrNo('Do you want to remove it?')
+
+                # Install
+                kwargs = {
+                    'engine': engine,
+                    'dbname': dbname,
+                    'dropDb': dropDb,
+                    'fullname': fullname,
+                    'dataDir': self.Wp.getPath(name, 'data')
+                }
+                M.install(**kwargs)
+
+                # Running scripts
+                if M.isInstalled() and type(args.run) == list:
+                    for script in args.run:
+                        logging.info('Running script \'%s\'' % (script))
+                        try:
+                            M.runScript(script)
+                        except Exception as e:
+                            logging.warning('Error while running the script: %s' % e)
 
         logging.info('Process complete!')
