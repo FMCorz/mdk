@@ -80,6 +80,19 @@ class Command(object):
         return self.__Wp
 
 
+class CommandArgumentFormatter(argparse.HelpFormatter):
+
+    def _get_help_string(self, action):
+        help = action.help
+        if '%(default)' not in action.help:
+            forbiddentypes = ['_StoreTrueAction', '_StoreFalseAction']
+            if action.__class__.__name__ not in forbiddentypes and action.default is not argparse.SUPPRESS:
+                defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
+                if action.option_strings or action.nargs in defaulting_nargs:
+                    help += ' (default: %(default)s)'
+        return help
+
+
 class CommandRunner(object):
     """Executes a command"""
 
@@ -91,7 +104,8 @@ class CommandRunner(object):
         return self._command
 
     def run(self, sysargs=sys.argv, prog=None):
-        parser = argparse.ArgumentParser(description=self.command.description, prog=prog)
+        parser = argparse.ArgumentParser(description=self.command.description, prog=prog,
+            formatter_class=CommandArgumentFormatter)
         for argument in self.command.arguments:
             args = argument[0]
             kwargs = argument[1]
