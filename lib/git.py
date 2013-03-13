@@ -51,7 +51,7 @@ class Git(object):
             return False
         cmd = 'am %s' % (files)
         result = self.execute(cmd)
-        return result[0] != 0
+        return result[0] == 0
 
     def checkout(self, branch):
         if self.currentBranch == branch:
