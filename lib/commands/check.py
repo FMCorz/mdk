@@ -43,8 +43,8 @@ class CheckCommand(Command):
             ['--limit'],
             {
                 'nargs': '*',
-                'default': ['cached', 'directories', 'remotes'],
-                'choices': ['cached', 'directories', 'remotes'],
+                'default': ['cached', 'directories', 'remotes', 'wwwroot'],
+                'choices': ['cached', 'directories', 'remotes', 'wwwroot'],
                 'help': 'Limit the identification and fix to those type of issues'
             }
         )
@@ -61,6 +61,9 @@ class CheckCommand(Command):
 
         # Check instances remotes
         'remotes' in args.limit and self.remotes(args)
+
+        # Check instances wwwroot
+        'wwwroot' in args.limit and self.wwwroot(args)
 
     def cachedRepositories(self, args):
         """Ensure that the cached repositories are valid"""
@@ -144,7 +147,7 @@ class CheckCommand(Command):
             if remote != remotes['mine']:
                 print '    Remote %s is %s, not %s' % (myRemote, remote, remotes['mine'])
                 if (args.fix):
-                    print '    Setting %s to %s' % (myRemote, remotes['mine'])
+                    print '      Setting %s to %s' % (myRemote, remotes['mine'])
                     M.git().setRemote(myRemote, remotes['mine'])
 
             expected = remotes['stable'] if M.isStable() else remotes['integration']
@@ -152,5 +155,27 @@ class CheckCommand(Command):
             if remote != expected:
                 print '    Remote %s is %s, not %s' % (upstreamRemote, remote, expected)
                 if (args.fix):
-                    print '    Setting %s to %s' % (upstreamRemote, expected)
+                    print '      Setting %s to %s' % (upstreamRemote, expected)
                     M.git().setRemote(upstreamRemote, expected)
+
+    def wwwroot(self, args):
+        """Check the wwwroot of the instances"""
+
+        print 'Checking wwwroot'
+        instances = self.Wp.resolveMultiple(self.Wp.list())
+
+        wwwroot = '%s://%s/' % (self.C.get('scheme'), self.C.get('host'))
+        if self.C.get('path') != '' and self.C.get('path') != None:
+            wwwroot = wwwroot + self.C.get('path') + '/'
+
+        for M in instances:
+            if not M.isInstalled():
+                continue
+            else:
+                actual = M.get('wwwroot')
+                expected = wwwroot + M.get('identifier')
+                if actual != expected:
+                    print '  %s has %s, not %s' % (M.get('identifier'), actual, expected)
+                    if args.fix:
+                        print '    Setting %s on %s' % (expected, M.get('identifier'))
+                        M.updateConfig('wwwroot', expected)
