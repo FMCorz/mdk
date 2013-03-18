@@ -90,7 +90,7 @@ class BehatCommand(Command):
     def run(self, args):
 
         # Loading instance
-        M = self.resolve(args.name)
+        M = self.Wp.resolve(args.name)
         if not M:
             raise Exception('This is not a Moodle instance')
 

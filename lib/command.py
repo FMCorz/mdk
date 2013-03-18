@@ -66,12 +66,6 @@ class Command(object):
     def description(self):
         return self._description
 
-    def resolve(self, name):
-        return self.Wp.resolve(name)
-
-    def resolveMultiple(self, names):
-        return self.Wp.resolve(names)
-
     def run(self, args):
         return True
 

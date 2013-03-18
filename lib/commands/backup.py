@@ -129,7 +129,7 @@ class BackupCommand(Command):
 
         # Backup the instance
         else:
-            M = self.resolve(name)
+            M = self.Wp.resolve(name)
             if not M:
                 raise Exception('This is not a Moodle instance')
 
