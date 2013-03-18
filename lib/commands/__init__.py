@@ -47,6 +47,7 @@ commandsList = [
     'rebase',
     'remove',
     'run',
+    'tracker',
     'update',
     'upgrade'
 ]
