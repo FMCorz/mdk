@@ -35,7 +35,17 @@ class CheckCommand(Command):
             ['--fix'],
             {
                 'action': 'store_true',
-                'help': 'Automatically fix the identified problems'
+                'help': 'Automatically fix all the identified problems'
+            }
+
+        ),
+        (
+            ['--limit'],
+            {
+                'nargs': '*',
+                'default': ['cached', 'directories', 'remotes'],
+                'choices': ['cached', 'directories', 'remotes'],
+                'help': 'Limit the identification and fix to those type of issues'
             }
         )
     ]
@@ -44,10 +54,13 @@ class CheckCommand(Command):
     def run(self, args):
 
         # Check directories
-        self.directories(args)
+        'directories' in args.limit and self.directories(args)
 
         # Check the cached remotes
-        self.cachedRepositories(args)
+        'cached' in args.limit and self.cachedRepositories(args)
+
+        # Check instances remotes
+        'remotes' in args.limit and self.remotes(args)
 
     def cachedRepositories(self, args):
         """Ensure that the cached repositories are valid"""
@@ -109,3 +122,35 @@ class CheckCommand(Command):
                 if args.fix:
                     print '    Creating %s' % d
                     os.mkdir(d, 0777)
+
+    def remotes(self, args):
+        """Check that the correct remotes are used"""
+
+        print 'Checking remotes'
+        remotes = {
+            'mine': self.C.get('remotes.mine'),
+            'stable': self.Wp.getCachedRemote(),
+            'integration': self.Wp.getCachedRemote(True)
+        }
+        myRemote = self.C.get('myRemote')
+        upstreamRemote = self.C.get('upstreamRemote')
+
+        instances = self.Wp.list()
+        for identifier in instances:
+            print '  Working on %s' % (identifier)
+            M = self.Wp.get(identifier)
+
+            remote = M.git().getRemote(myRemote)
+            if remote != remotes['mine']:
+                print '    Remote %s is %s, not %s' % (myRemote, remote, remotes['mine'])
+                if (args.fix):
+                    print '    Setting %s to %s' % (myRemote, remotes['mine'])
+                    M.git().setRemote(myRemote, remotes['mine'])
+
+            expected = remotes['stable'] if M.isStable() else remotes['integration']
+            remote = M.git().getRemote(upstreamRemote)
+            if remote != expected:
+                print '    Remote %s is %s, not %s' % (upstreamRemote, remote, expected)
+                if (args.fix):
+                    print '    Setting %s to %s' % (upstreamRemote, expected)
+                    M.git().setRemote(upstreamRemote, expected)

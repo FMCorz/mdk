@@ -58,8 +58,8 @@ class Workplace(object):
 
     def checkCachedClones(self, stable=True, integration=True):
         """Clone the official repository in a local cache"""
-        cacheStable = os.path.join(self.cache, 'moodle.git')
-        cacheIntegration = os.path.join(self.cache, 'integration.git')
+        cacheStable = self.getCacheRemote(False)
+        cacheIntegration = self.getCacheRemote(True)
         if not os.path.isdir(cacheStable) and stable:
             logging.info('Cloning stable repository into cache...')
             logging.info('That\'s going to take a while...')
@@ -192,6 +192,13 @@ class Workplace(object):
         if not self.isMoodle(name):
             raise Exception('Could not find Moodle instance %s' % name)
         return moodle.Moodle(os.path.join(self.path, name, self.wwwDir), identifier=name)
+
+    def getCachedRemote(self, integration=False):
+        """Return the path to the cached remote"""
+        if integration:
+            return os.path.join(self.cache, 'integration.git')
+        else:
+            return os.path.join(self.cache, 'moodle.git')
 
     def getPath(self, name, mode=None):
         """Returns the path of an instance base on its name"""
