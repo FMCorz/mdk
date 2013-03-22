@@ -58,8 +58,8 @@ class Workplace(object):
 
     def checkCachedClones(self, stable=True, integration=True):
         """Clone the official repository in a local cache"""
-        cacheStable = self.getCacheRemote(False)
-        cacheIntegration = self.getCacheRemote(True)
+        cacheStable = self.getCachedRemote(False)
+        cacheIntegration = self.getCachedRemote(True)
         if not os.path.isdir(cacheStable) and stable:
             logging.info('Cloning stable repository into cache...')
             logging.info('That\'s going to take a while...')
