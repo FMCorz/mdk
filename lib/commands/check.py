@@ -140,22 +140,21 @@ class CheckCommand(Command):
 
         instances = self.Wp.list()
         for identifier in instances:
-            print '  Working on %s' % (identifier)
             M = self.Wp.get(identifier)
 
             remote = M.git().getRemote(myRemote)
             if remote != remotes['mine']:
-                print '    Remote %s is %s, not %s' % (myRemote, remote, remotes['mine'])
+                print '  %s: Remote %s is %s, not %s' % (identifier, myRemote, remote, remotes['mine'])
                 if (args.fix):
-                    print '      Setting %s to %s' % (myRemote, remotes['mine'])
+                    print '    Setting %s to %s' % (myRemote, remotes['mine'])
                     M.git().setRemote(myRemote, remotes['mine'])
 
             expected = remotes['stable'] if M.isStable() else remotes['integration']
             remote = M.git().getRemote(upstreamRemote)
             if remote != expected:
-                print '    Remote %s is %s, not %s' % (upstreamRemote, remote, expected)
+                print '  %s: Remote %s is %s, not %s' % (identifier, upstreamRemote, remote, expected)
                 if (args.fix):
-                    print '      Setting %s to %s' % (upstreamRemote, expected)
+                    print '    Setting %s to %s' % (upstreamRemote, expected)
                     M.git().setRemote(upstreamRemote, expected)
 
     def wwwroot(self, args):
@@ -175,7 +174,7 @@ class CheckCommand(Command):
                 actual = M.get('wwwroot')
                 expected = wwwroot + M.get('identifier')
                 if actual != expected:
-                    print '  %s has %s, not %s' % (M.get('identifier'), actual, expected)
+                    print '  %s: Found %s, not %s' % (M.get('identifier'), actual, expected)
                     if args.fix:
                         print '    Setting %s on %s' % (expected, M.get('identifier'))
                         M.updateConfig('wwwroot', expected)
