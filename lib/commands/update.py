@@ -39,6 +39,13 @@ class UpdateCommand(Command):
             }
         ),
         (
+            ['-c', '--cached'],
+            {
+                'action': 'store_true',
+                'help': 'only update the cached (mirrored) repositories'
+            }
+        ),
+        (
             ['-i', '--integration'],
             {
                 'action': 'store_true',
@@ -76,6 +83,10 @@ class UpdateCommand(Command):
 
     def run(self, args):
 
+        if args.cached:
+            self.updateCached()
+            return
+
         # Updating instances
         names = args.names
         if args.all:
@@ -87,9 +98,7 @@ class UpdateCommand(Command):
         if len(Mlist) < 1:
             raise Exception('No instances to work on. Exiting...')
 
-        # Updating cache
-        print 'Updating cached repositories'
-        self.Wp.updateCachedClones(verbose=False)
+        self.updateCached()
 
         errors = []
 
@@ -119,3 +128,8 @@ class UpdateCommand(Command):
                 logging.warning('- %s' % M.get('identifier'))
             # Remove sys.exit and handle error code
             sys.exit(1)
+
+    def updateCached(self):
+        # Updating cache
+        print 'Updating cached repositories'
+        self.Wp.updateCachedClones(verbose=False)
