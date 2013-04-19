@@ -42,6 +42,13 @@ class BehatCommand(Command):
             }
         ),
         (
+            ['-d', '--disable'],
+            {
+                'action': 'store_true',
+                'help': 'disable Behat'
+            }
+        ),
+        (
             ['-j', '--no-javascript'],
             {
                 'action': 'store_true',
@@ -97,6 +104,11 @@ class BehatCommand(Command):
         # Check if installed
         if not M.get('installed'):
             raise Exception('This instance needs to be installed first')
+
+        # Disable Behat
+        if args.disable:
+            self.disable(M)
+            return
 
         # No Javascript
         nojavascript = args.nojavascript
@@ -188,10 +200,6 @@ class BehatCommand(Command):
                 if seleniumServer:
                     seleniumServer.kill()
 
-                # Remove the switch completely tag
-                if M.get('behat_switchcompletely'):
-                    M.removeConfig('behat_switchcompletely')
-
             else:
                 logging.info('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
                 if seleniumCommand:
@@ -200,3 +208,8 @@ class BehatCommand(Command):
 
         except Exception as e:
             raise e
+
+    def disable(self, M):
+        logging.info('Disabling Behat')
+        M.cli('admin/tool/behat/cli/util.php', '--disable')
+        M.removeConfig('behat_switchcompletely')
