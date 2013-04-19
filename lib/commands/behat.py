@@ -134,6 +134,7 @@ class BehatCommand(Command):
 
         # Run cli
         try:
+            logging.info('Initialising Behat, please be patient!')
             M.initBehat(switchcompletely=args.switchcompletely)
             logging.info('Behat ready!')
 

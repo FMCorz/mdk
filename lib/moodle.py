@@ -26,6 +26,7 @@ import os
 import re
 import logging
 import shutil
+import subprocess
 
 from tools import process
 from db import DB
@@ -289,60 +290,14 @@ class Moodle(object):
             self.removeConfig('behat_switchcompletely')
             self.removeConfig('behat_wwwroot')
 
-        # Drop the tables
-        def drop():
-            result = (None, None, None)
-            try:
-                logging.info('Dropping database')
-                result = self.cli('/admin/tool/behat/cli/util.php', args='--drop', stdout=None, stderr=None)
-            except:
-                pass
-            return result
-
-        # Enabling Behat (or updating the definitions)
-        def enable():
-            result = (None, None, None)
-            try:
-                logging.info('Enabling Behat')
-                result = self.cli('/admin/tool/behat/cli/util.php', args='--enable')
-            except:
-                pass
-            return result
-
-        # Install the tables
-        def install():
-            result = (None, None, None)
-            try:
-                logging.info('Installing Behat tables')
-                result = self.cli('/admin/tool/behat/cli/util.php', args='--install', stdout=None, stderr=None)
-            except:
-                pass
-            return result
-
         # Force a cache purge
         self.purge()
 
-        # Not really proud of this logic, but it works for now. Ideally there shouldn't be any duplicated call to enable().
-        result = enable()
-        if result[0] == 251:
-            raise Exception('Error: Behat requires PHP 5.4 or the flag --switch-completely to be set')
-        elif result[0] == 254:
-            # Installation required
-            installResult = install()
-            if installResult[0] != 0:
-                raise Exception('Unknown error while installing Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
-            result = enable()
-        elif result[0] > 0:
-            # Need to drop the tables
-            drop()
-            installResult = install()
-            if installResult[0] != 0:
-                raise Exception('Unknown error while installing Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
-            result = enable()
+        # Run the init script.
+        self.cli('admin/tool/behat/cli/init.php', stdout=None, stderr=None)
 
-        # Could not enable Behat
-        if result[0] != 0:
-            raise Exception('Unknown error while enabling Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
+        # Force a cache purge
+        self.purge()
 
     def info(self):
         """Returns a dictionary of information about this instance"""
