@@ -74,8 +74,15 @@ function _moodle() {
                 fi
                 ;;
             behat)
-                OPTS="--run --switch-completely --no-javascript --selenium --selenium-verbose"
-                OPTS="$OPTS $($BIN info -ln)"
+                if [[ "${PREV}" == "--feature" ]]; then
+                    # Basic autocomplete for --feature, should append a / at the end of directory names.
+                    compopt +o nospace
+                    OPTS="$(compgen -A file $CUR)"
+                    compopt -o nospace
+                else
+                    OPTS="--run --disable --feature --switch-completely --no-javascript --selenium --selenium-verbose"
+                    OPTS="$OPTS $($BIN info -ln)"
+                fi
                 ;;
             check)
                 # Empty options.
