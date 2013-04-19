@@ -45,7 +45,14 @@ class BehatCommand(Command):
             ['-d', '--disable'],
             {
                 'action': 'store_true',
-                'help': 'disable Behat'
+                'help': 'disable Behat, runs the tests first if --run has been set.'
+            }
+        ),
+        (
+            ['-f', '--feature'],
+            {
+                'metavar': 'path',
+                'help': 'typically a path to a feature, or an argument understood by behat (see [features]: vendor/bin/behat --help). Automatically convert path to absolute path.'
             }
         ),
         (
@@ -70,8 +77,7 @@ class BehatCommand(Command):
                 'default': None,
                 'dest': 'selenium',
                 'help': 'path to the selenium standalone server to use',
-                'metavar': 'jarfile',
-                'nargs': '?'
+                'metavar': 'jarfile'
             }
         ),
         (
@@ -101,12 +107,16 @@ class BehatCommand(Command):
         if not M:
             raise Exception('This is not a Moodle instance')
 
+        # Check required version
+        if M.branch_compare(25, '<'):
+            raise Exception('Behat is only available from Moodle 2.5')
+
         # Check if installed
         if not M.get('installed'):
             raise Exception('This instance needs to be installed first')
 
         # Disable Behat
-        if args.disable:
+        if args.disable and not args.run:
             self.disable(M)
             return
 
@@ -155,6 +165,14 @@ class BehatCommand(Command):
             if nojavascript:
                 cmd.append('--tags ~@javascript')
             cmd.append('--config=%s/behat/behat.yml' % (M.get('behat_dataroot')))
+
+            # Checking feature argument
+            if args.feature:
+                filepath = args.feature
+                if not filepath.startswith('/'):
+                    filepath = os.path.join(M.get('path'), filepath)
+                cmd.append(filepath)
+
             cmd = ' '.join(cmd)
 
             phpCommand = '%s -S localhost:8000' % (self.C.get('php'))
@@ -192,6 +210,7 @@ class BehatCommand(Command):
                     sleep(3)
 
                 # Running the tests
+                logging.info('Executing %s', cmd)
                 process(cmd, M.path, None, None)
 
                 # Kill the remaining processes
@@ -199,6 +218,10 @@ class BehatCommand(Command):
                     phpServer.kill()
                 if seleniumServer:
                     seleniumServer.kill()
+
+                # Disable Behat
+                if args.disable:
+                    self.disable(M)
 
             else:
                 logging.info('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
