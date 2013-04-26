@@ -27,6 +27,7 @@ import textwrap
 import re
 from lib.command import Command
 from lib.jira import Jira
+from lib.tools import parseBranch
 
 
 class TrackerCommand(Command):
@@ -42,7 +43,8 @@ class TrackerCommand(Command):
         (
             ['issue'],
             {
-                'help': 'MDL issue number'
+                'help': 'MDL issue number. Guessed from the current branch if not specified.',
+                'nargs': '?'
             }
         )
     ]
@@ -52,8 +54,22 @@ class TrackerCommand(Command):
     mdl = None
 
     def run(self, args):
+
+        issue = None
+        if not args.issue:
+            M = self.Wp.resolve()
+            if M:
+                parsedbranch = parseBranch(M.currentBranch(), self.C.get('wording.branchRegex'))
+                if parsedbranch:
+                    issue = parsedbranch['issue']
+        else:
+            issue = args.issue
+
+        if not issue or not re.match('(MDL|mdl)?(-|_)?[1-9]+', issue):
+            raise Exception('Invalid or unknown issue number')
+
         self.Jira = Jira()
-        self.mdl = 'MDL-' + re.sub(r'(MDL|mdl)(-|_)?', '', args.issue)
+        self.mdl = 'MDL-' + re.sub(r'(MDL|mdl)(-|_)?', '', issue)
         self.info(args)
 
     def info(self, args):
