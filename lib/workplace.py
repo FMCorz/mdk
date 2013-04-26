@@ -236,8 +236,8 @@ class Workplace(object):
             if not self.isMoodle(d): continue
             if integration != None or stable != None:
                 M = self.get(d)
-                if integration == False and M.isIntegration(): continue
-                if stable == False and M.isStable(): continue
+                if not integration and M.isIntegration(): continue
+                if not stable and M.isStable(): continue
             names.append(d)
         return names
 
