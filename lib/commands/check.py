@@ -40,11 +40,11 @@ class CheckCommand(Command):
 
         ),
         (
-            ['--limit'],
+            ['--limit', '-l'],
             {
                 'nargs': '*',
-                'default': ['cached', 'directories', 'remotes', 'wwwroot'],
-                'choices': ['cached', 'directories', 'remotes', 'wwwroot'],
+                'default': ['branch', 'cached', 'directories', 'remotes', 'wwwroot'],
+                'choices': ['branch', 'cached', 'directories', 'remotes', 'wwwroot'],
                 'help': 'Limit the identification and fix to those type of issues'
             }
         )
@@ -64,6 +64,26 @@ class CheckCommand(Command):
 
         # Check instances wwwroot
         'wwwroot' in args.limit and self.wwwroot(args)
+
+        # Check the branches
+        'branch' in args.limit and self.branch(args)
+
+    def branch(self, args):
+        """Make sure the correct branch is checked out. Only on integration branches."""
+
+        print 'Checking integration instances branches'
+
+        instances = self.Wp.list(integration=True)
+        for identifier in instances:
+            M = self.Wp.get(identifier)
+            stablebranch = M.get('stablebranch')
+            currentbranch = M.currentBranch()
+            if stablebranch != currentbranch:
+                print '  %s is on branch %s instead of %s' % (identifier, currentbranch, stablebranch)
+                if args.fix:
+                    print '    Checking out %s' % (stablebranch)
+                    if not M.git().checkout(stablebranch):
+                        print '      Error: Checkout unsucessful!'
 
     def cachedRepositories(self, args):
         """Ensure that the cached repositories are valid"""
