@@ -103,7 +103,7 @@ def parseBranch(branch, pattern):
 
 
 def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
-    if type(cmd) != 'list':
+    if type(cmd) != list:
         cmd = shlex.split(str(cmd))
     proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
     (out, err) = proc.communicate()
