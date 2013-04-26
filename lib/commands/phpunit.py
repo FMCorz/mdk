@@ -23,6 +23,8 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
+import os
+import urllib
 from lib.command import Command
 from lib.tools import process
 
@@ -67,12 +69,29 @@ class PhpunitCommand(Command):
         if not M.get('installed'):
             raise Exception('This instance needs to be installed first')
 
+        # Install Composer for >= 2.5
+        if M.branch_compare(25):
+            if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
+                logging.info('Installing Composer')
+                cliFile = 'phpunit_install_composer.php'
+                cliPath = os.path.join(M.get('path'), 'phpunit_install_composer.php')
+                urllib.urlretrieve('http://getcomposer.org/installer', cliPath)
+                M.cli('/' + cliFile, stdout=None, stderr=None)
+                os.remove(cliPath)
+                M.cli('composer.phar', args='install --dev', stdout=None, stderr=None)
+
         # Run cli
         try:
             M.initPHPUnit(force=args.force)
             logging.info('PHPUnit ready!')
             if args.run:
-                logging.info('Running PHPUnit')
-                process('phpunit', M.path, None, None)
+                cmd = []
+                if M.branch_compare(25):
+                    cmd.append('vendor/bin/phpunit')
+                else:
+                    cmd.append('phpunit')
+                cmd = ' '.join(cmd)
+                logging.info('Executing %s', cmd)
+                process(cmd, M.get('path'), None, None)
         except Exception as e:
             raise e
