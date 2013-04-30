@@ -65,11 +65,19 @@ class BackportCommand(Command):
                 }
             ),
             (
-                ['-t', '--push-to'],
+                ['--push-to'],
                 {
                     'dest': 'pushremote',
                     'help': 'the remote to push the branch to. Default is %s.' % self.C.get('myRemote'),
                     'metavar': 'remote'
+                }
+            ),
+            (
+                ['-t', '--update-tracker'],
+                {
+                    'action': 'store_true',
+                    'dest': 'updatetracker',
+                    'help': 'to use with --push, also add the diff information to the tracker issue'
                 }
             ),
             (
@@ -204,6 +212,10 @@ class BackportCommand(Command):
                     logging.debug(result[2])
                     stashPop(stash)
                     continue
+
+            # Update the tracker
+            if args.updatetracker:
+                M2.updateTrackerGitInfo(branch=newbranch)
 
             stashPop(stash)
 

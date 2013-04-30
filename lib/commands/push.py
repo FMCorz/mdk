@@ -114,42 +114,9 @@ class PushCommand(Command):
         if result[0] != 0:
             raise Exception(result[2])
 
+        # Update the tracker
         if args.updatetracker:
-            # Getting issue number
-            # Parsing the branch
-            parsedbranch = tools.parseBranch(branch, self.C.get('wording.branchRegex'))
-            if not parsedbranch:
-                raise Exception('Could not extract issue number from %s' % branch)
-            issue = 'MDL-%s' % (parsedbranch['issue'])
-
-            version = parsedbranch['version']
-
-            # Get the jira config
-            repositoryurl = self.C.get('repositoryUrl')
-            diffurltemplate = self.C.get('diffUrlTemplate')
-            stablebranch = M.get('stablebranch')
-            upstreamremote = self.C.get('upstreamRemote')
-            # Get the hash of the last upstream commit
-            ref = '%s/%s' % (upstreamremote, stablebranch)
-            headcommit = M.git().hashes(ref=ref, limit=1)[0]
-
-            J = jira.Jira()
-            diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%', stablebranch).replace('%headcommit%', headcommit)
-
-            fieldrepositoryurl = self.C.get('tracker.fieldnames.repositoryurl')
-            fieldbranch = self.C.get('tracker.fieldnames.%s.branch' % version)
-            fielddiffurl = self.C.get('tracker.fieldnames.%s.diffurl' % version)
-
-            if not (fieldrepositoryurl or fieldbranch or fielddiffurl):
-                logging.error('Cannot set tracker fields for this version (%s) as the field names are not configured in the config file.', version)
-
-            else:
-                logging.info('Setting tracker fields: \n\t%s: %s \n\t%s: %s \n\t%s: %s\n' % (fieldrepositoryurl, repositoryurl,
-                                                                                   fieldbranch, branch,
-                                                                                   fielddiffurl, diffurl))
-                J.setCustomFields(issue, {fieldrepositoryurl: repositoryurl,
-                                             fieldbranch: branch,
-                                             fielddiffurl: diffurl})
+            M.updateTrackerGitInfo(branch=branch)
 
         # Pushing stable branch
         if args.includestable:

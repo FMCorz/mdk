@@ -66,6 +66,14 @@ class RebaseCommand(Command):
                 }
             ),
             (
+                ['-t', '--update-tracker'],
+                {
+                    'action': 'store_true',
+                    'dest': 'updatetracker',
+                    'help': 'to use with --push, also add the diff information to the tracker issue'
+                }
+            ),
+            (
                 ['-r', '--remote'],
                 {
                     'default': self.C.get('myRemote'),
@@ -167,6 +175,10 @@ class RebaseCommand(Command):
                         logging.warning('Error while pushing to remote')
                         logging.debug(result[2])
                         continue
+
+                    # Update the tracker
+                    if args.updatetracker:
+                        M.updateTrackerGitInfo(branch=branch)
 
             # Stash pop
             if not stash[1].startswith('No local changes'):

@@ -60,7 +60,7 @@ function _moodle() {
                 ;;
             backport)
                 if [[ "$CUR" == -* ]]; then
-                    OPTS="--branch --remote --integration --dont-push --dont-fetch --push --push-to --force-push --versions"
+                    OPTS="--branch --remote --integration --dont-push --dont-fetch --push --push-to --force-push --versions --update-tracker"
                 else
                     OPTS="-- $($BIN info -ln)"
                 fi
@@ -156,7 +156,7 @@ function _moodle() {
                 ;;
             rebase)
                 if [[ "$PREV" == "rebase" || "$PREV" == "-p" || "$PREV" == "--push" || "$PREV" == "-f" || "$PREV" == "--force-push" ]]; then
-                    OPTS="--issues --suffix --versions --push --remote --force-push"
+                    OPTS="--issues --suffix --versions --push --remote --force-push --update-tracker"
                     if [[ "$CUR" != -* ]]; then
                         OPTS="$OPTS $($BIN info -ln)"
                     fi

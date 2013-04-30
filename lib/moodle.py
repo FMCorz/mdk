@@ -28,11 +28,12 @@ import logging
 import shutil
 import subprocess
 
-from tools import process
+from tools import process, parseBranch
 from db import DB
 from config import Conf
 from git import Git
 from exceptions import ScriptNotFound, InstallException
+from jira import Jira
 
 C = Conf()
 
@@ -600,6 +601,45 @@ class Moodle(object):
         """Update a setting in the config file."""
         self.removeConfig(name)
         self.addConfig(name, value)
+
+    def updateTrackerGitInfo(self, branch=None):
+        """Updates the git info on the tracker issue"""
+
+        if branch == None:
+            branch = self.currentBranch()
+            if branch == 'HEAD':
+                raise Exception('Cannot update the tracker when on detached branch')
+
+        # Parsing the branch
+        parsedbranch = parseBranch(branch, C.get('wording.branchRegex'))
+        if not parsedbranch:
+            raise Exception('Could not extract issue number from %s' % branch)
+        issue = 'MDL-%s' % (parsedbranch['issue'])
+        version = parsedbranch['version']
+
+        # Get the jira config
+        repositoryurl = C.get('repositoryUrl')
+        diffurltemplate = C.get('diffUrlTemplate')
+        stablebranch = self.get('stablebranch')
+        upstreamremote = C.get('upstreamRemote')
+
+        # Get the hash of the last upstream commit
+        ref = '%s/%s' % (upstreamremote, stablebranch)
+        headcommit = self.git().hashes(ref=ref, limit=1)[0]
+
+        J = Jira()
+        diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%', stablebranch).replace('%headcommit%', headcommit)
+
+        fieldrepositoryurl = C.get('tracker.fieldnames.repositoryurl')
+        fieldbranch = C.get('tracker.fieldnames.%s.branch' % version)
+        fielddiffurl = C.get('tracker.fieldnames.%s.diffurl' % version)
+
+        if not (fieldrepositoryurl or fieldbranch or fielddiffurl):
+            logging.error('Cannot set tracker fields for this version (%s). The field names are not set in the config file.', version)
+        else:
+            logging.info('Setting tracker fields: \n\t%s: %s \n\t%s: %s \n\t%s: %s' %
+                (fieldrepositoryurl, repositoryurl, fieldbranch, branch, fielddiffurl, diffurl))
+            J.setCustomFields(issue, {fieldrepositoryurl: repositoryurl, fieldbranch: branch, fielddiffurl: diffurl})
 
     def upgrade(self, nocheckout=False):
         """Calls the upgrade script"""
