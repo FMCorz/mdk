@@ -108,6 +108,23 @@ class PushCommand(Command):
         else:
             branch = args.branch
 
+        # Extra test to see if the commit message is correct. This prevents easy typos in branch or commit messages.
+        parsedbranch = tools.parseBranch(branch, self.C.get('wording.branchRegex'))
+        if parsedbranch or branch != M.get('stablebranch'):
+            message = M.git().messages(count=1)[0]
+            mdl = message.split(' ')[0]
+            if parsedbranch:
+                branchmdl = 'MDL-%s' % (parsedbranch['issue'])
+            else:
+                branchmdl = branch
+            if mdl != branchmdl:
+                print 'The MDL number in the last commit does not match the branch being pushed to.'
+                print 'Branch: %s vs. commit: %s' % (branchmdl, mdl)
+                answer = tools.question('Are you sure you want to continue?', default='n')
+                if answer.lower()[0] != 'y':
+                    print 'Exiting...'
+                    return
+
         # Pushing current branch
         logging.info('Pushing branch %s to remote %s...' % (branch, remote))
         result = M.git().push(remote, branch, force=args.force)
