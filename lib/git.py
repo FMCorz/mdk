@@ -143,10 +143,7 @@ class Git(object):
 
     def hashes(self, ref='', format='%H', limit=30):
         """Returns the latest hashes from git log"""
-        cmd = 'log %s -n %d --format=%s' % (ref, limit, format)
-        (returncode, hashlist, stderr) = self.execute(cmd)
-        if returncode != 0:
-            raise GitException('Error while getting hashes. Command: %s' % (cmd))
+        hashlist = self.log(count=limit, format=format, since=ref)
         return hashlist.split('\n')[:-1]
 
     def isRepository(self, path=None):
@@ -161,6 +158,29 @@ class Git(object):
         )
         proc.wait()
         return proc.returncode == 0
+
+    def log(self, count=10, since=None, path=None, format=None):
+        """Calls the log command and returns the raw output"""
+        cmd = 'log'
+        if count != None and count != 0:
+            cmd += ' -n %d ' % (int(count))
+        if format != None:
+            cmd += ' --format=%s ' % (format)
+        if since != None:
+            cmd += ' %s ' % (since)
+        if path != None:
+            cmd += ' -- %s' % (path)
+
+        (returncode, stdout, stderr) = self.execute(cmd)
+        if returncode != 0:
+            raise GitException('Error calling git log. Command: %s' % (cmd))
+
+        return stdout
+
+    def messages(self, count=10, since=None, path=None):
+        """Return the latest titles of the commit messages"""
+        messages = self.log(count=count, since=since, path=path, format='%s')
+        return messages.split('\n')[:-1]
 
     def pick(self, refs=None, abort=None):
         args = ''
