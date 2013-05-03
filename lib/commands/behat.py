@@ -26,6 +26,7 @@ import os
 import urllib
 import re
 import logging
+import gzip
 from time import sleep
 from lib.command import Command
 from lib.tools import process, ProcessInThread
@@ -131,7 +132,14 @@ class BehatCommand(Command):
             logging.info('Installing Composer')
             cliFile = 'behat_install_composer.php'
             cliPath = os.path.join(M.get('path'), 'behat_install_composer.php')
-            urllib.urlretrieve('http://getcomposer.org/installer', cliPath)
+            (to, headers) = urllib.urlretrieve('http://getcomposer.org/installer', cliPath)
+            if headers.dict.get('content-encoding') == 'gzip':
+                f = gzip.open(cliPath, 'r')
+                content = f.read()
+                f.close()
+                f = open(cliPath, 'w')
+                f.write(content)
+                f.close()
             M.cli('/' + cliFile, stdout=None, stderr=None)
             os.remove(cliPath)
             M.cli('composer.phar', args='install --dev', stdout=None, stderr=None)
