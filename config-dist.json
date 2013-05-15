@@ -146,7 +146,7 @@
     "symlinkToData": false,
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 25,
+    "masterBranch": 26,
 
     // Aliases for MDK commands.
     // An alias starting with a ! will be executed through the command line.
