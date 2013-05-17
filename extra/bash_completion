@@ -134,8 +134,15 @@ function _moodle() {
                 esac
                 ;;
             phpunit)
-                OPTS="--force --run"
-                OPTS="$OPTS $($BIN info -ln)"
+                if [[ "${PREV}" == "--unittest" ]]; then
+                    # Basic autocomplete for --unittest, should append a / at the end of directory names.
+                    compopt +o nospace
+                    OPTS="$(compgen -A file $CUR)"
+                    compopt -o nospace
+                else
+                    OPTS="--force --run --unittest"
+                    OPTS="$OPTS $($BIN info -ln)"
+                fi
                 ;;
             purge)
                 OPTS="--all --integration --stable"

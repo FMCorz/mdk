@@ -48,6 +48,14 @@ class PhpunitCommand(Command):
             }
         ),
         (
+            ['-u', '--unittest'],
+            {
+                'default': None,
+                'help': 'test file to run. This sets --run.',
+                'metavar': 'path'
+            }
+        ),
+        (
             ['name'],
             {
                 'default': None,
@@ -92,12 +100,18 @@ class PhpunitCommand(Command):
         try:
             M.initPHPUnit(force=args.force)
             logging.info('PHPUnit ready!')
+
+            if args.unittest:
+                args.run = True
+
             if args.run:
                 cmd = []
                 if M.branch_compare(25):
                     cmd.append('vendor/bin/phpunit')
                 else:
                     cmd.append('phpunit')
+                if args.unittest:
+                    cmd.append(args.unittest)
                 cmd = ' '.join(cmd)
                 logging.info('Executing %s', cmd)
                 process(cmd, M.get('path'), None, None)
