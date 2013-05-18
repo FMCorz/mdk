@@ -24,11 +24,20 @@ http://github.com/FMCorz/mdk
 
 import logging
 from lib.command import Command
+from lib.scripts import Scripts
 
 
 class RunCommand(Command):
 
     _arguments = [
+        (
+            ['-l', '--list'],
+            {
+                'action': 'store_true',
+                'dest': 'list',
+                'help': 'list the available scripts'
+            }
+        ),
         (
             ['-a', '--all'],
             {
@@ -56,6 +65,7 @@ class RunCommand(Command):
         (
             ['script'],
             {
+                'nargs': '?',
                 'help': 'the name of the script to run'
             }
         ),
@@ -70,6 +80,13 @@ class RunCommand(Command):
     _description = 'Run a script on a Moodle instance'
 
     def run(self, args):
+
+        # Printing existing scripts
+        if args.list:
+            scripts = Scripts.list()
+            for script in sorted(scripts.keys()):
+                print u'%s (%s)' % (script, scripts[script])
+            return
 
         # Resolving instances
         names = args.names

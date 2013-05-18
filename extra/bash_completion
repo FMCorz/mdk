@@ -176,7 +176,7 @@ function _moodle() {
                 if [[ "${COMP_CWORD}" == 2 ]]; then
                     OPTS="$(_list_scripts)"
                 elif [[ "${COMP_CWORD}" == 3 ]]; then
-                    OPTS="--integration --stable --all $($BIN info -ln)"
+                    OPTS="--integration --stable --all --list $($BIN info -ln)"
                 fi
                 ;;
             update)
