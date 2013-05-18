@@ -22,16 +22,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import sys
 from os.path import basename
 from lib.command import CommandRunner
 from lib.commands import getCommand
 from lib.config import Conf
 
 f = basename(__file__)
-print "Do not call %s directly." % (f)
-print "This file will be removed in a later version."
-print "Please use `mdk [command] [arguments]`"
-print ""
+sys.stderr.write("Do not call %s directly.\n" % (f))
+sys.stderr.write("This file will be removed in a later version.\n")
+sys.stderr.write("Please use `mdk [command] [arguments]`\n")
+sys.stderr.write("\n")
 
 cmd = f.replace('moodle-', '').replace('.py', '')
 cls = getCommand(cmd)
