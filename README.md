@@ -126,13 +126,17 @@ Restore the second backup of the instance stable_master
 behat
 -----
 
-Get the instance ready for acceptance testing (Behat).
+Get the instance ready for acceptance testing (Behat), and run the test feature(s).
+
+**Examples**
+
+    mdk behat -r --tags=@core_completion
 
 
 check
 -----
 
-Perform some checks on the environment to identify possible problems.
+Perform some checks on the environment to identify possible problems, and attempt to fix them automatically.
 
 create
 ------
@@ -206,8 +210,11 @@ Run the command line installation script with all parameters set on an existing 
 phpunit
 -------
 
-Get the instance ready for PHPUnit tests.
+Get the instance ready for PHPUnit tests, and run the test(s).
 
+**Examples**
+
+    mdk phpunit -u repository/tests/repository_test.php
 
 purge
 -----
