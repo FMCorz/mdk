@@ -26,7 +26,6 @@ import os
 import re
 import logging
 import shutil
-import subprocess
 
 from tools import process, parseBranch
 from db import DB
@@ -34,6 +33,7 @@ from config import Conf
 from git import Git
 from exceptions import ScriptNotFound, InstallException
 from jira import Jira
+from scripts import Scripts
 
 C = Conf()
 
@@ -540,41 +540,7 @@ class Moodle(object):
 
     def runScript(self, scriptname, **kwargs):
         """Runs a script on the instance"""
-        supported = ['php']
-        directories = ['~/.moodle-sdk']
-        if C.get('dirs.moodle') != None:
-            directories.insert(0, C.get('dirs.moodle'))
-        directories.append('/etc/moodle-sdk')
-        directories.append(os.path.join(os.path.dirname(__file__), '..'))
-
-        # Loop over each directory in order of preference.
-        for directory in directories:
-            script = None
-            type = None
-
-            f = os.path.expanduser(os.path.join(directory, 'scripts', scriptname))
-            if os.path.isfile(f) and scriptname.rsplit('.', 1)[1] in supported:
-                script = f
-                type = scriptname.rsplit('.', 1)[1]
-            else:
-                for ext in supported:
-                    if os.path.isfile(f + '.' + ext):
-                        script = f + '.' + ext
-                        type = ext
-                        break
-            # Exit the loop if the script has been found.
-            if script != None and type != None:
-                break
-
-        if not script:
-            raise ScriptNotFound('Could not find the script, or format not supported')
-
-        if type == 'php':
-            dest = os.path.join(self.get('path'), 'mdkrun.php')
-            shutil.copyfile(script, dest)
-            result = self.cli('mdkrun.php', **kwargs)
-            os.remove(dest)
-            return result[0]
+        return Scripts.run(scriptname, self.get('path'), cmdkwargs=kwargs)
 
     def update(self, remote=None):
         """Update the instance from the remote"""

@@ -47,6 +47,10 @@ class ConfigFileCouldNotBeSaved(Exception):
     pass
 
 
+class ConflictInScriptName(Exception):
+    pass
+
+
 class CreateException(Exception):
     pass
 
@@ -56,4 +60,8 @@ class InstallException(Exception):
 
 
 class ScriptNotFound(Exception):
+    pass
+
+
+class UnsupportedScript(Exception):
     pass
