@@ -54,8 +54,8 @@ Manual installation
 
 ### 2. Make executable and accessible
 
-    sudo chmod +x /opt/moodle-sdk/moodle /opt/moodle-sdk/moodle-*.py
-    sudo ln -s /opt/moodle-sdk/moodle /usr/local/bin/mdk
+    sudo chmod +x /opt/moodle-sdk/mdk.py
+    sudo ln -s /opt/moodle-sdk/mdk.py /usr/local/bin/mdk
 
 ### 3. Set up the basics
 
