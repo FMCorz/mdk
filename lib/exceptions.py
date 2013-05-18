@@ -55,6 +55,10 @@ class CreateException(Exception):
     pass
 
 
+class DisplayCommandHelp(Exception):
+    pass
+
+
 class InstallException(Exception):
     pass
 

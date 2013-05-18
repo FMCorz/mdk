@@ -54,6 +54,9 @@ class Command(object):
         self.__C = config
         self.__Wp = workplace.Workplace()
 
+    def argumentError(self, message):
+        raise CommandArgumentError(message)
+
     @property
     def arguments(self):
         return self._arguments
@@ -74,7 +77,13 @@ class Command(object):
         return self.__Wp
 
 
+class CommandArgumentError(Exception):
+    """Exception when a command sends an argument error"""
+    pass
+
+
 class CommandArgumentFormatter(argparse.HelpFormatter):
+    """Custom argument formatter"""
 
     def _get_help_string(self, action):
         help = action.help
@@ -85,6 +94,14 @@ class CommandArgumentFormatter(argparse.HelpFormatter):
                 if action.option_strings or action.nargs in defaulting_nargs:
                     help += ' (default: %(default)s)'
         return help
+
+
+class CommandArgumentParser(argparse.ArgumentParser):
+    """Custom argument parser"""
+
+    def error(self, message):
+        self.print_help(sys.stderr)
+        self.exit(2, '\n%s: error: %s\n' % (self.prog, message))
 
 
 class CommandRunner(object):
@@ -98,7 +115,7 @@ class CommandRunner(object):
         return self._command
 
     def run(self, sysargs=sys.argv, prog=None):
-        parser = argparse.ArgumentParser(description=self.command.description, prog=prog,
+        parser = CommandArgumentParser(description=self.command.description, prog=prog,
             formatter_class=CommandArgumentFormatter)
         for argument in self.command.arguments:
             args = argument[0]
@@ -118,7 +135,11 @@ class CommandRunner(object):
             else:
                 parser.add_argument(*args, **kwargs)
         args = parser.parse_args(sysargs)
-        self.command.run(args)
+
+        try:
+            self.command.run(args)
+        except CommandArgumentError as e:
+            parser.error(e.message)
 
 
 if __name__ == "__main__":

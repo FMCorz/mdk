@@ -88,6 +88,9 @@ class RunCommand(Command):
                 print u'%s (%s)' % (script, scripts[script])
             return
 
+        # Trigger error when script is missing
+        self.argumentError('missing script name')
+
         # Resolving instances
         names = args.names
         if args.all:
