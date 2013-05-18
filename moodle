@@ -53,14 +53,14 @@ function resolve {
 
 # Trying to use the new Python script, if not possible resume the bash script.
 # This whole file should be removed in a later version.
-echo "You are using a deprecated bash script."
-echo "Please update your symlink '`basename $0`'."
+echo "You are using a deprecated bash script." 1>&2
+echo "Please update your symlink '`basename $0`'."  1>&2
 MDK=`resolve 'mdk.py'`
 if [ -n "$MDK" ] && [ -f "$MDK" ]; then
     CLI="`which python` $MDK $COMMAND $ARGS"
-    echo "  ln -sf '$MDK' '$0'"
-    echo ""
-    echo "Executing: $CLI"
+    echo "  ln -sf '$MDK' '$0'" 1>&2
+    echo "" 1>&2
+    echo "Executing: $CLI" 1>&2
     $CLI
     exit $?
 fi
