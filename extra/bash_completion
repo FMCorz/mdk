@@ -85,7 +85,7 @@ function _moodle() {
                 fi
                 ;;
             check)
-                # Empty options.
+                OPTS="--all --branch --cached --directories --remotes --wwwroot"
                 ;;
             config)
                 if [[ "${COMP_CWORD}" == 2 ]]; then

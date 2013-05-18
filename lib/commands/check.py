@@ -37,36 +37,87 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Automatically fix all the identified problems'
             }
+        ),
+        (
+            ['--all'],
+            {
+                'action': 'store_true',
+                'help': 'Enable all the checks, this is the default'
+            }
+        ),
+        (
+            ['--branch'],
+            {
+                'action': 'store_true',
+                'help': 'Check the branch checked out on your integration instances'
+            }
 
         ),
         (
-            ['--limit', '-l'],
+            ['--cached'],
             {
-                'nargs': '*',
-                'default': ['branch', 'cached', 'directories', 'remotes', 'wwwroot'],
-                'choices': ['branch', 'cached', 'directories', 'remotes', 'wwwroot'],
-                'help': 'Limit the identification and fix to those type of issues'
+                'action': 'store_true',
+                'help': 'Check the cached repositories'
             }
+
+        ),
+        (
+            ['--directories'],
+            {
+                'action': 'store_true',
+                'help': 'Check the directories set in the config file'
+            }
+
+        ),
+        (
+            ['--remotes'],
+            {
+                'action': 'store_true',
+                'help': 'Check the remotes of your instances'
+            }
+
+        ),
+        (
+            ['--wwwroot'],
+            {
+                'action': 'store_true',
+                'help': 'Check the $CFG->wwwroot of your instances'
+            }
+
         )
     ]
     _description = 'Perform several checks on your current installation'
 
     def run(self, args):
 
+        allChecks = True
+        if not args.all:
+            argsDict = vars(args)
+            commands = ['directories', 'cached', 'remotes', 'wwwroot', 'branch']
+            for i in commands:
+                if argsDict.get(i):
+                    allChecks = False
+                    break
+
         # Check directories
-        'directories' in args.limit and self.directories(args)
+        if args.directories or allChecks:
+            self.directories(args)
 
         # Check the cached remotes
-        'cached' in args.limit and self.cachedRepositories(args)
+        if args.cached or allChecks:
+            self.cachedRepositories(args)
 
         # Check instances remotes
-        'remotes' in args.limit and self.remotes(args)
+        if args.remotes or allChecks:
+            self.remotes(args)
 
         # Check instances wwwroot
-        'wwwroot' in args.limit and self.wwwroot(args)
+        if args.wwwroot or allChecks:
+            self.wwwroot(args)
 
         # Check the branches
-        'branch' in args.limit and self.branch(args)
+        if args.branch or allChecks:
+            self.branch(args)
 
     def branch(self, args):
         """Make sure the correct branch is checked out. Only on integration branches."""
