@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-import os
+import logging
 import re
 import shlex
 import subprocess
@@ -33,7 +33,7 @@ class Git(object):
     _path = None
     _bin = None
 
-    def __init__(self, path, bin = '/usr/bin/git'):
+    def __init__(self, path, bin='/usr/bin/git'):
         self.setPath(path)
         self.setBin(bin)
 
@@ -51,7 +51,7 @@ class Git(object):
             return False
         cmd = 'am %s' % (files)
         result = self.execute(cmd)
-        return result[0] != 0
+        return result[0] == 0
 
     def checkout(self, branch):
         if self.currentBranch == branch:
@@ -60,7 +60,7 @@ class Git(object):
         result = self.execute(cmd)
         return result[0] == 0
 
-    def createBranch(self, branch, track = None):
+    def createBranch(self, branch, track=None):
         if track != None:
             cmd = 'branch --track %s %s' % (branch, track)
         else:
@@ -82,7 +82,7 @@ class Git(object):
         result = self.execute(cmd)
         return result[0] == 0
 
-    def execute(self, cmd, path = None):
+    def execute(self, cmd, path=None):
         if path == None:
             path = self.getPath()
 
@@ -93,6 +93,8 @@ class Git(object):
             cmd = shlex.split(str(cmd))
         cmd.insert(0, self.getBin())
 
+        logging.debug(' '.join(cmd))
+
         proc = subprocess.Popen(cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -101,7 +103,7 @@ class Git(object):
         (stdout, stderr) = proc.communicate()
         return (proc.returncode, stdout, stderr)
 
-    def fetch(self, remote = '', ref = ''):
+    def fetch(self, remote='', ref=''):
         cmd = 'fetch %s %s' % (remote, ref)
         return self.execute(cmd)
 
@@ -131,7 +133,7 @@ class Git(object):
                 remotes[remote] = repo
         return remotes
 
-    def hasBranch(self, branch, remote = ''):
+    def hasBranch(self, branch, remote=''):
         if remote != '':
             cmd = 'show-ref --verify --quiet "refs/remotes/%s/%s"' % (remote, branch)
         else:
@@ -141,13 +143,10 @@ class Git(object):
 
     def hashes(self, ref='', format='%H', limit=30):
         """Returns the latest hashes from git log"""
-        cmd = 'log %s -n %d --format=%s' % (ref, limit, format)
-        (returncode, hashlist, stderr) = self.execute(cmd)
-        if returncode != 0:
-            raise GitException('Error while getting hashes. Command: %s' % (cmd))
+        hashlist = self.log(count=limit, format=format, since=ref)
         return hashlist.split('\n')[:-1]
 
-    def isRepository(self, path = None):
+    def isRepository(self, path=None):
         if path == None:
             path = self.getPath()
 
@@ -160,6 +159,29 @@ class Git(object):
         proc.wait()
         return proc.returncode == 0
 
+    def log(self, count=10, since=None, path=None, format=None):
+        """Calls the log command and returns the raw output"""
+        cmd = 'log'
+        if count != None and count != 0:
+            cmd += ' -n %d ' % (int(count))
+        if format != None:
+            cmd += ' --format=%s ' % (format)
+        if since != None:
+            cmd += ' %s ' % (since)
+        if path != None:
+            cmd += ' -- %s' % (path)
+
+        (returncode, stdout, stderr) = self.execute(cmd)
+        if returncode != 0:
+            raise GitException('Error calling git log. Command: %s' % (cmd))
+
+        return stdout
+
+    def messages(self, count=10, since=None, path=None):
+        """Return the latest titles of the commit messages"""
+        messages = self.log(count=count, since=since, path=path, format='%s')
+        return messages.split('\n')[:-1]
+
     def pick(self, refs=None, abort=None):
         args = ''
         if refs != None:
@@ -171,11 +193,11 @@ class Git(object):
         cmd = 'cherry-pick %s' % (args)
         return self.execute(cmd)
 
-    def pull(self, remote = '', ref = ''):
+    def pull(self, remote='', ref=''):
         cmd = 'pull %s %s' % (remote, ref)
         return self.execute(cmd)
 
-    def push(self, remote = '', branch = '', force = None):
+    def push(self, remote='', branch='', force=None):
         if force:
             force = '--force '
         else:
@@ -183,7 +205,7 @@ class Git(object):
         cmd = 'push %s%s %s' % (force, remote, branch)
         return self.execute(cmd)
 
-    def rebase(self, base = None, branch = None, abort = False):
+    def rebase(self, base=None, branch=None, abort=False):
         cmd = None
         if abort:
             cmd = 'rebase --abort'
@@ -216,11 +238,16 @@ class Git(object):
             refs.append([hash, ref])
         return refs
 
-    def reset(self, to, hard = False):
+    def reset(self, to, hard=False):
         mode = ''
         if hard:
             mode = '--hard'
         cmd = 'reset %s %s' % (mode, to)
+        result = self.execute(cmd)
+        return result[0] == 0
+
+    def setConfig(self, name, value):
+        cmd = 'config %s %s' % (name, value)
         result = self.execute(cmd)
         return result[0] == 0
 
@@ -232,7 +259,7 @@ class Git(object):
         result = self.execute(cmd)
         return result[0] == 0
 
-    def stash(self, command = 'save', untracked = False):
+    def stash(self, command='save', untracked=False):
         cmd = 'stash %s' % command
         if untracked:
             cmd += ' --include-untracked'

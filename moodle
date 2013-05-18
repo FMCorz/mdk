@@ -23,7 +23,11 @@ ARGS=${@:2}
 
 # Resolve a command
 function resolve {
-    BIN=`which moodle-$1.py`
+    PY="moodle-$1.py"
+    if [[ $1 == "mdk.py" ]]; then
+        PY="mdk.py"
+    fi
+    BIN=`which $PY`
     if [ -z "$BIN" ]
     then
         if [ -n "${BASH_SOURCE[0]}" ]
@@ -37,7 +41,7 @@ function resolve {
                 DIR="$( cd -P "$( dirname "$SOURCE"  )" && pwd )"
             done
             DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-            BIN="$DIR/moodle-$1.py"
+            BIN="$DIR/$PY"
         fi
     fi
     if [ -z "$BIN" ] || [ ! -f "$BIN" ]
@@ -47,9 +51,24 @@ function resolve {
     echo "$BIN"
 }
 
+# Trying to use the new Python script, if not possible resume the bash script.
+# This whole file should be removed in a later version.
+echo "You are using a deprecated bash script." 1>&2
+echo "Please update your symlink '`basename $0`'."  1>&2
+MDK=`resolve 'mdk.py'`
+if [ -n "$MDK" ] && [ -f "$MDK" ]; then
+    CLI="`which python` $MDK $COMMAND $ARGS"
+    echo "  ln -sf '$MDK' '$0'" 1>&2
+    echo "" 1>&2
+    echo "Executing: $CLI" 1>&2
+    $CLI
+    exit $?
+fi
+echo ""
+
 # Checking if an alias exist for that command.
 BIN=`resolve "alias"`
-ALIAS=`$BIN show $COMMAND`
+ALIAS=`$BIN show $COMMAND | tail -1`
 
 if [ -n "$ALIAS" ]
 then

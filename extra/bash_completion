@@ -22,30 +22,35 @@
 # This file defines the functions for Bash completion.
 #
 # To install on Ubuntu, link this file into /etc/bash_completion.d
-#     ln -s bash_completion /etc/bash_completion.d/moodle
-#     source /etc/bash_completion.d/moodle
+#     ln -s bash_completion /etc/bash_completion.d/mdk
+#     source /etc/bash_completion.d/mdk
 
-function _moodle() {
+function _mdk() {
     local BIN CMD CUR PREV OPTS
     COMPREPLY=()
     BIN="${COMP_WORDS[0]}"
     CUR="${COMP_WORDS[COMP_CWORD]}"
     OPTS=""
 
-    # Helper to list the scripts available to `moodle run`.
+    # Helper to list the scripts available to `mdk run`.
     function _list_scripts() {
-        local FOLDER
-        FOLDER="$(dirname $(readlink `which $BIN`))/scripts"
-        if [[ -d "$FOLDER" ]]; then
-            echo "$(ls $FOLDER | grep -v 'README.md')"
-        fi
+        local SCRIPTS
+        SCRIPTS=$($BIN run --list 2> /dev/null | cut -d ' ' -f 1)
+        echo $SCRIPTS
+    }
+
+    # Helper to list the instances.
+    function _list_instances() {
+        local INSTANCES
+        INSTANCES=$($BIN info -ln 2> /dev/null)
+        echo $INSTANCES
     }
 
     if [[ "${COMP_CWORD}" == 1 ]]; then
         # List the commands and aliases.
         # Ignoring these commands on purpose: init
         OPTS="alias backport backup behat check config create fix info install phpunit purge pull push rebase remove run update upgrade"
-        OPTS="$OPTS $($BIN alias list | cut -d ':' -f 1)"
+        OPTS="$OPTS $($BIN alias list 2> /dev/null | cut -d ':' -f 1)"
     else
         # List of options according to the command.
         CMD="${COMP_WORDS[1]}"
@@ -55,36 +60,43 @@ function _moodle() {
                 if [[ "${COMP_CWORD}" == 2 ]]; then
                     OPTS="list show add remove"
                 elif [[ "${COMP_CWORD}" == 3 && "${PREV}" != "add" && "${PREV}" != "list" ]]; then
-                    OPTS="$($BIN alias list | cut -d ':' -f 1)"
+                    OPTS="$($BIN alias list 2> /dev/null | cut -d ':' -f 1)"
                 fi
                 ;;
             backport)
                 if [[ "$CUR" == -* ]]; then
-                    OPTS="--branch --remote --integration --dont-push --dont-fetch --push --push-to --force-push --versions"
+                    OPTS="--branch --remote --integration --dont-push --dont-fetch --push --push-to --force-push --versions --update-tracker"
                 else
-                    OPTS="-- $($BIN info -ln)"
+                    OPTS="-- $(_list_instances)"
                 fi
                 ;;
             backup)
                 OPTS="--list --info --restore"
                 if [[ "${COMP_CWORD}" == 3 && ("${PREV}" == "--restore" || "${PREV}" == "--info") ]]; then
-                    OPTS="$($BIN backup --list | cut -d ' ' -f 1)"
+                    OPTS="$($BIN backup --list 2> /dev/null | cut -d ' ' -f 1)"
                 elif [[ "${COMP_CWORD}" == 2 && "$CUR"  != -* ]]; then
-                    OPTS="$OPTS $($BIN info -ln)"
+                    OPTS="$OPTS $(_list_instances)"
                 fi
                 ;;
             behat)
-                OPTS="--run --switch-completely --no-javascript --selenium --selenium-verbose"
-                OPTS="$OPTS $($BIN info -ln)"
+                if [[ "${PREV}" == "--feature" ]]; then
+                    # Basic autocomplete for --feature, should append a / at the end of directory names.
+                    compopt +o nospace
+                    OPTS="$(compgen -A file $CUR)"
+                    compopt -o nospace
+                else
+                    OPTS="--run --disable --feature --switch-completely --no-javascript --selenium --selenium-verbose --tags"
+                    OPTS="$OPTS $(_list_instances)"
+                fi
                 ;;
             check)
-                # Empty options.
+                OPTS="--all --branch --cached --directories --remotes --wwwroot"
                 ;;
             config)
                 if [[ "${COMP_CWORD}" == 2 ]]; then
                     OPTS="flatlist list show set"
                 elif [[ "${COMP_CWORD}" == 3 && ("${PREV}" == "set" || "${PREV}" == "show") ]]; then
-                    OPTS="$($BIN config flatlist | cut -d ':' -f 1)"
+                    OPTS="$($BIN config flatlist 2> /dev/null | cut -d ':' -f 1)"
                 fi
                 ;;
             create)
@@ -105,7 +117,7 @@ function _moodle() {
             info)
                 OPTS="--list --var --edit"
                 if [[ "${COMP_CWORD}" == 2 && "$CUR" != -* ]]; then
-                    OPTS="$OPTS $($BIN info -ln)"
+                    OPTS="$OPTS $(_list_instances)"
                 elif [[ "${COMP_CWORD}" == 3 && ("$PREV" == "--list" || "$PREV" == "-l") ]]; then
                     OPTS="--integration --stable --names-only"
                 fi
@@ -121,19 +133,26 @@ function _moodle() {
                         ;;
                     *)
                         if [[ "$CUR" != -* ]]; then
-                            OPTS="$OPTS $($BIN info -ln)"
+                            OPTS="$OPTS $(_list_instances)"
                         fi
                     ;;
                 esac
                 ;;
             phpunit)
-                OPTS="--force --run"
-                OPTS="$OPTS $($BIN info -ln)"
+                if [[ "${PREV}" == "--unittest" ]]; then
+                    # Basic autocomplete for --unittest, should append a / at the end of directory names.
+                    compopt +o nospace
+                    OPTS="$(compgen -A file $CUR)"
+                    compopt -o nospace
+                else
+                    OPTS="--force --run --unittest"
+                    OPTS="$OPTS $(_list_instances)"
+                fi
                 ;;
             purge)
                 OPTS="--all --integration --stable"
                 if [[ "$CUR" != -* ]]; then
-                    OPTS="$OPTS $($BIN info -ln)"
+                    OPTS="$OPTS $(_list_instances)"
                 fi
                 ;;
             pull)
@@ -143,15 +162,15 @@ function _moodle() {
                 if [[ "$PREV" != "--branch" && "$PREV" != "-b" && "$PREV" != "--remote" && "$PREV" != "-r" ]]; then
                     OPTS="--branch --remote --force --include-stable --force-stable --update-tracker"
                     if [[ "$CUR" != -* ]]; then
-                        OPTS="$OPTS $($BIN info -ln)"
+                        OPTS="$OPTS $(_list_instances)"
                     fi
                 fi
                 ;;
             rebase)
                 if [[ "$PREV" == "rebase" || "$PREV" == "-p" || "$PREV" == "--push" || "$PREV" == "-f" || "$PREV" == "--force-push" ]]; then
-                    OPTS="--issues --suffix --versions --push --remote --force-push"
+                    OPTS="--issues --suffix --versions --push --remote --force-push --update-tracker"
                     if [[ "$CUR" != -* ]]; then
-                        OPTS="$OPTS $($BIN info -ln)"
+                        OPTS="$OPTS $(_list_instances)"
                     fi
                 fi
                 ;;
@@ -162,19 +181,19 @@ function _moodle() {
                 if [[ "${COMP_CWORD}" == 2 ]]; then
                     OPTS="$(_list_scripts)"
                 elif [[ "${COMP_CWORD}" == 3 ]]; then
-                    OPTS="--integration --stable --all $($BIN info -ln)"
+                    OPTS="--integration --stable --all --list $(_list_instances)"
                 fi
                 ;;
             update)
                 OPTS="--integration --stable --all --upgrade --update-cache --proceed"
                 if [[ "$CUR" != -* ]]; then
-                    OPTS="$OPTS $($BIN info -ln)"
+                    OPTS="$OPTS $(_list_instances)"
                 fi
                 ;;
             upgrade)
                 OPTS="--integration --stable --all --updade --no-checkout"
                 if [[ "$CUR" != -* ]]; then
-                    OPTS="$OPTS $($BIN info -ln)"
+                    OPTS="$OPTS $(_list_instances)"
                 fi
                 ;;
             *)
@@ -186,9 +205,6 @@ function _moodle() {
     return 0
 }
 
-if [[ -n "$(which moodle)" ]]; then
-    complete -F _moodle moodle
-fi
 if [[ -n "$(which mdk)" ]]; then
-    complete -F _moodle mdk
+    complete -F _mdk mdk
 fi

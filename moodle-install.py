@@ -21,53 +21,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 http://github.com/FMCorz/mdk
 """
-import sys
-import os
-import argparse
 
-from lib import db, moodle, workplace
-from lib.tools import debug
+import sys
+from os.path import basename
+from lib.command import CommandRunner
+from lib.commands import getCommand
 from lib.config import Conf
 
-DB = db.DB
-Wp = workplace.Workplace()
-C = Conf()
+f = basename(__file__)
+sys.stderr.write("Do not call %s directly.\n" % (f))
+sys.stderr.write("This file will be removed in a later version.\n")
+sys.stderr.write("Please use `mdk [command] [arguments]`\n")
+sys.stderr.write("\n")
 
-# Arguments
-parser = argparse.ArgumentParser(description='Install a Moodle instance')
-parser.add_argument('-e', '--engine', action='store', choices=['mysqli', 'pgsql'], default=C.get('defaultEngine'), help='database engine to use', metavar='engine')
-parser.add_argument('-f', '--fullname', action='store', help='full name of the instance', metavar='fullname')
-parser.add_argument('-r', '--run', action='store', nargs='*', help='scripts to run after installation', metavar='run')
-parser.add_argument('name', metavar='name', default=None, nargs='?', help='name of the instance')
-args = parser.parse_args()
-
-name = args.name
-engine = args.engine
-fullname = args.fullname
-
-M = Wp.resolve(name)
-if not M:
-    debug('This is not a Moodle instance')
-    sys.exit(1)
-
-name = M.get('identifier')
-dataDir = Wp.getPath(name, 'data')
-if not os.path.isdir(dataDir):
-	os.mkdir(dataDir, 0777)
-
-kwargs = {
-	'engine': engine,
-	'fullname': fullname,
-	'dataDir': dataDir
-}
-M.install(**kwargs)
-
-# Running scripts
-if M.isInstalled() and type(args.run) == list:
-    for script in args.run:
-        debug('Running script \'%s\'' % (script))
-        try:
-            M.runScript(script)
-        except Exception as e:
-            debug('Error while running the script')
-            debug(e)
+cmd = f.replace('moodle-', '').replace('.py', '')
+cls = getCommand(cmd)
+Cmd = cls(Conf())
+Runner = CommandRunner(Cmd)
+Runner.run(None, prog='%s %s' % ('mdk', cmd))

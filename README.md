@@ -54,8 +54,8 @@ Manual installation
 
 ### 2. Make executable and accessible
 
-    sudo chmod +x /opt/moodle-sdk/moodle /opt/moodle-sdk/moodle-*.py
-    sudo ln -s /opt/moodle-sdk/moodle /usr/local/bin/mdk
+    sudo chmod +x /opt/moodle-sdk/mdk.py
+    sudo ln -s /opt/moodle-sdk/mdk.py /usr/local/bin/mdk
 
 ### 3. Set up the basics
 
@@ -126,13 +126,17 @@ Restore the second backup of the instance stable_master
 behat
 -----
 
-Get the instance ready for acceptance testing (Behat).
+Get the instance ready for acceptance testing (Behat), and run the test feature(s).
+
+**Examples**
+
+    mdk behat -r --tags=@core_completion
 
 
 check
 -----
 
-Perform some checks on the environment to identify possible problems.
+Perform some checks on the environment to identify possible problems, and attempt to fix them automatically.
 
 create
 ------
@@ -206,8 +210,11 @@ Run the command line installation script with all parameters set on an existing 
 phpunit
 -------
 
-Get the instance ready for PHPUnit tests.
+Get the instance ready for PHPUnit tests, and run the test(s).
 
+**Examples**
+
+    mdk phpunit -u repository/tests/repository_test.php
 
 purge
 -----
@@ -283,6 +290,27 @@ Set the instance stable_master ready for development
 
     mdk run dev stable_master
 
+
+tracker
+-------
+
+Gets some information about the issue on the tracker.
+
+**Example**
+
+    $ mdk tracker 34543
+    ------------------------------------------------------------------------
+      MDL-34543: New assignment module - Feedback file exists for an
+        assignment but not shown in the Feedback files picker
+      Bug - Critical - https://tracker.moodle.org/browse/MDL-34543
+      Closed (Fixed) 2012-08-17 07:25
+    -------------------------------------------------------[ V: 7 - W: 7 ]--
+    Reporter            : Paul Hague (paulhague) on 2012-07-26 08:30
+    Assignee            : Eric Merrill (emerrill)
+    Peer reviewer       : Damyon Wiese (damyon)
+    Integrator          : Dan Poltawski (poltawski)
+    Tester              : Tim Barker (timb)
+    ------------------------------------------------------------------------
 
 update
 ------

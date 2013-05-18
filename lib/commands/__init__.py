@@ -4,7 +4,7 @@
 """
 Moodle Development Kit
 
-Copyright (c) 2012 Frédéric Massart - FMCorz.net
+Copyright (c) 2013 Frédéric Massart - FMCorz.net
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,49 +23,31 @@ http://github.com/FMCorz/mdk
 """
 
 
-class BackupDirectoryExistsException(Exception):
-    pass
+def getCommand(cmd):
+    """Lazy loading of a command class. Millseconds saved, hurray!"""
+    cls = cmd.capitalize() + 'Command'
+    return getattr(getattr(getattr(__import__('lib.%s.%s' % ('commands', cmd)), 'commands'), cmd), cls)
 
-
-class BackupDBExistsException(Exception):
-    pass
-
-
-class BackupDBEngineNotSupported(Exception):
-    pass
-
-
-class ConfigFileNotFound(Exception):
-    pass
-
-
-class ConfigFileCouldNotBeLoaded(Exception):
-    pass
-
-
-class ConfigFileCouldNotBeSaved(Exception):
-    pass
-
-
-class ConflictInScriptName(Exception):
-    pass
-
-
-class CreateException(Exception):
-    pass
-
-
-class DisplayCommandHelp(Exception):
-    pass
-
-
-class InstallException(Exception):
-    pass
-
-
-class ScriptNotFound(Exception):
-    pass
-
-
-class UnsupportedScript(Exception):
-    pass
+commandsList = [
+    'alias',
+    'backport',
+    'backup',
+    'behat',
+    'check',
+    'config',
+    'create',
+    'fix',
+    'info',
+    'init',
+    'install',
+    'phpunit',
+    'pull',
+    'purge',
+    'push',
+    'rebase',
+    'remove',
+    'run',
+    'tracker',
+    'update',
+    'upgrade'
+]

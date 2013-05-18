@@ -23,20 +23,21 @@ http://github.com/FMCorz/mdk
 """
 
 import json
-from tools import debug, question
+from tools import question
 from config import Conf
 from urllib import urlencode, urlretrieve
 from urlparse import urlparse
 from base64 import b64encode
 from datetime import datetime
+import logging
 import os
 import httplib
-import getpass
 try:
     import keyring
 except:
-    debug('Could not load module keyring. You might want to install it.')
-    debug('Try `apt-get install python-keyring`, or visit http://pypi.python.org/pypi/keyring')
+    # TODO Find a better way of suggesting this
+    # debug('Could not load module keyring. You might want to install it.')
+    # debug('Try `apt-get install python-keyring`, or visit http://pypi.python.org/pypi/keyring')
     pass
 
 C = Conf()
@@ -243,7 +244,7 @@ class Jira(object):
 
         if not update['fields']:
             # No fields to update
-            debug('No updates required')
+            logging.info('No updates required')
             return True
 
         resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(update))

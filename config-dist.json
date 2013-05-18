@@ -109,6 +109,8 @@
     // The public acccess URL of your repository. It is used to populate the fields on the tracker issue.
     "repositoryUrl": "git://github.com/YourGitHub/moodle.git",
 
+    // The scheme to set during an install (http or https)
+    "scheme": "http",
     // The host name to set during an install
     "host": "localhost",
     // Path to your Moodle instances, http://host/path/ should point to dirs.www.
@@ -137,9 +139,8 @@
     // Path to Java
     "java": "/usr/bin/java",
 
-    // Experimental setting to use a local cache as your upstream remotes.
-    // Can be useful to prevent fetch from a slow remote.
-    "useCacheAsRemote": false,
+    // Debug level of MDK. 'debug', 'info', 'warning', 'error' or 'critical'.
+    "debug": "info",
 
     // Name of the symlink pointing to the data directory to create in the www directory
     // during an instance creation. If false, the symlink won't be created.
