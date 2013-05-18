@@ -25,6 +25,7 @@ http://github.com/FMCorz/mdk
 import os
 import re
 import shutil
+import glob
 
 from tools import debug, process
 from db import DB
@@ -603,6 +604,22 @@ class Moodle(object):
             result = self.cli('mdkrun.php', **kwargs)
             os.remove(dest)
             return result[0]
+
+    def listScripts(self):
+        """List scripts available """
+        directories = ['~/.moodle-sdk']
+        if C.get('dirs.moodle') != None:
+            directories.insert(0, C.get('dirs.moodle'))
+        directories.append('/etc/moodle-sdk')
+        directories.append(os.path.join(os.path.dirname(__file__), '..'))
+
+        # Loop over each directory in order of preference.
+        for directory in directories:
+            path = os.path.join(directory, 'scripts')
+            if os.path.exists(path):
+                os.chdir(path)
+                for files in glob.glob('*.php'):
+                    print files
 
     def update(self, remote = None):
         """Update the instance from the remote"""

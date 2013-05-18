@@ -54,7 +54,10 @@ if len(Mlist) < 1:
 for M in Mlist:
     debug('Running \'%s\' on \'%s\'' % (args.script, M.get('identifier')))
     try:
-        M.runScript(args.script, stderr=None, stdout=None)
+        if args.script == 'list':
+            M.listScripts()
+        else:
+            M.runScript(args.script, stderr=None, stdout=None)
     except Exception as e:
         debug('Error while running the script on %s' % M.get('identifier'))
         debug(e)
