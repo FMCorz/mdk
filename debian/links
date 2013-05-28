@@ -1,4 +1,4 @@
-/usr/share/moodle-sdk/moodle /usr/bin/mdk
+/usr/share/moodle-sdk/mdk.py /usr/bin/mdk
 /usr/share/moodle-sdk/extra/apache.conf /etc/apache2/sites-available/moodle-sdk
 /usr/share/moodle-sdk/extra/bash_completion /etc/bash_completion.d/moodle-sdk
 /usr/share/moodle-sdk/extra/welcome.php /var/lib/moodle-sdk/www/index.php

@@ -1,6 +1,7 @@
-moodle /usr/share/moodle-sdk
-moodle-*.py /usr/share/moodle-sdk/
+mdk.py /usr/share/moodle-sdk
 config-dist.json /usr/share/moodle-sdk/
+version.py /usr/share/moodle-sdk/
 extra/* /usr/share/moodle-sdk/extra/
 lib/*.py /usr/share/moodle-sdk/lib/
+lib/commands/*.py /usr/share/moodle-sdk/lib/commands/
 scripts/* /usr/share/moodle-sdk/scripts/

@@ -1,6 +1,7 @@
 /usr/share/moodle-sdk
 /usr/share/moodle-sdk/extra
 /usr/share/moodle-sdk/lib
+/usr/share/moodle-sdk/lib/commands
 /usr/share/moodle-sdk/scripts
 /etc/moodle-sdk
 /var/lib/moodle-sdk/storage

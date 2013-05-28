@@ -6,5 +6,4 @@ DH_ALWAYS_EXCLUDE=.git:.gitignore
 	dh $@
 
 install:
-	chmod +x debian/moodle-sdk/usr/share/moodle-sdk/moodle
-	chmod +x debian/moodle-sdk/usr/share/moodle-sdk/moodle*.py
+	chmod +x debian/moodle-sdk/usr/share/moodle-sdk/mdk.py
