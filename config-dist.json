@@ -109,6 +109,8 @@
     // The public acccess URL of your repository. It is used to populate the fields on the tracker issue.
     "repositoryUrl": "git://github.com/YourGitHub/moodle.git",
 
+    // The scheme to set during an install (http or https)
+    "scheme": "http",
     // The host name to set during an install
     "host": "moodle-sdk",
     // Path to your Moodle instances, http://host/path/ should point to dirs.www.
@@ -137,16 +139,15 @@
     // Path to Java
     "java": "/usr/bin/java",
 
-    // Experimental setting to use a local cache as your upstream remotes.
-    // Can be useful to prevent fetch from a slow remote.
-    "useCacheAsRemote": false,
+    // Debug level of MDK. 'debug', 'info', 'warning', 'error' or 'critical'.
+    "debug": "info",
 
     // Name of the symlink pointing to the data directory to create in the www directory
     // during an instance creation. If false, the symlink won't be created.
     "symlinkToData": false,
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 25,
+    "masterBranch": 26,
 
     // Aliases for MDK commands.
     // An alias starting with a ! will be executed through the command line.

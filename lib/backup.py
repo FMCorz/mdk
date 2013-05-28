@@ -25,9 +25,10 @@ http://github.com/FMCorz/mdk
 import os
 import json
 import time
+import logging
 from distutils.dir_util import copy_tree
 
-from tools import debug, chmodRecursive
+from tools import chmodRecursive
 from db import DB
 from config import Conf
 from workplace import Workplace
@@ -36,6 +37,7 @@ from exceptions import *
 C = Conf()
 jason = 'info.json'
 sqlfile = 'dump.sql'
+
 
 class BackupManager(object):
 
@@ -59,27 +61,27 @@ class BackupManager(object):
         # Copy whole directory, shutil will create topath
         topath = os.path.join(self.path, backup_identifier)
         path = Wp.getPath(name)
-        debug('Copying instance directory')
-        copy_tree(path, topath, preserve_symlinks = 1)
+        logging.info('Copying instance directory')
+        copy_tree(path, topath, preserve_symlinks=1)
 
         # Dump the whole database
         if M.isInstalled():
-            debug('Dumping database')
+            logging.info('Dumping database')
             dumpto = os.path.join(topath, sqlfile)
             fd = open(dumpto, 'w')
             M.dbo().selectdb(M.get('dbname'))
             M.dbo().dump(fd)
         else:
-            debug('Instance not installed. Do not dump database.')
+            logging.info('Instance not installed. Do not dump database.')
 
         # Create a JSON file containing all known information
-        debug('Saving instance information')
+        logging.info('Saving instance information')
         jsonto = os.path.join(topath, jason)
         info = M.info()
         info['backup_origin'] = path
         info['backup_identifier'] = backup_identifier
         info['backup_time'] = now
-        json.dump(info, open(jsonto, 'w'), sort_keys = True, indent = 4)
+        json.dump(info, open(jsonto, 'w'), sort_keys=True, indent=4)
 
         return True
 
@@ -151,7 +153,7 @@ class Backup(object):
         except:
             raise Exception('Could not load information from JSON file')
 
-    def restore(self, destination = None):
+    def restore(self, destination=None):
         """Restores the backup"""
 
         identifier = self.get('identifier')
@@ -176,8 +178,8 @@ class Backup(object):
 
         # Copy tree to destination
         try:
-            debug('Restoring instance directory')
-            copy_tree(self.path, destination, preserve_symlinks = 1)
+            logging.info('Restoring instance directory')
+            copy_tree(self.path, destination, preserve_symlinks=1)
             M = Wp.get(identifier)
             chmodRecursive(Wp.getPath(identifier, 'data'), 0777)
         except Exception as e:
@@ -185,14 +187,14 @@ class Backup(object):
 
         # Restoring database
         if self.get('installed') and os.path.isfile(self.sqlfile):
-            debug('Restoring database')
+            logging.info('Restoring database')
             content = ''
             f = open(self.sqlfile, 'r')
             for l in f:
                 content += l
             queries = content.split(';\n')
             content = None
-            debug("%d queries to execute" % (len(queries)))
+            logging.info("%d queries to execute" % (len(queries)))
 
             dbo.createdb(dbname)
             dbo.selectdb(dbname)
@@ -202,12 +204,11 @@ class Backup(object):
                 try:
                     dbo.execute(query)
                 except:
-                    debug('Query failed! You will have to fix this mually.')
-                    debug(query)
+                    logging.error('Query failed! You will have to fix this mually. %s', query)
                 done += 1
                 if done % 500 == 0:
-                    debug("%d queries done" % done)
-            debug('%d queries done' % done)
+                    logging.debug("%d queries done" % done)
+            logging.info('%d queries done' % done)
             dbo.close()
 
         # Restoring symbolic link
@@ -215,9 +216,8 @@ class Backup(object):
         wwwDir = Wp.getPath(identifier, 'www')
         if os.path.islink(linkDir):
             os.remove(linkDir)
-        if os.path.isfile(linkDir) or os.path.isdir(linkDir): # No elif!
-            debug('Could not create symbolic link')
-            debug('Please manually create: ln -s %s %s' % (wwwDir, linkDir))
+        if os.path.isfile(linkDir) or os.path.isdir(linkDir):  # No elif!
+            logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (wwwDir, linkDir))
         else:
             os.symlink(wwwDir, linkDir)
 

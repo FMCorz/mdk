@@ -1,6 +1,35 @@
 Changelog
 =========
 
+v0.4
+----
+
+* New command `tracker` to fetch information from the tracker
+* `alias` support arguments for bash aliases
+* `alias` can update aliases
+* `backport` works locally
+* `backport` can update tracker Git info
+* `behat` can limit features to test
+* `behat` can disable itself
+* `check` can fix problems
+* `check` checks remote URLs
+* `check` checks $CFG->wwwroot
+* `check` checks the branch checked out on integration instances
+* `create` accepts multiple versions
+* `create` accepts multiple suffixes
+* `phpunit` can limit testing to one file
+* `pull` can download patch from the tracker
+* `pull` can checkout the remote branch
+* `push` checks that the branch and MDL in commit message match
+* `rebase` can update tracker Git info
+* `run` can list the available scripts
+* Cached repositories are mirrors
+* Removed use of Bash script to launch commands
+* Deprecated moodle-*.py files
+* Instances can be installed on https
+* Improved debugging
+
+
 v0.3
 ----
 

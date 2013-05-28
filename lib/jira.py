@@ -23,18 +23,21 @@ http://github.com/FMCorz/mdk
 """
 
 import json
-from tools import debug, question
+from tools import question
 from config import Conf
-from urllib import urlencode
+from urllib import urlencode, urlretrieve
 from urlparse import urlparse
 from base64 import b64encode
+from datetime import datetime
+import logging
+import os
 import httplib
-import getpass
 try:
     import keyring
 except:
-    debug('Could not load module keyring. You might want to install it.')
-    debug('Try `apt-get install python-keyring`, or visit http://pypi.python.org/pypi/keyring')
+    # TODO Find a better way of suggesting this
+    # debug('Could not load module keyring. You might want to install it.')
+    # debug('Try `apt-get install python-keyring`, or visit http://pypi.python.org/pypi/keyring')
     pass
 
 C = Conf()
@@ -58,11 +61,34 @@ class Jira(object):
         self.version = {}
         self._load()
 
+    def download(self, url, dest):
+        """Download a URL to the destination while authenticating the user"""
+        headers = {}
+        headers['Authorization'] = 'Basic %s' % (b64encode('%s:%s' % (self.username, self.password)))
+
+        if self.ssl:
+            r = httplib.HTTPSConnection(self.host)
+        else:
+            r = httplib.HTTPConnection(self.host)
+        r.request('GET', url, None, headers)
+
+        resp = r.getresponse()
+        if resp.status == 403:
+            raise JiraException('403 Request not authorized. %s %s' % ('GET', url))
+
+        data = resp.read()
+        if len(data) > 0:
+            f = open(dest, 'w')
+            f.write(data)
+            f.close()
+
+        return os.path.isfile(dest)
+
     def get(self, param, default=None):
         """Returns a property of this instance"""
         return self.info().get(param, default)
 
-    def getIssue(self, key, fields='*all'):
+    def getIssue(self, key, fields='*all,-comment'):
         """Load the issue info from the jira server using a rest api call.
 
         The returned key 'named' of the returned dict is organised by name of the fields, not id.
@@ -154,7 +180,6 @@ class Jira(object):
             # Do not die if keyring package is not available.
             pass
 
-
         return True
 
     def reload(self):
@@ -194,6 +219,11 @@ class Jira(object):
 
         return {'status': resp.status, 'data': data}
 
+    @staticmethod
+    def parseDate(value):
+        """Parse a date returned by Jira API"""
+        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.000+0000')
+
     def setCustomFields(self, key, updates):
         """Set a list of fields for this issue in Jira
 
@@ -214,7 +244,7 @@ class Jira(object):
 
         if not update['fields']:
             # No fields to update
-            debug('No updates required')
+            logging.info('No updates required')
             return True
 
         resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(update))

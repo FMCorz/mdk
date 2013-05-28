@@ -37,7 +37,12 @@ if (@include_once('FirePHPCore/fb.php')) {
     ob_start();
 }
 ";
-if ($f = fopen(dirname(__FILE__).'/config.php', 'a')) {
-    fputs($f, $firephp);
-    fclose($f);
+$conffile = dirname(__FILE__) . '/config.php';
+if ($content = file_get_contents($conffile)) {
+    if (strpos($content, "include_once('FirePHPCore/fb.php')") === false) {
+        if ($f = fopen($conffile, 'a')) {
+            fputs($f, $firephp);
+            fclose($f);
+        }
+    }
 }

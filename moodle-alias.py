@@ -23,50 +23,19 @@ http://github.com/FMCorz/mdk
 """
 
 import sys
-import argparse
-from lib.tools import debug
+from os.path import basename
+from lib.command import CommandRunner
+from lib.commands import getCommand
 from lib.config import Conf
 
-try:
-    C = Conf()
-except:
-    # Quietly die here. The main reason would be that the config file could not
-    # be loaded for some reason, which means that the environment has not been
-    # set yet. Therefore we exit quietly. This is a very specific case for
-    # moodle-alias as it is used in the Moodle bash script which does not know
-    # if the environment is properly set or not.
-    sys.exit()
+f = basename(__file__)
+sys.stderr.write("Do not call %s directly.\n" % (f))
+sys.stderr.write("This file will be removed in a later version.\n")
+sys.stderr.write("Please use `mdk [command] [arguments]`\n")
+sys.stderr.write("\n")
 
-# Arguments
-parser = argparse.ArgumentParser(description='Manage your aliases')
-parser.add_argument('command', metavar='command', choices=['list', 'show', 'add', 'remove'], help='the action to perform')
-parser.add_argument('arguments', type=str, metavar='arguments', default=None, nargs=argparse.REMAINDER, help='arguments for the command')
-args = parser.parse_args()
-
-if args.command == 'list':
-    aliases = C.get('aliases')
-    for alias, command in aliases.items():
-        print '{0:<20}: {1}'.format(alias, command)
-
-elif args.command == 'show':
-    if len(args.arguments) != 1:
-        debug('Too few/many arguments. One needed: moodle alias show aliasName')
-        sys.exit(1)
-    alias = C.get('aliases.%s' % args.arguments[0])
-    if alias != None:
-        debug(alias)
-
-elif args.command == 'add':
-    if len(args.arguments) < 2:
-        debug('Too few/many arguments. Two needed: moodle alias add aliasName Command To Perform')
-        sys.exit(1)
-    alias = args.arguments[0]
-    command = ' '.join(args.arguments[1:])
-    C.add('aliases.%s' % alias, command)
-
-elif args.command == 'remove':
-    if len(args.arguments) != 1:
-        debug('Too few/many arguments. One needed: moodle alias remove aliasName')
-        sys.exit(1)
-    alias = args.arguments[0]
-    C.remove('aliases.%s' % alias)
+cmd = f.replace('moodle-', '').replace('.py', '')
+cls = getCommand(cmd)
+Cmd = cls(Conf())
+Runner = CommandRunner(Cmd)
+Runner.run(None, prog='%s %s' % ('mdk', cmd))

@@ -23,57 +23,19 @@ http://github.com/FMCorz/mdk
 """
 
 import sys
-import argparse
-from lib.tools import debug
+from os.path import basename
+from lib.command import CommandRunner
+from lib.commands import getCommand
 from lib.config import Conf
 
-C = Conf()
+f = basename(__file__)
+sys.stderr.write("Do not call %s directly.\n" % (f))
+sys.stderr.write("This file will be removed in a later version.\n")
+sys.stderr.write("Please use `mdk [command] [arguments]`\n")
+sys.stderr.write("\n")
 
-# Arguments
-parser = argparse.ArgumentParser(description='Manage your configuration')
-parser.add_argument('command', metavar='command', choices=['flatlist', 'list', 'show', 'set'], help='the action to perform')
-parser.add_argument('arguments', metavar='arguments', default=None, nargs='*', help='arguments for the command')
-args = parser.parse_args()
-
-if args.command == 'list':
-    def show_list(settings, ident):
-        for name, setting in settings.items():
-            if type(setting) != dict:
-                print u'{0:<20}: {1}'.format(u' ' * ident + name, setting)
-            else:
-                print u' ' * ident + '[%s]' % name
-                show_list(setting, ident + 2)
-    show_list(C.get(), 0)
-
-elif args.command == 'flatlist':
-    def show_list(settings, parent=''):
-        for name, setting in settings.items():
-            if type(setting) != dict:
-                print u'%s: %s' % (parent + name, setting)
-            else:
-                show_list(setting, parent + name + u'.')
-    show_list(C.get())
-
-elif args.command == 'show':
-    if len(args.arguments) != 1:
-        debug('Too few/many arguments. One needed: moodle config show settingName')
-        sys.exit(1)
-    setting = C.get(args.arguments[0])
-    if setting != None:
-        debug(setting)
-
-elif args.command == 'set':
-    if len(args.arguments) < 2:
-        debug('Too few arguments. Two needed: moodle config set settingName value')
-        sys.exit(1)
-    setting = args.arguments[0]
-    val = u' '.join(args.arguments[1:])
-    if val.startswith('b:'):
-        val = True if val[2:].lower() in ['1', 'true'] else False
-    elif val.startswith('i:'):
-        try:
-            val = int(val[2:])
-        except ValueError:
-            # Not a valid int, let's consider it a string.
-            pass
-    C.set(setting, val)
+cmd = f.replace('moodle-', '').replace('.py', '')
+cls = getCommand(cmd)
+Cmd = cls(Conf())
+Runner = CommandRunner(Cmd)
+Runner.run(None, prog='%s %s' % ('mdk', cmd))

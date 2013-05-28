@@ -24,13 +24,15 @@ http://github.com/FMCorz/mdk
 
 import os
 import re
-import shutil
+import logging
 
-from tools import debug, process
+from tools import process, parseBranch
 from db import DB
 from config import Conf
 from git import Git
-from exceptions import ScriptNotFound
+from exceptions import InstallException
+from jira import Jira
+from scripts import Scripts
 
 C = Conf()
 
@@ -50,7 +52,19 @@ class Moodle(object):
     _cos_hasstash = False
     _cos_oldbranch = None
 
-    def __init__(self, path, identifier = None):
+    _reservedKeywords = [
+        'branch',
+        'identifier',
+        'installed',
+        'integration',
+        'maturity',
+        'path',
+        'release',
+        'stablebranch',
+        'version'
+    ]
+
+    def __init__(self, path, identifier=None):
         self.path = path
         self.identifier = identifier
         self.version = {}
@@ -63,6 +77,9 @@ class Moodle(object):
         configFile = os.path.join(self.path, 'config.php')
         if not os.path.isfile(configFile):
             return None
+
+        if name in self._reservedKeywords:
+            raise Exception('Cannot use reserved keywords for settings in config.php')
 
         if type(value) == bool:
             value = 'true' if value else 'false'
@@ -97,7 +114,7 @@ class Moodle(object):
 
         self.reload()
 
-    def branch_compare(self, branch, compare = '>='):
+    def branch_compare(self, branch, compare='>='):
         """Compare the branch of the current instance with the one passed"""
         try:
             branch = int(branch)
@@ -121,7 +138,7 @@ class Moodle(object):
             return b < branch
         return False
 
-    def checkout_stable(self, checkout = True):
+    def checkout_stable(self, checkout=True):
         """Checkout the stable branch, do a stash if required. Needs to be called again to pop the stash!"""
 
         # Checkout the branch
@@ -273,60 +290,14 @@ class Moodle(object):
             self.removeConfig('behat_switchcompletely')
             self.removeConfig('behat_wwwroot')
 
-        # Drop the tables
-        def drop():
-            result = (None, None, None)
-            try:
-                debug('Dropping database')
-                result = self.cli('/admin/tool/behat/cli/util.php', args='--drop', stdout=None, stderr=None)
-            except:
-                pass
-            return result
-
-        # Enabling Behat (or updating the definitions)
-        def enable():
-            result = (None, None, None)
-            try:
-                debug('Enabling Behat')
-                result = self.cli('/admin/tool/behat/cli/util.php', args='--enable')
-            except:
-                pass
-            return result
-
-        # Install the tables
-        def install():
-            result = (None, None, None)
-            try:
-                debug('Installing Behat tables')
-                result = self.cli('/admin/tool/behat/cli/util.php', args='--install', stdout=None, stderr=None)
-            except:
-                pass
-            return result
-
         # Force a cache purge
         self.purge()
 
-        # Not really proud of this logic, but it works for now. Ideally there shouldn't be any duplicated call to enable().
-        result = enable()
-        if result[0] == 251:
-            raise Exception('Error: Behat requires PHP 5.4 or the flag --switch-completely to be set')
-        elif result[0] == 254:
-            # Installation required
-            installResult = install()
-            if installResult[0] != 0:
-                raise Exception('Unknown error while installing Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
-            result = enable()
-        elif result[0] > 0:
-            # Need to drop the tables
-            drop()
-            installResult = install()
-            if installResult[0] != 0:
-                raise Exception('Unknown error while installing Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
-            result = enable()
+        # Run the init script.
+        self.cli('admin/tool/behat/cli/init.php', stdout=None, stderr=None)
 
-        # Could not enable Behat
-        if result[0] != 0:
-            raise Exception('Unknown error while enabling Behat. \nError code: %s\nStdout: %s\nStderr: %s' % (result))
+        # Force a cache purge
+        self.purge()
 
     def info(self):
         """Returns a dictionary of information about this instance"""
@@ -342,14 +313,14 @@ class Moodle(object):
             info[k] = v
         return info
 
-    def install(self, dbname = None, engine = None, dataDir = None, fullname = None, dropDb = False):
+    def install(self, dbname=None, engine=None, dataDir=None, fullname=None, dropDb=False):
         """Launch the install script of an Instance"""
 
         if self.isInstalled():
-            raise Exception('Instance already installed!')
+            raise InstallException('Instance already installed!')
 
         if dataDir == None or not os.path.isdir(dataDir):
-            raise Exception('Cannot install instance without knowing where the data directory is')
+            raise InstallException('Cannot install instance without knowing where the data directory is')
         if dbname == None:
             dbname = re.sub(r'[^a-zA-Z0-9]', '', self.identifier).lower()[:28]
         if engine == None:
@@ -358,38 +329,38 @@ class Moodle(object):
             fullname = self.identifier.replace('-', ' ').replace('_', ' ').title()
             fullname = fullname + ' ' + C.get('wording.%s' % engine)
 
-        debug('Creating database...')
+        logging.info('Creating database...')
         db = DB(engine, C.get('db.%s' % engine))
         if db.dbexists(dbname):
             if dropDb:
                 db.dropdb(dbname)
                 db.createdb(dbname)
             else:
-                raise Exception('Cannot install an instance on an existing database (%s)' % dbname)
+                raise InstallException('Cannot install an instance on an existing database (%s)' % dbname)
         else:
             db.createdb(dbname)
         db.selectdb(dbname)
 
         # Defining wwwroot.
-        wwwroot = 'http://%s/' % C.get('host')
+        wwwroot = '%s://%s/' % (C.get('scheme'), C.get('host'))
         if C.get('path') != '' and C.get('path') != None:
             wwwroot = wwwroot + C.get('path') + '/'
         wwwroot = wwwroot + self.identifier
 
-        debug('Installing %s...' % self.identifier)
+        logging.info('Installing %s...' % self.identifier)
         cli = 'admin/cli/install.php'
         params = (wwwroot, dataDir, engine, dbname, C.get('db.%s.user' % engine), C.get('db.%s.passwd' % engine), C.get('db.%s.host' % engine), fullname, self.identifier, C.get('login'), C.get('passwd'))
         args = '--wwwroot="%s" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
         result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
-            raise Exception('Error while running the install, please manually fix the problem.\n- Command was: %s %s %s' % (C.get('php'), cli, args))
+            raise InstallException('Error while running the install, please manually fix the problem.\n- Command was: %s %s %s' % (C.get('php'), cli, args))
 
         configFile = os.path.join(self.path, 'config.php')
         os.chmod(configFile, 0666)
         try:
             self.addConfig('sessioncookiepath', '/%s/' % self.identifier)
-        except Exception as e:
-            debug('Could not append $CFG->sessioncookiepath to config.php')
+        except InstallException:
+            logging.warning('Could not append $CFG->sessioncookiepath to config.php')
 
         self.reload()
 
@@ -517,8 +488,8 @@ class Moodle(object):
 
                 f.close()
 
-            except Exception as e:
-                debug('Error while reading config file')
+            except Exception:
+                logging.exception('Error while reading config file')
         else:
             self.installed = False
 
@@ -534,7 +505,7 @@ class Moodle(object):
 
         try:
             self.cli('admin/cli/purge_caches.php', stderr=None, stdout=None)
-        except Exception as e:
+        except Exception:
             raise Exception('Error while purging cache!')
 
     def reload(self):
@@ -568,43 +539,9 @@ class Moodle(object):
 
     def runScript(self, scriptname, **kwargs):
         """Runs a script on the instance"""
-        supported = ['php']
-        directories = ['~/.moodle-sdk']
-        if C.get('dirs.moodle') != None:
-            directories.insert(0, C.get('dirs.moodle'))
-        directories.append('/etc/moodle-sdk')
-        directories.append(os.path.join(os.path.dirname(__file__), '..'))
+        return Scripts.run(scriptname, self.get('path'), cmdkwargs=kwargs)
 
-        # Loop over each directory in order of preference.
-        for directory in directories:
-            script = None
-            type = None
-
-            f = os.path.expanduser(os.path.join(directory, 'scripts', scriptname))
-            if os.path.isfile(f) and scriptname.rsplit('.', 1)[1] in supported:
-                script = f
-                type = scriptname.rsplit('.', 1)[1]
-            else:
-                for ext in supported:
-                    if os.path.isfile(f + '.' + ext):
-                        script = f + '.' + ext
-                        type = ext
-                        break
-            # Exit the loop if the script has been found.
-            if script != None and type != None:
-                break
-
-        if not script:
-            raise ScriptNotFound('Could not find the script, or format not supported')
-
-        if type == 'php':
-            dest = os.path.join(self.get('path'), 'mdkrun.php')
-            shutil.copyfile(script, dest)
-            result = self.cli('mdkrun.php', **kwargs)
-            os.remove(dest)
-            return result[0]
-
-    def update(self, remote = None):
+    def update(self, remote=None):
         """Update the instance from the remote"""
 
         if remote == None:
@@ -619,7 +556,7 @@ class Moodle(object):
 
         # Reset HARD
         upstream = '%s/%s' % (remote, self.get('stablebranch'))
-        if not self.git().reset(to = upstream, hard = True):
+        if not self.git().reset(to=upstream, hard=True):
             raise Exception('Error while executing git reset.')
 
         # Return to previous branch
@@ -630,7 +567,46 @@ class Moodle(object):
         self.removeConfig(name)
         self.addConfig(name, value)
 
-    def upgrade(self, nocheckout = False):
+    def updateTrackerGitInfo(self, branch=None):
+        """Updates the git info on the tracker issue"""
+
+        if branch == None:
+            branch = self.currentBranch()
+            if branch == 'HEAD':
+                raise Exception('Cannot update the tracker when on detached branch')
+
+        # Parsing the branch
+        parsedbranch = parseBranch(branch, C.get('wording.branchRegex'))
+        if not parsedbranch:
+            raise Exception('Could not extract issue number from %s' % branch)
+        issue = 'MDL-%s' % (parsedbranch['issue'])
+        version = parsedbranch['version']
+
+        # Get the jira config
+        repositoryurl = C.get('repositoryUrl')
+        diffurltemplate = C.get('diffUrlTemplate')
+        stablebranch = self.get('stablebranch')
+        upstreamremote = C.get('upstreamRemote')
+
+        # Get the hash of the last upstream commit
+        ref = '%s/%s' % (upstreamremote, stablebranch)
+        headcommit = self.git().hashes(ref=ref, limit=1)[0]
+
+        J = Jira()
+        diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%', stablebranch).replace('%headcommit%', headcommit)
+
+        fieldrepositoryurl = C.get('tracker.fieldnames.repositoryurl')
+        fieldbranch = C.get('tracker.fieldnames.%s.branch' % version)
+        fielddiffurl = C.get('tracker.fieldnames.%s.diffurl' % version)
+
+        if not (fieldrepositoryurl or fieldbranch or fielddiffurl):
+            logging.error('Cannot set tracker fields for this version (%s). The field names are not set in the config file.', version)
+        else:
+            logging.info('Setting tracker fields: \n\t%s: %s \n\t%s: %s \n\t%s: %s' %
+                (fieldrepositoryurl, repositoryurl, fieldbranch, branch, fielddiffurl, diffurl))
+            J.setCustomFields(issue, {fieldrepositoryurl: repositoryurl, fieldbranch: branch, fielddiffurl: diffurl})
+
+    def upgrade(self, nocheckout=False):
         """Calls the upgrade script"""
         if not self.isInstalled():
             raise Exception('Cannot upgrade an instance which is not installed.')
@@ -643,7 +619,7 @@ class Moodle(object):
 
         cli = '/admin/cli/upgrade.php'
         args = '--non-interactive --allow-unstable'
-        result = self.cli(cli, args, stdout = None, stderr = None)
+        result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
             raise Exception('Error while running the upgrade.')
 

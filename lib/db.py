@@ -1,6 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Moodle Development Kit
+
+Copyright (c) 2012 Frédéric Massart - FMCorz.net
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+http://github.com/FMCorz/mdk
+"""
+
+import logging
 try:
     # Try to import the library python-mysqldb.
     import MySQLdb as mysql
@@ -77,6 +99,7 @@ class DB(object):
         columns = []
 
         if self.engine == 'mysqli':
+            logging.debug('DESCRIBE %s' % table)
             self.cur.execute('DESCRIBE %s' % table)
             for column in self.cur.fetchall():
                 columns.append(column[0])
@@ -93,9 +116,12 @@ class DB(object):
             pass
 
         if self.engine == 'mysqli':
-            self.cur.execute('CREATE DATABASE `%s` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci' % db)
+            sql = 'CREATE DATABASE `%s` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci' % db
         elif self.engine == 'pgsql':
-            self.cur.execute('CREATE DATABASE "%s" WITH ENCODING \'UNICODE\'' % db)
+            sql = 'CREATE DATABASE "%s" WITH ENCODING \'UNICODE\'' % db
+
+        logging.debug(sql)
+        self.cur.execute(sql)
 
         try:
             self.conn.set_isolation_level(old_isolation_level)
@@ -106,12 +132,14 @@ class DB(object):
 
         count = None
         if self.engine == 'mysqli':
-            self.cur.execute("SELECT COUNT('*') FROM information_schema.SCHEMATA WHERE SCHEMA_NAME LIKE '%s'" % db)
-            count = self.cur.fetchone()[0]
+            sql = "SELECT COUNT('*') FROM information_schema.SCHEMATA WHERE SCHEMA_NAME LIKE '%s'" % db
 
         elif self.engine == 'pgsql':
-            self.cur.execute("SELECT COUNT('*') FROM pg_database WHERE datname='%s'" % db)
-            count = self.cur.fetchone()[0]
+            sql = "SELECT COUNT('*') FROM pg_database WHERE datname='%s'" % db
+
+        logging.debug(sql)
+        self.cur.execute(sql)
+        count = self.cur.fetchone()[0]
 
         return count > 0
 
@@ -125,9 +153,12 @@ class DB(object):
             pass
 
         if self.engine == 'mysqli':
-            self.cur.execute('DROP DATABASE `%s`' % db)
+            sql = 'DROP DATABASE `%s`' % db
         elif self.engine == 'pgsql':
-            self.cur.execute('DROP DATABASE "%s"' % db)
+            sql = 'DROP DATABASE "%s"' % db
+
+        logging.debug(sql)
+        self.cur.execute(sql)
 
         try:
             self.conn.set_isolation_level(old_isolation_level)
