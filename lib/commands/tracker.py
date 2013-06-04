@@ -92,7 +92,8 @@ class TrackerCommand(Command):
         print '{0:->70}--'.format(vw)
         print u'{0:<20}: {1} ({2}) on {3}'.format('Reporter', issue['fields']['reporter']['displayName'], issue['fields']['reporter']['name'], created)
 
-        print u'{0:<20}: {1} ({2})'.format('Assignee', issue['fields']['assignee']['displayName'], issue['fields']['assignee']['name'])
+        if issue['fields'].get('assignee') != None:
+            print u'{0:<20}: {1} ({2})'.format('Assignee', issue['fields']['assignee']['displayName'], issue['fields']['assignee']['name'])
         if issue['named'].get('Peer reviewer'):
             print u'{0:<20}: {1} ({2})'.format('Peer reviewer', issue['named']['Peer reviewer']['displayName'], issue['named']['Peer reviewer']['name'])
         if issue['named'].get('Integrator'):
