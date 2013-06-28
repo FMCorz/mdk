@@ -176,9 +176,9 @@ class InitCommand(Command):
 
         # Database settings.
         C.set('db.mysqli.user', question('What is your MySQL user?', C.get('db.mysqli.user')))
-        C.set('db.mysqli.passwd', question('What is your MySQL password?', C.get('db.mysqli.passwd'), password=True))
+        C.set('db.mysqli.passwd', question('What is your MySQL password?', 'root', password=True))
         C.set('db.pgsql.user', question('What is your PostgreSQL user?', C.get('db.pgsql.user')))
-        C.set('db.pgsql.passwd', question('What is your PostgreSQL password?', C.get('db.pgsql.passwd'), password=True))
+        C.set('db.pgsql.passwd', question('What is your PostgreSQL password?', 'root', password=True))
 
         print ''
         print 'MDK has been initialised with minimal configuration.'
