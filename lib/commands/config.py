@@ -86,6 +86,7 @@ class ConfigCommand(Command):
         )
     ]
     _description = 'Manage your configuration'
+    _loadWorkplace = False
 
     def run(self, args):
         if args.action == 'list':
