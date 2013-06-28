@@ -75,7 +75,9 @@ class ConfigCommand(Command):
                             (
                                 ['value'],
                                 {
+                                    'default': '',
                                     'metavar': 'value',
+                                    'nargs': '?',
                                     'help': 'value to set'
                                 }
                             )
