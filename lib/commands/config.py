@@ -93,7 +93,8 @@ class ConfigCommand(Command):
     def run(self, args):
         if args.action == 'list':
             def show_list(settings, ident):
-                for name, setting in settings.items():
+                for name in sorted(settings.keys()):
+                    setting = settings[name]
                     if type(setting) != dict:
                         print u'{0:<20}: {1}'.format(u' ' * ident + name, setting)
                     else:
@@ -103,7 +104,8 @@ class ConfigCommand(Command):
 
         elif args.action == 'flatlist':
             def show_list(settings, parent=''):
-                for name, setting in settings.items():
+                for name in sorted(settings.keys()):
+                    setting = settings[name]
                     if type(setting) != dict:
                         print u'%s: %s' % (parent + name, setting)
                     else:
