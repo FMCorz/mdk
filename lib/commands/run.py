@@ -89,7 +89,8 @@ class RunCommand(Command):
             return
 
         # Trigger error when script is missing
-        self.argumentError('missing script name')
+        if not args.script:
+            self.argumentError('missing script name')
 
         # Resolving instances
         names = args.names

@@ -132,5 +132,6 @@ class InfoCommand(Command):
 
             # Printing info
             else:
-                for key, info in M.info().items():
-                    print '{0:<20}: {1}'.format(key, info)
+                infos = M.info()
+                for key in sorted(infos.keys()):
+                    print '{0:<20}: {1}'.format(key, infos[key])

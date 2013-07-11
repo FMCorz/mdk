@@ -46,13 +46,15 @@ class Command(object):
             )
         ]
     _description = 'Undocumented command'
+    _loadWorkplace = True
 
     __C = None
     __Wp = None
 
     def __init__(self, config):
         self.__C = config
-        self.__Wp = workplace.Workplace()
+        if self._loadWorkplace:
+            self.__Wp = workplace.Workplace()
 
     def argumentError(self, message):
         raise CommandArgumentError(message)

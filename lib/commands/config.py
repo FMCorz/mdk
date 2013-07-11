@@ -75,7 +75,9 @@ class ConfigCommand(Command):
                             (
                                 ['value'],
                                 {
+                                    'default': '',
                                     'metavar': 'value',
+                                    'nargs': '?',
                                     'help': 'value to set'
                                 }
                             )
@@ -86,31 +88,39 @@ class ConfigCommand(Command):
         )
     ]
     _description = 'Manage your configuration'
+    _loadWorkplace = False
+
+    def dictDisplay(self, data, ident=0):
+        for name in sorted(data.keys()):
+            setting = data[name]
+            if type(setting) != dict:
+                print u'{0:<20}: {1}'.format(u' ' * ident + name, setting)
+            else:
+                print u' ' * ident + '[%s]' % name
+                self.dictDisplay(setting, ident + 2)
+
+    def flatDisplay(self, data, parent=''):
+        for name in sorted(data.keys()):
+            setting = data[name]
+            if type(setting) != dict:
+                print u'%s: %s' % (parent + name, setting)
+            else:
+                self.flatDisplay(setting, parent + name + u'.')
 
     def run(self, args):
         if args.action == 'list':
-            def show_list(settings, ident):
-                for name, setting in settings.items():
-                    if type(setting) != dict:
-                        print u'{0:<20}: {1}'.format(u' ' * ident + name, setting)
-                    else:
-                        print u' ' * ident + '[%s]' % name
-                        show_list(setting, ident + 2)
-            show_list(self.C.get(), 0)
+            self.dictDisplay(self.C.get(), 0)
 
         elif args.action == 'flatlist':
-            def show_list(settings, parent=''):
-                for name, setting in settings.items():
-                    if type(setting) != dict:
-                        print u'%s: %s' % (parent + name, setting)
-                    else:
-                        show_list(setting, parent + name + u'.')
-            show_list(self.C.get())
+            self.flatDisplay(self.C.get())
 
         elif args.action == 'show':
             setting = self.C.get(args.setting)
             if setting != None:
-                print setting
+                if type(setting) == dict:
+                    self.flatDisplay(setting, args.setting + u'.')
+                else:
+                    print setting
 
         elif args.action == 'set':
             setting = args.setting
