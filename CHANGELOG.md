@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.4.1
+------
+
+* `config` can display objects (eg. `mdk config show wording`)
+* `config` output is ordered alphabetically
+* `info` output is ordered alphabetically
+* `init` does not show the default password between brackets
+* `init` does not fail because of missing directories
+* `run` was permanently failing
+* `tracker` failed when an issue was unassigned
+
 v0.4
 ----
 
