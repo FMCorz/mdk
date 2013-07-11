@@ -1,3 +1,15 @@
+moodle-sdk (0.4.1) precise; urgency=low
+
+  * `config` can display objects (eg. `mdk config show wording`)
+  * `config` output is ordered alphabetically
+  * `info` output is ordered alphabetically
+  * `init` does not show the default password between brackets
+  * `init` does not fail because of missing directories
+  * `run` was permanently failing
+  * `tracker` failed when an issue was unassigned
+
+ -- Frédéric Massart <fred@moodle.com>  Thu, 11 July 2013 11:42:05 +0800
+
 moodle-sdk (0.4) precise; urgency=low
 
   * New command `tracker` to fetch information from the tracker
