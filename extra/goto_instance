@@ -1,0 +1,56 @@
+#
+# Moodle Development Kit
+#
+# Copyright (c) 2013 Frédéric Massart - FMCorz.net
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# http://github.com/FMCorz/mdk
+#
+
+# This file defines a function to quickly go to into an MDK instance.
+#
+# To install on Ubuntu, source this file into your ~/.bashrc file:
+#
+#   if [ -f /usr/share/moodle-sdk/extra/goto_instance ]; then
+#       . /usr/share/moodle-sdk/extra/goto_instance
+#   fi
+#
+# Then source ~/.bashrc:
+#
+#   source ~/.bashrc
+#
+
+# Go to instance directory.
+function gt() {
+    DIR=`mdk config show dirs.www`
+    eval DIR="$DIR/$1"
+    if [[ ! -d $DIR ]]; then
+        echo "Could not resolve path"
+        return
+    fi
+    cd "$DIR"
+}
+
+# Go to instance data directory.
+function gtd() {
+    DIR=`mdk config show dirs.storage`
+    DATADIR=`mdk config show dataDir`
+    eval DIR="$DIR/$1/$DATADIR"
+    if [[ ! -d $DIR ]]; then
+        echo "Could not resolve path"
+        return
+    fi
+    cd $DIR
+}
