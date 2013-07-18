@@ -70,7 +70,7 @@ function _mdk() {
         case "${CMD}" in
             alias)
                 if [[ "${COMP_CWORD}" == 2 ]]; then
-                    OPTS="list show add remove"
+                    OPTS="list show add remove set"
                 elif [[ "${COMP_CWORD}" == 3 && "${PREV}" != "add" && "${PREV}" != "list" ]]; then
                     OPTS="$($BIN alias list 2> /dev/null | cut -d ':' -f 1)"
                 fi
@@ -91,7 +91,7 @@ function _mdk() {
                 fi
                 ;;
             behat)
-                if [[ "${PREV}" == "--feature" ]]; then
+                if [[ "${PREV}" == "--feature" ]] || [[ "${PREV}" == "-f" ]]; then
                     # Basic autocomplete for --feature, should append a / at the end of directory names.
                     compopt +o nospace
                     OPTS="$(compgen -A file $CUR)"
@@ -151,7 +151,7 @@ function _mdk() {
                 esac
                 ;;
             phpunit)
-                if [[ "${PREV}" == "--unittest" ]]; then
+                if [[ "${PREV}" == "--unittest" ]] || [[ "${PREV}" == "-u" ]]; then
                     # Basic autocomplete for --unittest, should append a / at the end of directory names.
                     compopt +o nospace
                     OPTS="$(compgen -A file $CUR)"
@@ -187,7 +187,7 @@ function _mdk() {
                 fi
                 ;;
             remove)
-                OPTS=`$BIN info -ln`
+                OPTS="$OPTS $(_list_instances)"
                 ;;
             run)
                 if [[ "${COMP_CWORD}" == 2 ]]; then
