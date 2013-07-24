@@ -1,0 +1,42 @@
+#
+# Moodle Development Kit
+#
+# Copyright (c) 2013 Frédéric Massart - FMCorz.net
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# http://github.com/FMCorz/mdk
+#
+
+# This file defines the functions the Bash completion of extra/goto_instance.
+#
+# This file has to be loaded after the goto_instance one, so it cannot be placed
+# into /etc/bash_completion.d.
+
+function _gt() {
+    local BIN CUR OPTS
+    BIN="mdk"
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    OPTS=""
+    if [[ "${COMP_CWORD}" == 1 ]]; then
+        OPTS=$($BIN info -ln 2> /dev/null)
+    fi
+    COMPREPLY=( $(compgen -W "${OPTS}" -- ${CUR}) )
+    return 0
+}
+
+if [[ -n "$(type -t gt)" ]]; then
+    complete -F _gt gt
+    complete -F _gt gtd
+fi

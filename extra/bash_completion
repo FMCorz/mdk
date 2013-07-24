@@ -221,9 +221,3 @@ function _mdk() {
 if [[ -n "$(which mdk)" ]]; then
     complete -F _mdk mdk
 fi
-
-# Autocomplete for extra/goto_instance
-if [[ -n "$(type -t gt)" ]]; then
-    complete -F _gt gt
-    complete -F _gt gtd
-fi
