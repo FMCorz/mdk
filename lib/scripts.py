@@ -82,7 +82,7 @@ class Scripts(object):
                     # Check if supported format.
                     supported = False
                     for ext in cls._supported:
-                        if f.endswith(u'.' + ext):
+                        if f.endswith('.' + ext):
                             supported = True
                             break
 
@@ -102,10 +102,11 @@ class Scripts(object):
         if script in lst.keys():
             cli = os.path.join(lst[script], script)
         else:
+            found = 0
             for ext in cls._supported:
-                found = 0
-                scriptFile = script + u'.' + ext
-                if scriptFile in lst.keys():
+                candidate = script + '.' + ext
+                if candidate in lst.keys():
+                    scriptFile = candidate
                     found += 1
 
             if found > 1:
