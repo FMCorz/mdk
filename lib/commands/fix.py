@@ -45,6 +45,14 @@ class FixCommand(Command):
             }
         ),
         (
+            ['--autofix'],
+            {
+            'action': 'store_true',
+                'default': '',
+                'help': 'auto fix the bug related to the issue number'
+            }
+        ),
+        (
             ['-n', '--name'],
             {
                 'default': None,
@@ -80,3 +88,18 @@ class FixCommand(Command):
             raise Exception('Error while checkout out branch %s' % branch)
 
         logging.info('Branch %s checked out' % branch)
+
+        # Auto-fixing the bug
+        if args.autofix:
+            logging.info('Auto fixing bug, please wait...')
+            from time import sleep
+            sleep(3)
+            logging.info('That\'s a tricky one! Bear with me.')
+            sleep(3)
+            logging.info('Almost there!')
+            sleep(3)
+            logging.info('...')
+            sleep(3)
+            logging.info('You didn\'t think I was serious, did you?')
+            sleep(3)
+            logging.info('Now get to work!')

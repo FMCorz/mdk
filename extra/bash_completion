@@ -123,7 +123,7 @@ function _mdk() {
                 if [[ "$PREV" == "-n" || "$PREV" == "--name" ]]; then
                     OPTS=`$BIN info -ln`
                 else
-                    OPTS="--name"
+                    OPTS="--autofix --name"
                 fi
                 ;;
             info)
