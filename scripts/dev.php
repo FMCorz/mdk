@@ -1,34 +1,42 @@
 <?php
 /**
- * Sets the instance ready for developers
+ * Sets the instance ready for developers.
+ *
+ * When you add a setting here, please update undev.php.
  */
 
 define('CLI_SCRIPT', true);
 require(dirname(__FILE__).'/config.php');
 
-// Set developer level.
-set_config('debug', DEBUG_DEVELOPER);
+function mdk_set_config($name, $value) {
+    set_config($name, $value);
+    $value = is_bool($value) ? (int) $value : $value;
+    mtrace("Setting $name to $value");
+}
 
-// Disply debug messages
-set_config('debugdisplay', 1);
+// Set developer level.
+mdk_set_config('debug', DEBUG_DEVELOPER);
+
+// Display debug messages.
+mdk_set_config('debugdisplay', 1);
 
 // Any kind of password is allowed.
-set_config('passwordpolicy', 0);
+mdk_set_config('passwordpolicy', 0);
 
 // Debug the performance.
-set_config('perfdebug', 15);
+mdk_set_config('perfdebug', 15);
 
 // Debug the information of the page.
-set_config('debugpageinfo', 1);
+mdk_set_config('debugpageinfo', 1);
 
 // Allow themes to be changed from the URL.
-set_config('allowthemechangeonurl', 1);
+mdk_set_config('allowthemechangeonurl', 1);
 
 // Do not cache JavaScript.
-set_config('cachejs', 0);
+mdk_set_config('cachejs', 0);
 
 // Do not use YUI combo loading.
-set_config('yuicomboloading', 0);
+mdk_set_config('yuicomboloading', 0);
 
 // Adds FirePHP
 $firephp = "
