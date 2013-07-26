@@ -220,7 +220,8 @@ class DB(object):
                     host=str(self.options['host']),
                     port=int(self.options['port']),
                     user=str(self.options['user']),
-                    password=str(self.options['passwd'])
+                    password=str(self.options['passwd']),
+                    database=str(db)
                 )
             except Exception:
                 # bpsql.
@@ -229,7 +230,7 @@ class DB(object):
                     port=int(self.options['port']),
                     username=str(self.options['user']),
                     password=str(self.options['passwd']),
-                    dbname=''
+                    dbname=str(db)
                 )
 
             self.cur = self.conn.cursor()
