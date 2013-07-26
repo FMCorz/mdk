@@ -168,7 +168,7 @@ function _mdk() {
                 fi
                 ;;
             pull)
-                OPTS="--integration --testing"
+                OPTS="--fetch-only --integration --no-merge --testing"
                 ;;
             push)
                 if [[ "$PREV" != "--branch" && "$PREV" != "-b" && "$PREV" != "--remote" && "$PREV" != "-r" ]]; then
