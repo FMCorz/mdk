@@ -25,6 +25,7 @@ http://github.com/FMCorz/mdk
 import os
 import shutil
 import stat
+import logging
 from tools import process
 from config import Conf
 from exceptions import ScriptNotFound, ConflictInScriptName, UnsupportedScript
@@ -126,17 +127,22 @@ class Scripts(object):
         cli = cls.find(script)
         if cli.endswith('.php'):
             dest = os.path.join(path, 'mdkscriptrun.php')
+            logging.debug('Copying %s to %s' % (cli, dest))
             shutil.copyfile(cli, dest)
 
             cmd = '%s %s' % (C.get('php'), dest)
+            logging.debug('Executing %s' % (cmd))
             result = process(cmd, cwd=path, **cmdkwargs)
-            os.remove(dest)
+            print result
+            # os.remove(dest)
         elif cli.endswith('.sh'):
             dest = os.path.join(path, 'mdkscriptrun.sh')
+            logging.debug('Copying %s to %s' % (cli, dest))
             shutil.copyfile(cli, dest)
             os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
 
             cmd = '%s' % (dest)
+            logging.debug('Executing %s' % (cmd))
             result = process(cmd, cwd=path, **cmdkwargs)
             os.remove(dest)
         else:
