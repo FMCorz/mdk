@@ -73,6 +73,16 @@ class CreateCommand(Command):
                 }
             ),
             (
+                ['-n', '--identifier'],
+                {
+                    'action': 'store',
+                    'default': None,
+                    'help': 'use this identifier instead of generating one. The flag --suffix will be used. ' +
+                        'Do not use when creating multiple versions at once',
+                    'metavar': 'name',
+                }
+            ),
+            (
                 ['-s', '--suffix'],
                 {
                     'action': 'store',
@@ -107,6 +117,7 @@ class CreateCommand(Command):
                     'suffix': suffix,
                     'engine': engine,
                     'integration': args.integration,
+                    'identifier': args.identifier,
                     'install': args.install,
                     'run': args.run
                 }
@@ -125,7 +136,7 @@ class CreateCommand(Command):
 
         engine = args.engine
         version = args.version
-        name = self.Wp.generateInstanceName(version, integration=args.integration, suffix=args.suffix)
+        name = self.Wp.generateInstanceName(version, integration=args.integration, suffix=args.suffix, identifier=args.identifier)
 
         # Wording version
         versionNice = version
