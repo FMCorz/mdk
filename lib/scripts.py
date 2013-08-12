@@ -133,8 +133,7 @@ class Scripts(object):
             cmd = '%s %s' % (C.get('php'), dest)
             logging.debug('Executing %s' % (cmd))
             result = process(cmd, cwd=path, **cmdkwargs)
-            print result
-            # os.remove(dest)
+            os.remove(dest)
         elif cli.endswith('.sh'):
             dest = os.path.join(path, 'mdkscriptrun.sh')
             logging.debug('Copying %s to %s' % (cli, dest))
