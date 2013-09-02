@@ -32,6 +32,9 @@ mdk_set_config('debugpageinfo', 1);
 // Allow themes to be changed from the URL.
 mdk_set_config('allowthemechangeonurl', 1);
 
+// Enable theme designer mode.
+mdk_set_config('themedesignermode', 1);
+
 // Do not cache JavaScript.
 mdk_set_config('cachejs', 0);
 

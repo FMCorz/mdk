@@ -57,6 +57,10 @@ $settings = $settingspage->settings;
 $default = $settings->allowthemechangeonurl->get_defaultsetting();
 mdk_set_config('allowthemechangeonurl', $default);
 
+// Enable designer mode.
+$default = $settings->themedesignermode->get_defaultsetting();
+mdk_set_config('themedesignermode', $default);
+
 
 // Javascript settings.
 $settingspage = $adminroot->locate('ajax', true);
