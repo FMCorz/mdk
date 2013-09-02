@@ -172,7 +172,8 @@ class PullCommand(Command):
                 if not M.git().hasBranch(newBranch):
                     break
             track = '%s/%s' % (self.C.get('upstreamRemote'), M.get('stablebranch'))
-            M.git().createBranch(newBranch, track=track)
+            if not M.git().createBranch(newBranch, track=track):
+                raise Exception('Could not create branch %s tracking %s' % (newBranch, track))
             if not M.git().checkout(newBranch):
                 raise Exception('Could not checkout branch %s' % (newBranch))
             logging.info('Checked out branch %s' % (newBranch))
@@ -193,7 +194,8 @@ class PullCommand(Command):
                 if not M.git().hasBranch(newBranch):
                     break
             track = '%s/%s' % (self.C.get('upstreamRemote'), M.get('stablebranch'))
-            M.git().createBranch(newBranch, track=track)
+            if not M.git().createBranch(newBranch, track=track):
+                raise Exception('Could not create branch %s tracking %s' % (newBranch, track))
             if not M.git().checkout(newBranch):
                 raise Exception('Could not checkout branch %s' % (newBranch))
             logging.info('Checked out branch %s' % (newBranch))
