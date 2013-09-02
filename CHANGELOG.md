@@ -1,6 +1,20 @@
 Changelog
 =========
 
+v0.4.2
+------
+
+* Updating tracker issue uses short hashes
+* `create` accepts a custom instance identifier
+* More verbose `dev` script
+* New script `undev` to revert the changes of the script `dev`
+* `pull` has an option to fetch only
+* New script `less` to compile the less files from bootstrapbase
+* `run` can execut shell scripts
+* Auto complete for `behat` -f
+* Auto complete for `phpunit` -u
+* Shipping a bash script `extra/goto_instance` to jump to instances with auto complete
+
 v0.4.1
 ------
 
