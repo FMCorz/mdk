@@ -131,6 +131,7 @@ class Scripts(object):
             shutil.copyfile(cli, dest)
 
             cmd = '%s %s' % (C.get('php'), dest)
+            logging.debug('Executing %s' % (cmd))
             result = process(cmd, cwd=path, **cmdkwargs)
             os.remove(dest)
         elif cli.endswith('.sh'):
@@ -140,6 +141,7 @@ class Scripts(object):
             os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
 
             cmd = '%s' % (dest)
+            logging.debug('Executing %s' % (cmd))
             result = process(cmd, cwd=path, **cmdkwargs)
             os.remove(dest)
         else:
