@@ -1,3 +1,18 @@
+moodle-sdk (0.4.2) precise; urgency=low
+
+  * Updating tracker issue uses short hashes
+  * `create` accepts a custom instance identifier
+  * More verbose `dev` script
+  * New script `undev` to revert the changes of the script `dev`
+  * `pull` has an option to fetch only
+  * New script `less` to compile the less files from bootstrapbase
+  * `run` can execut shell scripts
+  * Auto complete for `behat` -f
+  * Auto complete for `phpunit` -u
+  * Shipping a bash script `extra/goto_instance` to jump to instances with auto complete
+
+ -- Frédéric Massart <fred@moodle.com>  Mon, 02 Sep 2013 11:44:57 +0800
+
 moodle-sdk (0.4.1) precise; urgency=low
 
   * `config` can display objects (eg. `mdk config show wording`)
