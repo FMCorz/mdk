@@ -162,7 +162,7 @@ function _mdk() {
                 fi
                 ;;
             purge)
-                OPTS="--all --integration --stable"
+                OPTS="--all --integration --stable --manual"
                 if [[ "$CUR" != -* ]]; then
                     OPTS="$OPTS $(_list_instances)"
                 fi

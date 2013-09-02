@@ -54,6 +54,14 @@ class PurgeCommand(Command):
             }
         ),
         (
+            ['-m', '--manual'],
+            {
+                'action': 'store_true',
+                'dest': 'manual',
+                'help': 'perform a manual deletion of some cache in dataroot before executing the CLI script'
+            }
+        ),
+        (
             ['names'],
             {
                 'default': None,
@@ -83,7 +91,7 @@ class PurgeCommand(Command):
             logging.info('Purging cache on %s' % (M.get('identifier')))
 
             try:
-                M.purge()
+                M.purge(manual=args.manual)
             except Exception as e:
                 logging.error('Could not purge cache: %s' % e)
             else:

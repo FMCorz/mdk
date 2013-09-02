@@ -25,6 +25,7 @@ http://github.com/FMCorz/mdk
 import os
 import re
 import logging
+import shutil
 
 from tools import process, parseBranch
 from db import DB
@@ -496,7 +497,7 @@ class Moodle(object):
         self._loaded = True
         return True
 
-    def purge(self):
+    def purge(self, manual=False):
         """Purge the cache of an instance"""
         if not self.isInstalled():
             raise Exception('Instance not installed, cannot purge.')
@@ -504,7 +505,14 @@ class Moodle(object):
             raise Exception('Instance does not support cache purging.')
 
         try:
+            dataroot = self.get('dataroot', False)
+            if manual and dataroot != False:
+                logging.debug('Removing directories [dataroot]/cache and [dataroot]/localcache')
+                shutil.rmtree(os.path.join(dataroot, 'cache'), True)
+                shutil.rmtree(os.path.join(dataroot, 'localcache'), True)
+
             self.cli('admin/cli/purge_caches.php', stderr=None, stdout=None)
+
         except Exception:
             raise Exception('Error while purging cache!')
 
