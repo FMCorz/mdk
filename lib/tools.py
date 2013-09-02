@@ -140,6 +140,7 @@ class ProcessInThread(threading.Thread):
         os.kill(self._pid, signal.SIGKILL)
 
     def run(self):
+        logging.debug(' '.join(self.cmd))
         proc = subprocess.Popen(self.cmd, cwd=self.cwd, stdout=self.stdout, stderr=self.stderr)
         self._pid = proc.pid
         while True:
