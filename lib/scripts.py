@@ -24,6 +24,8 @@ http://github.com/FMCorz/mdk
 
 import os
 import shutil
+import stat
+import logging
 from tools import process
 from config import Conf
 from exceptions import ScriptNotFound, ConflictInScriptName, UnsupportedScript
@@ -33,7 +35,7 @@ C = Conf()
 
 class Scripts(object):
 
-    _supported = ['php']
+    _supported = ['php', 'sh']
     _dirs = None
     _list = None
 
@@ -81,7 +83,7 @@ class Scripts(object):
                     # Check if supported format.
                     supported = False
                     for ext in cls._supported:
-                        if f.endswith(u'.' + ext):
+                        if f.endswith('.' + ext):
                             supported = True
                             break
 
@@ -101,10 +103,11 @@ class Scripts(object):
         if script in lst.keys():
             cli = os.path.join(lst[script], script)
         else:
+            found = 0
             for ext in cls._supported:
-                found = 0
-                scriptFile = script + u'.' + ext
-                if scriptFile in lst.keys():
+                candidate = script + '.' + ext
+                if candidate in lst.keys():
+                    scriptFile = candidate
                     found += 1
 
             if found > 1:
@@ -124,9 +127,19 @@ class Scripts(object):
         cli = cls.find(script)
         if cli.endswith('.php'):
             dest = os.path.join(path, 'mdkscriptrun.php')
+            logging.debug('Copying %s to %s' % (cli, dest))
             shutil.copyfile(cli, dest)
 
             cmd = '%s %s' % (C.get('php'), dest)
+            result = process(cmd, cwd=path, **cmdkwargs)
+            os.remove(dest)
+        elif cli.endswith('.sh'):
+            dest = os.path.join(path, 'mdkscriptrun.sh')
+            logging.debug('Copying %s to %s' % (cli, dest))
+            shutil.copyfile(cli, dest)
+            os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
+
+            cmd = '%s' % (dest)
             result = process(cmd, cwd=path, **cmdkwargs)
             os.remove(dest)
         else:

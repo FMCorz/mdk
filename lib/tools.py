@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-import sys
 import os
 import signal
 import subprocess
@@ -30,6 +29,7 @@ import shlex
 import re
 import threading
 import getpass
+import logging
 
 
 def yesOrNo(q):
@@ -105,6 +105,7 @@ def parseBranch(branch, pattern):
 def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
     if type(cmd) != list:
         cmd = shlex.split(str(cmd))
+    logging.debug(' '.join(cmd))
     proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
     (out, err) = proc.communicate()
     return (proc.returncode, out, err)
@@ -139,6 +140,7 @@ class ProcessInThread(threading.Thread):
         os.kill(self._pid, signal.SIGKILL)
 
     def run(self):
+        logging.debug(' '.join(self.cmd))
         proc = subprocess.Popen(self.cmd, cwd=self.cwd, stdout=self.stdout, stderr=self.stderr)
         self._pid = proc.pid
         while True:

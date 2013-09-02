@@ -113,7 +113,6 @@ class PhpunitCommand(Command):
                 if args.unittest:
                     cmd.append(args.unittest)
                 cmd = ' '.join(cmd)
-                logging.info('Executing %s', cmd)
                 process(cmd, M.get('path'), None, None)
         except Exception as e:
             raise e

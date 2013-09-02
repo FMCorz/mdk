@@ -50,6 +50,14 @@ class PullCommand(Command):
             }
         ),
         (
+            ['--fetch-only'],
+            {
+                'action': 'store_true',
+                'dest': 'fetchonly',
+                'help': 'only fetches the remote branch, you can then use FETCH_HEAD. Does not work with patch files. (Fetch mode)'
+            }
+        ),
+        (
             ['-t', '--testing'],
             {
                 'action': 'store_true',
@@ -96,12 +104,17 @@ class PullCommand(Command):
         J = jira.Jira()
         issueInfo = J.getIssue(mdl)
 
-        mode = 'pull'
+        mode = 'pull' if not args.fetchonly else 'fetchonly'
         remoteUrl = issueInfo.get('named').get(self.C.get('tracker.fieldnames.repositoryurl'))
         remoteBranch = issueInfo.get('named').get(self.C.get('tracker.fieldnames.%s.branch' % (branch)))
         patchesToApply = []
 
-        if not args.nomerge and (not remoteUrl or not remoteBranch):
+        if (args.nomerge or args.fetchonly) and (not remoteUrl or not remoteBranch):
+            # No merge and Fetch only require valid URL and branch
+            mode = None
+
+        elif (not args.nomerge and not args.fetchonly) and (not remoteUrl or not remoteBranch):
+            # Attempting to find a patch
             mode = None
             attachments = issueInfo.get('fields').get('attachment')
             patches = {}
@@ -141,11 +154,13 @@ class PullCommand(Command):
             raise Exception('Did not find enough information to pull a patch.')
 
         # Stash
-        stash = M.git().stash(untracked=True)
-        if stash[0] != 0:
-            raise Exception('Error while trying to stash your changes. Exiting...')
-        elif not stash[1].startswith('No local changes'):
-            logging.info('Stashed your local changes')
+        stash = None
+        if mode != 'fetchonly':
+            stash = M.git().stash(untracked=True)
+            if stash[0] != 0:
+                raise Exception('Error while trying to stash your changes. Exiting...')
+            elif not stash[1].startswith('No local changes'):
+                logging.info('Stashed your local changes')
 
         # Create a testing branch
         if args.testing:
@@ -189,6 +204,15 @@ class PullCommand(Command):
             logging.info('Pulling branch %s from %s into %s' % (remoteBranch, remoteUrl, M.currentBranch()))
             M.git().pull(remote=remoteUrl, ref=remoteBranch)
 
+        elif mode == 'fetchonly':
+            # Only fetches the branch from the remote
+            logging.info('Fetching branch %s from %s' % (remoteBranch, remoteUrl))
+            fetch = M.git().fetch(remote=remoteUrl, ref=remoteBranch)
+            if fetch[0] != 0:
+                logging.warning('Failed to fetch the remote branch')
+            else:
+                logging.info('Fetch successful, you can now use FETCH_HEAD')
+
         elif mode == 'patch':
             # Apply a patch from tracker
             files = []
@@ -217,7 +241,7 @@ class PullCommand(Command):
             M.git().reset('FETCH_HEAD', hard=True)
 
         # Stash pop
-        if not stash[1].startswith('No local changes'):
+        if stash and not stash[1].startswith('No local changes'):
             pop = M.git().stash(command='pop')
             if pop[0] != 0:
                 logging.error('An error ocured while unstashing your changes')
@@ -227,3 +251,4 @@ class PullCommand(Command):
         logging.info('Done.')
 
         # TODO Tidy up the messy logic above!
+        # TODO Really, this needs some good tidy up!

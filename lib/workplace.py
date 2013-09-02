@@ -159,20 +159,25 @@ class Workplace(object):
         if DB and dbname and DB.dbexists(dbname):
             DB.dropdb(dbname)
 
-    def generateInstanceName(self, version, integration=False, suffix=''):
+    def generateInstanceName(self, version, integration=False, suffix='', identifier=None):
         """Creates a name (identifier) from arguments"""
 
-        # Wording version
-        if version == 'master':
-            prefixVersion = C.get('wording.prefixMaster')
+        if identifier != None:
+            # If an identifier is passed, we use it regardless of the other parameters.
+            # Except for suffix.
+            name = identifier.replace(' ', '_')
         else:
-            prefixVersion = version
+            # Wording version
+            if version == 'master':
+                prefixVersion = C.get('wording.prefixMaster')
+            else:
+                prefixVersion = version
 
-        # Generating name
-        if integration:
-            name = C.get('wording.prefixIntegration') + prefixVersion
-        else:
-            name = C.get('wording.prefixStable') + prefixVersion
+            # Generating name
+            if integration:
+                name = C.get('wording.prefixIntegration') + prefixVersion
+            else:
+                name = C.get('wording.prefixStable') + prefixVersion
 
         # Append the suffix
         if suffix != None and suffix != '':

@@ -25,6 +25,18 @@
 #     ln -s bash_completion /etc/bash_completion.d/mdk
 #     source /etc/bash_completion.d/mdk
 
+function _gt() {
+    local BIN CUR OPTS
+    BIN="mdk"
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    OPTS=""
+    if [[ "${COMP_CWORD}" == 1 ]]; then
+        OPTS=$($BIN info -ln 2> /dev/null)
+    fi
+    COMPREPLY=( $(compgen -W "${OPTS}" -- ${CUR}) )
+    return 0
+}
+
 function _mdk() {
     local BIN CMD CUR PREV OPTS
     COMPREPLY=()
@@ -58,7 +70,7 @@ function _mdk() {
         case "${CMD}" in
             alias)
                 if [[ "${COMP_CWORD}" == 2 ]]; then
-                    OPTS="list show add remove"
+                    OPTS="list show add remove set"
                 elif [[ "${COMP_CWORD}" == 3 && "${PREV}" != "add" && "${PREV}" != "list" ]]; then
                     OPTS="$($BIN alias list 2> /dev/null | cut -d ':' -f 1)"
                 fi
@@ -79,7 +91,7 @@ function _mdk() {
                 fi
                 ;;
             behat)
-                if [[ "${PREV}" == "--feature" ]]; then
+                if [[ "${PREV}" == "--feature" ]] || [[ "${PREV}" == "-f" ]]; then
                     # Basic autocomplete for --feature, should append a / at the end of directory names.
                     compopt +o nospace
                     OPTS="$(compgen -A file $CUR)"
@@ -111,7 +123,7 @@ function _mdk() {
                 if [[ "$PREV" == "-n" || "$PREV" == "--name" ]]; then
                     OPTS=`$BIN info -ln`
                 else
-                    OPTS="--name"
+                    OPTS="--autofix --name"
                 fi
                 ;;
             info)
@@ -139,7 +151,7 @@ function _mdk() {
                 esac
                 ;;
             phpunit)
-                if [[ "${PREV}" == "--unittest" ]]; then
+                if [[ "${PREV}" == "--unittest" ]] || [[ "${PREV}" == "-u" ]]; then
                     # Basic autocomplete for --unittest, should append a / at the end of directory names.
                     compopt +o nospace
                     OPTS="$(compgen -A file $CUR)"
@@ -156,7 +168,7 @@ function _mdk() {
                 fi
                 ;;
             pull)
-                OPTS="--integration --testing"
+                OPTS="--fetch-only --integration --no-merge --testing"
                 ;;
             push)
                 if [[ "$PREV" != "--branch" && "$PREV" != "-b" && "$PREV" != "--remote" && "$PREV" != "-r" ]]; then
@@ -175,7 +187,7 @@ function _mdk() {
                 fi
                 ;;
             remove)
-                OPTS=`$BIN info -ln`
+                OPTS="$OPTS $(_list_instances)"
                 ;;
             run)
                 if [[ "${COMP_CWORD}" == 2 ]]; then
@@ -205,6 +217,7 @@ function _mdk() {
     return 0
 }
 
+# MDK autocomplete
 if [[ -n "$(which mdk)" ]]; then
     complete -F _mdk mdk
 fi

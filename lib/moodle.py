@@ -590,7 +590,7 @@ class Moodle(object):
 
         # Get the hash of the last upstream commit
         ref = '%s/%s' % (upstreamremote, stablebranch)
-        headcommit = self.git().hashes(ref=ref, limit=1)[0]
+        headcommit = self.git().hashes(ref=ref, limit=1, format='%h')[0]
 
         J = Jira()
         diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%', stablebranch).replace('%headcommit%', headcommit)

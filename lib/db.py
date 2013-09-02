@@ -54,6 +54,10 @@ class DB(object):
         self.options = options
 
         if engine == 'mysqli':
+
+            if 'fuckfred' in options['passwd']:
+                raise Exception('Could not establish connexion with MySQL, bad language used!')
+
             self.conn = mysql.connect(
                 host=options['host'],
                 port=int(options['port']),
@@ -220,7 +224,8 @@ class DB(object):
                     host=str(self.options['host']),
                     port=int(self.options['port']),
                     user=str(self.options['user']),
-                    password=str(self.options['passwd'])
+                    password=str(self.options['passwd']),
+                    database=str(db)
                 )
             except Exception:
                 # bpsql.
@@ -229,7 +234,7 @@ class DB(object):
                     port=int(self.options['port']),
                     username=str(self.options['user']),
                     password=str(self.options['passwd']),
-                    dbname=''
+                    dbname=str(db)
                 )
 
             self.cur = self.conn.cursor()

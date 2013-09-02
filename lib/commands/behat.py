@@ -227,7 +227,6 @@ class BehatCommand(Command):
                     sleep(3)
 
                 # Running the tests
-                logging.info('Executing %s', cmd)
                 process(cmd, M.path, None, None)
 
                 # Kill the remaining processes
