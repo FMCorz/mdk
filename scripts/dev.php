@@ -8,9 +8,14 @@
 define('CLI_SCRIPT', true);
 require(dirname(__FILE__).'/config.php');
 
-function mdk_set_config($name, $value) {
-    set_config($name, $value);
+function mdk_set_config($name, $value, $plugin = null) {
+    set_config($name, $value, $plugin);
     $value = is_bool($value) ? (int) $value : $value;
+
+    if ($plugin) {
+        // Make a fancy name.
+        $name = "$plugin/$name";
+    }
     mtrace("Setting $name to $value");
 }
 
@@ -40,6 +45,14 @@ mdk_set_config('cachejs', 0);
 
 // Do not use YUI combo loading.
 mdk_set_config('yuicomboloading', 0);
+
+// Disable modintro for lazy devs.
+mdk_set_config('requiremodintro', 0, 'book');
+mdk_set_config('requiremodintro', 0, 'folder');
+mdk_set_config('requiremodintro', 0, 'imscp');
+mdk_set_config('requiremodintro', 0, 'page');
+mdk_set_config('requiremodintro', 0, 'resource');
+mdk_set_config('requiremodintro', 0, 'url');
 
 // Adds FirePHP
 $firephp = "
