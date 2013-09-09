@@ -116,6 +116,8 @@ def downloadProcessHook(count, size, total):
     """Hook to report the downloading a file using urllib.urlretrieve"""
     downloaded = int((count * size) / (1024))
     total = int(total / (1024)) if total != 0 else '?'
+    if downloaded > total:
+        downloaded = total
     sys.stderr.write("\r  %sKB / %sKB" % (downloaded, total))
     sys.stderr.flush()
 
