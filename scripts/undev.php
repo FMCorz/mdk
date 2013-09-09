@@ -79,10 +79,11 @@ mdk_set_config('cachejs', $default);
 $default = $settings->yuicomboloading->get_defaultsetting();
 mdk_set_config('yuicomboloading', $default);
 
-// Enable modintro for conciencious devs.
-mdk_set_config('requiremodintro', 1, 'book');
-mdk_set_config('requiremodintro', 1, 'folder');
-mdk_set_config('requiremodintro', 1, 'imscp');
-mdk_set_config('requiremodintro', 1, 'page');
-mdk_set_config('requiremodintro', 1, 'resource');
-mdk_set_config('requiremodintro', 1, 'url');
+// Restore modintro for conciencious devs.
+$resources = array('book', 'folder', 'imscp', 'page', 'resource', 'url');
+foreach ($resources as $r) {
+    $settingpage = $adminroot->locate('modsetting' . $r, true);
+    $settings = $settingpage->settings;
+    $default = $settings->requiremodintro->get_defaultsetting();
+    mdk_set_config('requiremodintro', $default, $r);
+}
