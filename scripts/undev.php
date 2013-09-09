@@ -8,9 +8,14 @@ define('CLI_SCRIPT', true);
 require(dirname(__FILE__).'/config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-function mdk_set_config($name, $value) {
-    set_config($name, $value);
+function mdk_set_config($name, $value, $plugin = null) {
+    set_config($name, $value, $plugin);
     $value = is_bool($value) ? (int) $value : $value;
+
+    if ($plugin) {
+        // Make a fancy name.
+        $name = "$plugin/$name";
+    }
     mtrace("Setting $name to $value");
 }
 
@@ -73,3 +78,11 @@ mdk_set_config('cachejs', $default);
 // Do not use YUI combo loading.
 $default = $settings->yuicomboloading->get_defaultsetting();
 mdk_set_config('yuicomboloading', $default);
+
+// Enable modintro for conciencious devs.
+mdk_set_config('requiremodintro', 1, 'book');
+mdk_set_config('requiremodintro', 1, 'folder');
+mdk_set_config('requiremodintro', 1, 'imscp');
+mdk_set_config('requiremodintro', 1, 'page');
+mdk_set_config('requiremodintro', 1, 'resource');
+mdk_set_config('requiremodintro', 1, 'url');
