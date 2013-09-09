@@ -517,9 +517,8 @@ class Moodle(object):
             raise Exception('Error while purging cache!')
 
     def reload(self):
-        """Reloads the information"""
+        """Sets the value to be reloaded"""
         self._loaded = False
-        return self._load()
 
     def removeConfig(self, name):
         """Remove a configuration setting from the config file."""
