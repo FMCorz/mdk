@@ -89,6 +89,14 @@ class BehatCommand(Command):
             }
         ),
         (
+            ['--selenium-download'],
+            {
+                'action': 'store_true',
+                'dest': 'seleniumforcedl',
+                'help': 'force the download of the latest Selenium to the cache'
+            }
+        ),
+        (
             ['--selenium-verbose'],
             {
                 'action': 'store_true',
@@ -155,7 +163,7 @@ class BehatCommand(Command):
         seleniumPath = os.path.expanduser(os.path.join(self.C.get('dirs.mdk'), 'selenium.jar'))
         if args.selenium:
             seleniumPath = args.selenium
-        elif not nojavascript and not os.path.isfile(seleniumPath):
+        elif args.seleniumforcedl or (not nojavascript and not os.path.isfile(seleniumPath)):
             logging.info('Attempting to find a download for Selenium')
             url = urllib.urlopen('http://docs.seleniumhq.org/download/')
             content = url.read()
@@ -166,7 +174,7 @@ class BehatCommand(Command):
             else:
                 logging.warning('Could not locate Selenium server to download')
 
-        if not os.path.isfile(seleniumPath):
+        if not nojavascript and not os.path.isfile(seleniumPath):
             raise Exception('Selenium file %s does not exist')
 
         # Run cli

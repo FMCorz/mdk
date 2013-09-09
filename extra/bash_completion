@@ -97,7 +97,7 @@ function _mdk() {
                     OPTS="$(compgen -A file $CUR)"
                     compopt -o nospace
                 else
-                    OPTS="--run --disable --feature --switch-completely --no-javascript --selenium --selenium-verbose --tags"
+                    OPTS="--run --disable --feature --switch-completely --no-javascript --selenium --selenium-download --selenium-verbose --tags"
                     OPTS="$OPTS $(_list_instances)"
                 fi
                 ;;
