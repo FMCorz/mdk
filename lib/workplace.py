@@ -93,10 +93,7 @@ class Workplace(object):
         os.mkdir(wwwDir, 0755)
         os.mkdir(dataDir, 0777)
 
-        if integration:
-            repository = os.path.join(self.cache, 'integration.git')
-        else:
-            repository = os.path.join(self.cache, 'moodle.git')
+        repository = self.getCachedRemote(integration)
 
         # Clone the instances
         logging.info('Cloning repository...')
@@ -106,7 +103,7 @@ class Workplace(object):
         if os.path.islink(linkDir):
             os.remove(linkDir)
         if os.path.isfile(linkDir) or os.path.isdir(linkDir):  # No elif!
-            logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' (wwwDir, linkDir))
+            logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (wwwDir, linkDir))
         else:
             os.symlink(wwwDir, linkDir)
 
@@ -118,6 +115,9 @@ class Workplace(object):
 
         logging.info('Checking out branch...')
         repo = git.Git(wwwDir, C.get('git'))
+
+        # Removing the default remote origin coming from the clone
+        repo.delRemote('origin')
 
         # Setting up the correct remote names
         repo.setRemote(C.get('myRemote'), C.get('remotes.mine'))
@@ -132,6 +132,13 @@ class Workplace(object):
         else:
             repo.checkout(branch)
         repo.pull(remote=C.get('upstreamRemote'))
+
+        # Fixing up remote URLs if need be, this is done after pulling the cache one because we
+        # do not want to contact the real origin server from here, it is slow and pointless.
+        if not C.get('useCacheAsUpstreamRemote'):
+            realupstream = C.get('remotes.integration') if integration else C.get('remotes.stable')
+            if realupstream:
+                repo.setRemote(C.get('upstreamRemote'), realupstream)
 
         M = self.get(name)
         return M

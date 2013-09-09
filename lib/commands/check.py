@@ -203,8 +203,8 @@ class CheckCommand(Command):
         print 'Checking remotes'
         remotes = {
             'mine': self.C.get('remotes.mine'),
-            'stable': self.Wp.getCachedRemote(),
-            'integration': self.Wp.getCachedRemote(True)
+            'stable': self.Wp.getCachedRemote() if self.C.get('useCacheAsUpstreamRemote') else self.C.get('remotes.stable'),
+            'integration': self.Wp.getCachedRemote(True) if self.C.get('useCacheAsUpstreamRemote') else self.C.get('remotes.integration')
         }
         myRemote = self.C.get('myRemote')
         upstreamRemote = self.C.get('upstreamRemote')

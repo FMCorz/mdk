@@ -146,6 +146,13 @@
     // during an instance creation. If false, the symlink won't be created.
     "symlinkToData": false,
 
+    // By default MDK caches origin as a local mirror. It is much faster when it comes to upgrading
+    // a couple of instances at the same time. MDK will update the mirror as often as it needs to,
+    // but if you are not using MDK to upgrade your instances, you might want to disable this
+    // functionality to only rely on the real origin. Creating new instances will not be affected
+    // by this setting.
+    "useCacheAsUpstreamRemote": true,
+
     // You should not edit this, this is the branch that is considered as master by developers.
     "masterBranch": 26,
 
