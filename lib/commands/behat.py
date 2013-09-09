@@ -29,7 +29,7 @@ import logging
 import gzip
 from time import sleep
 from lib.command import Command
-from lib.tools import process, ProcessInThread
+from lib.tools import process, ProcessInThread, downloadProcessHook
 
 
 class BehatCommand(Command):
@@ -170,7 +170,12 @@ class BehatCommand(Command):
             selenium = re.search(r'http:[a-z0-9/._-]+selenium-server-standalone-[0-9.]+\.jar', content, re.I)
             if selenium:
                 logging.info('Downloading Selenium from %s' % (selenium.group(0)))
-                urllib.urlretrieve(selenium.group(0), seleniumPath)
+                if (logging.getLogger().level <= logging.INFO):
+                    urllib.urlretrieve(selenium.group(0), seleniumPath, downloadProcessHook)
+                    # Force a new line after the hook display
+                    logging.info('')
+                else:
+                    urllib.urlretrieve(selenium.group(0), seleniumPath)
             else:
                 logging.warning('Could not locate Selenium server to download')
 

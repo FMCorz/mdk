@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import sys
 import os
 import signal
 import subprocess
@@ -109,6 +110,14 @@ def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
     proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
     (out, err) = proc.communicate()
     return (proc.returncode, out, err)
+
+
+def downloadProcessHook(count, size, total):
+    """Hook to report the downloading a file using urllib.urlretrieve"""
+    downloaded = int((count * size) / (1024))
+    total = int(total / (1024)) if total != 0 else '?'
+    sys.stderr.write("\r  %sKB / %sKB" % (downloaded, total))
+    sys.stderr.flush()
 
 
 def stableBranch(version):
