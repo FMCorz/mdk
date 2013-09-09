@@ -125,7 +125,8 @@ class ConfigObject(object):
 
     def set(self, name, value):
         """Set a new setting"""
-        value = unicode(value)
+        if type(value) == str:
+            value = unicode(value)
         name = unicode(name).split('.')
         count = len(name)
         data = self.data
