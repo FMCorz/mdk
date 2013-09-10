@@ -31,6 +31,7 @@ import re
 import threading
 import getpass
 import logging
+import hashlib
 
 
 def yesOrNo(q):
@@ -87,6 +88,12 @@ def get_current_user():
     return username
 
 
+def md5file(filepath):
+    """Return the md5 sum of a file
+    This is terribly memory inefficient!"""
+    return hashlib.md5(open(filepath).read()).hexdigest()
+
+
 def parseBranch(branch, pattern):
     pattern = re.compile(pattern, flags=re.I)
     result = pattern.search(branch)
@@ -114,6 +121,8 @@ def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
 
 def downloadProcessHook(count, size, total):
     """Hook to report the downloading a file using urllib.urlretrieve"""
+    if count <= 0:
+        return
     downloaded = int((count * size) / (1024))
     total = int(total / (1024)) if total != 0 else '?'
     if downloaded > total:

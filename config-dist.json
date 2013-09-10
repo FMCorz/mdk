@@ -109,6 +109,22 @@
     // The public acccess URL of your repository. It is used to populate the fields on the tracker issue.
     "repositoryUrl": "git://github.com/YourGitHub/moodle.git",
 
+    // Plugins related settings.
+    "plugins": {
+
+        // Set this setting to false to disable the caching of plugins locally.
+        "fileCache": true,
+
+        // Local repository for plugins missing on the database.
+        "localRepository": {
+            "auth_mdk": {
+                ">=20": {
+                    "downloadurl": "https://github.com/FMCorz/moodle-auth_mdk/archive/master.zip"
+                }
+            }
+        }
+    },
+
     // The scheme to set during an install (http or https)
     "scheme": "http",
     // The host name to set during an install
