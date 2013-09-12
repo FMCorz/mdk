@@ -216,6 +216,17 @@ Get the instance ready for PHPUnit tests, and run the test(s).
 
     mdk phpunit -u repository/tests/repository_test.php
 
+
+plugin
+------
+
+Look for a plugin on moodle.org and downloads it into your instance.
+
+**Example**
+
+    mdk plugin download repository_evernote
+
+
 purge
 -----
 
