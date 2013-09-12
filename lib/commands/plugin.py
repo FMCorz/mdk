@@ -160,7 +160,8 @@ class PluginCommand(Command):
 
         po = PluginObject(args.pluginname)
         if not args.force and PluginManager.hasPlugin(po, M):
-            raise Exception('The plugin is already present')
+            logging.error('The plugin is already present, set --force to overwrite it.')
+            return False
 
         branch = M.get('branch')
         if branch == 'master':
