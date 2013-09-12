@@ -213,9 +213,9 @@ class BackportCommand(Command):
                     stashPop(stash)
                     continue
 
-            # Update the tracker
-            if args.updatetracker:
-                M2.updateTrackerGitInfo(branch=newbranch)
+                # Update the tracker
+                if args.updatetracker:
+                    M2.updateTrackerGitInfo(branch=newbranch)
 
             stashPop(stash)
 
