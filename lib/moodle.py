@@ -367,6 +367,8 @@ class Moodle(object):
 
     def isInstalled(self):
         """Returns whether this instance is installed or not"""
+        # Reload the configuration if necessary.
+        self._load()
         return self.installed == True
 
     @staticmethod
