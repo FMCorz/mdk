@@ -154,7 +154,7 @@ function _mdk() {
                 if [[ "${COMP_CWORD}" == 2 ]]; then
                     OPTS="download install"
                 else
-                    OPTS="--force --stict --no-cache"
+                    OPTS="--force --strict --no-cache"
                     OPTS="$OPTS $(_list_instances)"
                 fi
                 ;;
