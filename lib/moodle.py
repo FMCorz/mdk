@@ -30,7 +30,7 @@ import shutil
 from tools import mkdir, process, parseBranch
 from db import DB
 from config import Conf
-from git import Git
+from git import Git, GitException
 from exceptions import InstallException
 from jira import Jira
 from scripts import Scripts
@@ -230,6 +230,55 @@ class Moodle(object):
             if not self._git.isRepository():
                 raise Exception('Could not find the Git repository')
         return self._git
+
+    def headcommit(self, branch=None):
+        """Try to resolve the head commit of branch of this instance"""
+
+        if branch == None:
+            branch = self.currentBranch()
+            if branch == 'HEAD':
+                raise Exception('Cannot update the tracker when on detached branch')
+
+        smartSearch = C.get('smartHeadCommitSearch')
+
+        # Parsing the branch
+        parsedbranch = parseBranch(branch, C.get('wording.branchRegex'))
+        if parsedbranch:
+            issue = 'MDL-%s' % (parsedbranch['issue'])
+        else:
+            logging.debug('Cannot smart resolve using the branch %s' % (branch))
+            smartSearch = False
+
+        headcommit = None
+        try:
+            # Trying to smart guess the last commit needed
+            if smartSearch:
+                commits = self.git().log(since=branch, count=C.get('smartHeadCommitLimit'), format='%s_____%h').split('\n')[:-1]
+
+                # Looping over the last commits to find the commit messages that match the MDL-12345.
+                candidate = None
+                for commit in commits:
+                    match = commit.strip().lower().startswith(issue.lower())
+                    if not candidate and not match:
+                        # The first commit does not match a hash, let's ignore this method.
+                        break
+                    candidate = commit.split('_____')[-1]
+                    if not match:
+                        # The commit does not match any more, we found it!
+                        headcommit = candidate
+                        break
+
+            # We could not smart find the last commit, let's use the default mechanism.
+            if not headcommit:
+                upstreamremote = C.get('upstreamRemote')
+                stablebranch = self.get('stablebranch')
+                headcommit = self.git().hashes(ref='%s/%s' % (upstreamremote, stablebranch), limit=1, format='%h')[0]
+
+        except GitException:
+            logging.warning('Could not resolve the head commit')
+            headcommit = False
+
+        return headcommit
 
     def initPHPUnit(self, force=False):
         """Initialise the PHPUnit environment"""
@@ -578,7 +627,7 @@ class Moodle(object):
         self.removeConfig(name)
         self.addConfig(name, value)
 
-    def updateTrackerGitInfo(self, branch=None):
+    def updateTrackerGitInfo(self, branch=None, ref=None):
         """Updates the git info on the tracker issue"""
 
         if branch == None:
@@ -597,11 +646,27 @@ class Moodle(object):
         repositoryurl = C.get('repositoryUrl')
         diffurltemplate = C.get('diffUrlTemplate')
         stablebranch = self.get('stablebranch')
-        upstreamremote = C.get('upstreamRemote')
 
         # Get the hash of the last upstream commit
-        ref = '%s/%s' % (upstreamremote, stablebranch)
-        headcommit = self.git().hashes(ref=ref, limit=1, format='%h')[0]
+        headcommit = None
+        logging.info('Searching for the head commit...')
+        if ref:
+            try:
+                headcommit = self.git().hashes(ref=ref, limit=1, format='%h')[0]
+            except GitException:
+                logging.warning('Could not resolve a head commit using the reference: %s' % (ref))
+                headcommit = None
+
+        # No reference was passed, or it was invalid.
+        if not headcommit:
+            headcommit = self.headcommit(branch)
+
+        # Head commit not resolved
+        if not headcommit:
+            logging.error('Head commit not resolved, aborting update of tracker fields')
+            return False
+
+        logging.debug('Head commit resolved to %s' % (headcommit))
 
         J = Jira()
         diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%', stablebranch).replace('%headcommit%', headcommit)

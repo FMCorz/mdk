@@ -59,9 +59,11 @@ class PushCommand(Command):
             (
                 ['-t', '--update-tracker'],
                 {
-                    'action': 'store_true',
+                    'const': True,
                     'dest': 'updatetracker',
-                    'help': 'also add the diff information to the tracker issue.'
+                    'help': 'also add the diff information to the tracker issue. If gitref is passed, it is used as a starting point for the diff URL.',
+                    'metavar': 'gitref',
+                    'nargs': '?'
                 }
             ),
             (
@@ -132,8 +134,9 @@ class PushCommand(Command):
             raise Exception(result[2])
 
         # Update the tracker
-        if args.updatetracker:
-            M.updateTrackerGitInfo(branch=branch)
+        if args.updatetracker != None:
+            ref = None if args.updatetracker == True else args.updatetracker
+            M.updateTrackerGitInfo(branch=branch, ref=ref)
 
         # Pushing stable branch
         if args.includestable:

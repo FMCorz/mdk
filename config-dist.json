@@ -158,6 +158,14 @@
     // Debug level of MDK. 'debug', 'info', 'warning', 'error' or 'critical'.
     "debug": "info",
 
+    // When enabled, MDK will try to be smart to identify the parent commit of the current branch. Instead of
+    // using the stable branch it will match the branch name with an issue number and compare it with the commit
+    // messages. The first commit message that does not match the pattern MDL-12345 will be used as the headcommit.
+    "smartHeadCommitSearch": true,
+
+    // Limit the search of the head commit to the last n commits.
+    "smartHeadCommitLimit": 50,
+
     // Name of the symlink pointing to the data directory to create in the www directory
     // during an instance creation. If false, the symlink won't be created.
     "symlinkToData": false,
