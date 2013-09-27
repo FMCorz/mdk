@@ -491,8 +491,10 @@ class Moodle(object):
 
                 f.close()
 
-            except Exception:
-                logging.exception('Error while reading config file')
+            except IOError:
+                self.installed = False
+                logging.error('Could not read config file')
+
         else:
             self.installed = False
 
