@@ -94,6 +94,13 @@ def md5file(filepath):
     return hashlib.md5(open(filepath).read()).hexdigest()
 
 
+def mkdir(path, perms=0755):
+    """Creates a directory ignoring the OS umask"""
+    oldumask = os.umask(0000)
+    os.mkdir(path, perms)
+    os.umask(oldumask)
+
+
 def parseBranch(branch, pattern):
     pattern = re.compile(pattern, flags=re.I)
     result = pattern.search(branch)

@@ -249,7 +249,7 @@ class PluginDownloadInfo(dict):
         if fileCache:
             if not os.path.isdir(dest):
                 logging.debug('Creating directory %s' % (dest))
-                os.mkdir(dest, 0777)
+                tools.mkdir(dest, 0777)
 
             if os.path.isfile(target) and (md5sum == None or tools.md5file(target) == md5sum):
                 logging.info('Found cached plugin file: %s' % (os.path.basename(target)))

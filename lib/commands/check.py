@@ -26,6 +26,7 @@ import os
 import shutil
 from lib import git
 from lib.command import Command
+from tools import mkdir
 
 
 class CheckCommand(Command):
@@ -195,7 +196,7 @@ class CheckCommand(Command):
                 print '  %s does not exist' % d
                 if args.fix:
                     print '    Creating %s' % d
-                    os.mkdir(d, 0777)
+                    mkdir(d, 0777)
 
     def remotes(self, args):
         """Check that the correct remotes are used"""

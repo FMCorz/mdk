@@ -25,7 +25,7 @@ http://github.com/FMCorz/mdk
 import os
 import shutil
 import logging
-from tools import process, stableBranch
+from tools import mkdir, process, stableBranch
 from exceptions import CreateException
 from config import Conf
 import git
@@ -89,9 +89,9 @@ class Workplace(object):
 
         self.checkCachedClones(not integration, integration)
         self.updateCachedClones(stable=not integration, integration=integration, verbose=False)
-        os.mkdir(installDir, 0755)
-        os.mkdir(wwwDir, 0755)
-        os.mkdir(dataDir, 0777)
+        mkdir(installDir, 0755)
+        mkdir(wwwDir, 0755)
+        mkdir(dataDir, 0777)
 
         repository = self.getCachedRemote(integration)
 

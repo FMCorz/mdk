@@ -30,7 +30,7 @@ import subprocess
 import logging
 
 from lib.command import Command
-from lib.tools import question, get_current_user
+from lib.tools import question, get_current_user, mkdir
 
 
 class InitCommand(Command):
@@ -83,7 +83,7 @@ class InitCommand(Command):
         # Create the main MDK folder.
         if not os.path.isdir(userdir):
             logging.info('Creating directory %s.' % userdir)
-            os.mkdir(userdir, 0755)
+            mkdir(userdir, 0755)
             os.chown(userdir, user.pw_uid, usergroup.gr_gid)
 
         # Checking if the config file exists.
@@ -122,7 +122,7 @@ class InitCommand(Command):
             www = self.resolve_directory(www, username)
             try:
                 if not os.path.isdir(www):
-                    os.mkdir(www, 0775)
+                    mkdir(www, 0775)
                     os.chown(www, user.pw_uid, usergroup.gr_gid)
             except:
                 logging.error('Error while creating directory %s' % www)
@@ -137,7 +137,7 @@ class InitCommand(Command):
             try:
                 if not os.path.isdir(storage):
                     if storage != www:
-                        os.mkdir(storage, 0775)
+                        mkdir(storage, 0775)
                         os.chown(storage, user.pw_uid, usergroup.gr_gid)
                     else:
                         logging.error('Error! dirs.www and dirs.storage must be different!')
@@ -156,7 +156,7 @@ class InitCommand(Command):
         if not os.path.isdir(mdkdir):
             try:
                 logging.info('Creating MDK directory %s' % mdkdir)
-                os.mkdir(mdkdir, 0775)
+                mkdir(mdkdir, 0775)
                 os.chown(mdkdir, user.pw_uid, usergroup.gr_gid)
             except:
                 logging.error('Error while creating %s, please fix manually.' % mdkdir)

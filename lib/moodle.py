@@ -27,7 +27,7 @@ import re
 import logging
 import shutil
 
-from tools import process, parseBranch
+from tools import mkdir, process, parseBranch
 from db import DB
 from config import Conf
 from git import Git
@@ -241,7 +241,7 @@ class Moodle(object):
         phpunit_dataroot = self.get('dataroot') + '_phpu'
         self.updateConfig('phpunit_dataroot', phpunit_dataroot)
         if not os.path.isdir(phpunit_dataroot):
-            os.mkdir(phpunit_dataroot, 0777)
+            mkdir(phpunit_dataroot, 0777)
 
         # Set PHPUnit prefix
         phpunit_prefix = 'phpu_'
