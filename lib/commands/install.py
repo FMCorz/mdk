@@ -26,7 +26,7 @@ import os
 import logging
 from lib import db
 from lib.command import Command
-from tools import mkdir
+from lib.tools import mkdir
 
 DB = db.DB
 

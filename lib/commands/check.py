@@ -26,7 +26,7 @@ import os
 import shutil
 from lib import git
 from lib.command import Command
-from tools import mkdir
+from lib.tools import mkdir
 
 
 class CheckCommand(Command):
