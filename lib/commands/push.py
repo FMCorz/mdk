@@ -23,8 +23,10 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
+import re
 from lib import tools, jira
 from lib.command import Command
+from lib.tools import getMDLFromCommitMessage
 
 
 class PushCommand(Command):
@@ -114,14 +116,23 @@ class PushCommand(Command):
         parsedbranch = tools.parseBranch(branch, self.C.get('wording.branchRegex'))
         if parsedbranch or branch != M.get('stablebranch'):
             message = M.git().messages(count=1)[0]
-            mdl = message.split(' ')[0]
+
+            mdl = getMDLFromCommitMessage(message)
+
             if parsedbranch:
                 branchmdl = 'MDL-%s' % (parsedbranch['issue'])
             else:
                 branchmdl = branch
-            if mdl != branchmdl:
-                print 'The MDL number in the last commit does not match the branch being pushed to.'
-                print 'Branch: %s vs. commit: %s' % (branchmdl, mdl)
+
+            if not mdl or mdl != branchmdl:
+                if not mdl:
+                    print 'The MDL number could not be found in the commit message.'
+                    print 'Commit: %s' % (message)
+
+                elif mdl != branchmdl:
+                    print 'The MDL number in the last commit does not match the branch being pushed to.'
+                    print 'Branch: \'%s\' vs. commit: \'%s\'' % (branchmdl, mdl)
+
                 answer = tools.question('Are you sure you want to continue?', default='n')
                 if answer.lower()[0] != 'y':
                     print 'Exiting...'

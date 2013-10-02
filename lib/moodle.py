@@ -27,7 +27,7 @@ import re
 import logging
 import shutil
 
-from tools import mkdir, process, parseBranch
+from tools import getMDLFromCommitMessage, mkdir, process, parseBranch
 from db import DB
 from config import Conf
 from git import Git, GitException
@@ -258,7 +258,7 @@ class Moodle(object):
                 # Looping over the last commits to find the commit messages that match the MDL-12345.
                 candidate = None
                 for commit in commits:
-                    match = commit.strip().lower().startswith(issue.lower())
+                    match = getMDLFromCommitMessage(commit) == issue
                     if not candidate and not match:
                         # The first commit does not match a hash, let's ignore this method.
                         break

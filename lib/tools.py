@@ -73,6 +73,15 @@ def chmodRecursive(path, chmod):
             os.chmod(file, chmod)
 
 
+def getMDLFromCommitMessage(message):
+    """Return the MDL-12345 number from a commit message"""
+    mdl = None
+    match = re.match(r'MDL(-|_)([0-9]+)', message, re.I)
+    if match:
+        mdl = 'MDL-%s' % (match.group(2))
+    return mdl
+
+
 def get_current_user():
     """Attempt to get the currently logged in user"""
     username = 'root'
