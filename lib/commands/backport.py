@@ -75,9 +75,11 @@ class BackportCommand(Command):
             (
                 ['-t', '--update-tracker'],
                 {
-                    'action': 'store_true',
+                    'const': True,
                     'dest': 'updatetracker',
-                    'help': 'to use with --push, also add the diff information to the tracker issue'
+                    'help': 'to use with --push, also add the diff information to the tracker issue',
+                    'metavar': 'gitref',
+                    'nargs': '?'
                 }
             ),
             (
@@ -214,8 +216,9 @@ class BackportCommand(Command):
                     continue
 
                 # Update the tracker
-                if args.updatetracker:
-                    M2.updateTrackerGitInfo(branch=newbranch)
+                if args.updatetracker != None:
+                    ref = None if args.updatetracker == True else args.updatetracker
+                    M2.updateTrackerGitInfo(branch=newbranch, ref=ref)
 
             stashPop(stash)
 
