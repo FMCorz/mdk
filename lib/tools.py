@@ -168,7 +168,7 @@ class ProcessInThread(threading.Thread):
         if type(cmd) != 'list':
             cmd = shlex.split(str(cmd))
         self.cmd = cmd
-        self.cwd = None
+        self.cwd = cwd
         self.stdout = stdout
         self.stderr = stderr
 
