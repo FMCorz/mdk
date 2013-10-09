@@ -20,7 +20,11 @@ function mdk_set_config($name, $value, $plugin = null) {
 }
 
 // Load all the settings.
-session_set_user(get_admin());
+if (class_exists('\core\session\manager')) {
+    \core\session\manager::set_user(get_admin());
+} else {
+    session_set_user(get_admin());
+}
 $adminroot = admin_get_root();
 
 
