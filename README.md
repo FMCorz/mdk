@@ -323,6 +323,13 @@ Gets some information about the issue on the tracker.
     Tester              : Tim Barker (timb)
     ------------------------------------------------------------------------
 
+
+uninstall
+---------
+
+Uninstall an instance: removes config file, drops the database, delete dataroot content, ...
+
+
 update
 ------
 

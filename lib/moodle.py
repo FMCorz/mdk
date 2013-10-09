@@ -627,6 +627,31 @@ class Moodle(object):
         self.removeConfig(name)
         self.addConfig(name, value)
 
+    def uninstall(self):
+        """Uninstall the instance"""
+
+        if not self.isInstalled():
+            raise Exception('The instance is not installed')
+
+        # Delete the content in moodledata
+        dataroot = self.get('dataroot')
+        if os.path.isdir(dataroot):
+            logging.debug('Deleting dataroot content (%s)' % (dataroot))
+            shutil.rmtree(dataroot)
+            mkdir(dataroot, 0777)
+
+        # Drop the database
+        dbname = self.get('dbname')
+        if self.dbo().dbexists(dbname):
+            logging.debug('Droping database (%s)' % (dbname))
+            self.dbo().dropdb(dbname)
+
+        # Remove the config file
+        configFile = os.path.join(self.get('path'), 'config.php')
+        if os.path.isfile(configFile):
+            logging.debug('Deleting config.php')
+            os.remove(configFile)
+
     def updateTrackerGitInfo(self, branch=None, ref=None):
         """Updates the git info on the tracker issue"""
 

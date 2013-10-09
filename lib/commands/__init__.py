@@ -49,6 +49,7 @@ commandsList = [
     'remove',
     'run',
     'tracker',
+    'uninstall',
     'update',
     'upgrade'
 ]
