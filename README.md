@@ -327,7 +327,7 @@ Gets some information about the issue on the tracker.
 uninstall
 ---------
 
-Uninstall an instance: removes config file, drops the database, delete dataroot content, ...
+Uninstall an instance: removes config file, drops the database, deletes dataroot content, ...
 
 
 update
