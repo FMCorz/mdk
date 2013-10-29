@@ -42,6 +42,14 @@ class RemoveCommand(Command):
                 'dest': 'do',
                 'help': 'do not ask for confirmation'
             }
+        ),
+        (
+            ['-f'],
+            {
+                'action': 'store_true',
+                'dest': 'force',
+                'help': 'force and do not ask for confirmation'
+            }
         )
     ]
     _description = 'Completely remove an instance'
@@ -53,7 +61,7 @@ class RemoveCommand(Command):
         except:
             raise Exception('This is not a Moodle instance')
 
-        if not args.do:
+        if not args.do and not args.force:
             confirm = raw_input('Are you sure? (Y/n) ')
             if confirm != 'Y':
                 logging.info('Aborting...')
