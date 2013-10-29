@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.5
+----
+
+* New command `uninstall` to uninstall an instance
+* New command `plugin` to install plugins
+* `push` and `backport` can specify the HEAD commit when updating the tracker
+* Updating the tracker smartly guesses the HEAD commit
+* `behat` can force the download of the latest Selenium
+* New setting not to use the cache repositories as remote
+* `purge` can manually purge cache without using the shipped CLI
+
 v0.4.2
 ------
 
