@@ -79,22 +79,21 @@ class PhpunitCommand(Command):
             raise Exception('This instance needs to be installed first')
 
         # Install Composer for >= 2.5
-        if M.branch_compare(25):
-            if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
-                logging.info('Installing Composer')
-                cliFile = 'phpunit_install_composer.php'
-                cliPath = os.path.join(M.get('path'), 'phpunit_install_composer.php')
-                (to, headers) = urllib.urlretrieve('http://getcomposer.org/installer', cliPath)
-                if headers.dict.get('content-encoding') == 'gzip':
-                    f = gzip.open(cliPath, 'r')
-                    content = f.read()
-                    f.close()
-                    f = open(cliPath, 'w')
-                    f.write(content)
-                    f.close()
-                M.cli('/' + cliFile, stdout=None, stderr=None)
-                os.remove(cliPath)
-                M.cli('composer.phar', args='install --dev', stdout=None, stderr=None)
+        if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
+            logging.info('Installing Composer')
+            cliFile = 'phpunit_install_composer.php'
+            cliPath = os.path.join(M.get('path'), 'phpunit_install_composer.php')
+            (to, headers) = urllib.urlretrieve('http://getcomposer.org/installer', cliPath)
+            if headers.dict.get('content-encoding') == 'gzip':
+                f = gzip.open(cliPath, 'r')
+                content = f.read()
+                f.close()
+                f = open(cliPath, 'w')
+                f.write(content)
+                f.close()
+            M.cli('/' + cliFile, stdout=None, stderr=None)
+            os.remove(cliPath)
+            M.cli('composer.phar', args='install --dev', stdout=None, stderr=None)
 
         # Run cli
         try:
@@ -106,10 +105,7 @@ class PhpunitCommand(Command):
 
             if args.run:
                 cmd = []
-                if M.branch_compare(25):
-                    cmd.append('vendor/bin/phpunit')
-                else:
-                    cmd.append('phpunit')
+                cmd.append('vendor/bin/phpunit')
                 if args.unittest:
                     cmd.append(args.unittest)
                 cmd = ' '.join(cmd)
