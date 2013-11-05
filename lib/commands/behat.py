@@ -57,6 +57,13 @@ class BehatCommand(Command):
             }
         ),
         (
+            ['-n', '--name'],
+            {
+                'metavar': 'name',
+                'help': 'Only execute the feature elements which match part of the given name or regex.'
+            }
+        ),
+        (
             ['-t', '--tags'],
             {
                 'metavar': 'tags',
@@ -192,8 +199,13 @@ class BehatCommand(Command):
             cmd = ['vendor/bin/behat']
             if args.tags:
                 cmd.append('--tags=%s' % (args.tags))
-            elif nojavascript:
+
+            if args.name:
+                cmd.append('--name=%s' % (args.name))
+
+            if not (args.tags or args.name) and nojavascript:
                 cmd.append('--tags ~@javascript')
+
             cmd.append('--config=%s/behat/behat.yml' % (M.get('behat_dataroot')))
 
             # Checking feature argument
