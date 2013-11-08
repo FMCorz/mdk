@@ -344,7 +344,9 @@ class Moodle(object):
         self.purge()
 
         # Run the init script.
-        self.cli('admin/tool/behat/cli/init.php', stdout=None, stderr=None)
+        result = self.cli('admin/tool/behat/cli/init.php', stdout=None, stderr=None)
+        if result[0] != 0:
+            raise Exception('Error while initialising Behat. Please try manually.')
 
         # Force a cache purge
         self.purge()
