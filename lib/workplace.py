@@ -62,7 +62,7 @@ class Workplace(object):
         cacheIntegration = self.getCachedRemote(True)
         if not os.path.isdir(cacheStable) and stable:
             logging.info('Cloning stable repository into cache...')
-            logging.info('That\'s going to take a while...')
+            logging.info('This is going to take a while...')
             process('%s clone --mirror %s %s' % (C.get('git'), C.get('remotes.stable'), cacheStable))
 
         if not os.path.isdir(cacheIntegration) and integration:
