@@ -224,6 +224,9 @@ class Jira(object):
         """Parse a date returned by Jira API"""
         return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.000+0000')
 
+    def search(self, query):
+        return self.request('search', data=urlencode({'jql': query, 'fields': 'id'}));
+
     def setCustomFields(self, key, updates):
         """Set a list of fields for this issue in Jira
 
