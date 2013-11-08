@@ -201,10 +201,18 @@ class PullCommand(Command):
             logging.info('Checked out branch %s' % (newBranch))
             mode = 'nomerge'
 
+        # Let's pretend everything was fine at the start.
+        result = True
+        unstash = True
+
         if mode == 'pull':
             # Pull branch from tracker
             logging.info('Pulling branch %s from %s into %s' % (remoteBranch, remoteUrl, M.currentBranch()))
-            M.git().pull(remote=remoteUrl, ref=remoteBranch)
+            result = M.git().pull(remote=remoteUrl, ref=remoteBranch)
+            if result[0] != 0:
+                logging.warning('Merge failed, please solve the conflicts and commit')
+                result = False
+                unstash = False
 
         elif mode == 'fetchonly':
             # Only fetches the branch from the remote
@@ -223,6 +231,7 @@ class PullCommand(Command):
                 logging.info('Downloading %s' % (patch['filename']))
                 if not J.download(patch['content'], dest):
                     logging.error('Failed to download. Aborting...')
+                    result = False
                     files = []
                     break
                 files.append(dest)
@@ -231,6 +240,7 @@ class PullCommand(Command):
                 logging.info('Applying patch(es)...')
                 if not M.git().apply(files):
                     logging.warning('Could not apply the patch(es), please apply manually')
+                    result = False
                 else:
                     for f in files:
                         os.remove(f)
@@ -243,14 +253,18 @@ class PullCommand(Command):
             M.git().reset('FETCH_HEAD', hard=True)
 
         # Stash pop
-        if stash and not stash[1].startswith('No local changes'):
+        if unstash and stash and not stash[1].startswith('No local changes'):
             pop = M.git().stash(command='pop')
             if pop[0] != 0:
                 logging.error('An error ocured while unstashing your changes')
             else:
                 logging.info('Popped the stash')
+        elif not unstash and stash:
+            logging.warning('Note that some files have been left in your stash')
 
-        logging.info('Done.')
+        if result:
+            logging.info('Done.')
 
         # TODO Tidy up the messy logic above!
         # TODO Really, this needs some good tidy up!
+        # TODO I'm being serious... this needs to crazy clean up!!
