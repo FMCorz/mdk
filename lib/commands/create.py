@@ -39,21 +39,21 @@ class CreateCommand(Command):
         super(CreateCommand, self).__init__(*args, **kwargs)
         self._arguments = [
             (
-                ['-e', '--engine'],
-                {
-                    'action': 'store',
-                    'choices': ['mysqli', 'pgsql'],
-                    'default': self.C.get('defaultEngine'),
-                    'help': 'database engine to use',
-                    'metavar': 'engine'
-                }
-            ),
-            (
                 ['-i', '--install'],
                 {
                     'action': 'store_true',
                     'dest': 'install',
                     'help': 'launch the installation script after creating the instance'
+                }
+            ),
+            (
+                ['-e', '--engine'],
+                {
+                    'action': 'store',
+                    'choices': ['mysqli', 'pgsql'],
+                    'default': self.C.get('defaultEngine'),
+                    'help': 'database engine to install the instance on, use with --install',
+                    'metavar': 'engine'
                 }
             ),
             (
@@ -109,6 +109,10 @@ class CreateCommand(Command):
         engine = args.engine
         versions = args.version
         suffixes = args.suffix
+        install = args.install
+
+        if engine and not install:
+            self.argumentError('--engine can only be used with --install.')
 
         for version in versions:
             for suffix in suffixes:
@@ -118,7 +122,7 @@ class CreateCommand(Command):
                     'engine': engine,
                     'integration': args.integration,
                     'identifier': args.identifier,
-                    'install': args.install,
+                    'install': install,
                     'run': args.run
                 }
                 self.do(arguments)
