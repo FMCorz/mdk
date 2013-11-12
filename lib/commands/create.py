@@ -111,8 +111,13 @@ class CreateCommand(Command):
         suffixes = args.suffix
         install = args.install
 
-        if engine and not install:
-            self.argumentError('--engine can only be used with --install.')
+        # Throw an error when --engine is used without --install. The code is currently commented out
+        # because as --engine has a default value, it will always be set, and so it becomes impossible
+        # to create an instance without installing it. I cannot think about a clean fix yet. Removing
+        # the default value will cause --help not to output the default as it should... Let's put more
+        # thoughts into this and perhaps use argument groups.
+        # if engine and not install:
+            # self.argumentError('--engine can only be used with --install.')
 
         for version in versions:
             for suffix in suffixes:
