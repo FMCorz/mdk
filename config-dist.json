@@ -93,6 +93,10 @@
                 "branch" : "Pull 2.5 Branch",
                 "diffurl" : "Pull 2.5 Diff URL"
             },
+            "26" : {
+                "branch" : "Pull 2.6 Branch",
+                "diffurl" : "Pull 2.6 Diff URL"
+            },
             "master" : {
                 "branch" : "Pull Master Branch",
                 "diffurl" : "Pull Master Diff URL"
