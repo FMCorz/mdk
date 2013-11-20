@@ -69,3 +69,7 @@ class ScriptNotFound(Exception):
 
 class UnsupportedScript(Exception):
     pass
+
+
+class UpgradeNotAllowed(Exception):
+    pass

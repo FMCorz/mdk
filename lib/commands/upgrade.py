@@ -25,7 +25,7 @@ http://github.com/FMCorz/mdk
 import sys
 import logging
 from lib.command import Command
-
+from lib.exceptions import UpgradeNotAllowed
 
 class UpgradeCommand(Command):
 
@@ -115,6 +115,9 @@ class UpgradeCommand(Command):
 
             try:
                 M.upgrade(args.nocheckout)
+            except UpgradeNotAllowed as e:
+                logging.info('Skipping upgrade of %s (not allowed)' % (M.get('identifier')))
+                logging.debug(e)
             except Exception as e:
                 errors.append(M)
                 logging.warning('Error during the upgrade of %s' % M.get('identifier'))

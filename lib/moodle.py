@@ -31,7 +31,7 @@ from tools import getMDLFromCommitMessage, mkdir, process, parseBranch
 from db import DB
 from config import Conf
 from git import Git, GitException
-from exceptions import InstallException
+from exceptions import InstallException, UpgradeNotAllowed
 from jira import Jira
 from scripts import Scripts
 
@@ -715,6 +715,8 @@ class Moodle(object):
             raise Exception('Cannot upgrade an instance which is not installed.')
         elif not self.branch_compare(20):
             raise Exception('Upgrade command line tool not supported by this version.')
+        elif os.path.isfile(os.path.join(self.get('path'), '.noupgrade')):
+            raise UpgradeNotAllowed('Upgrade not allowed, found .noupgrade.')
 
         # Checkout stable
         if not nocheckout:
