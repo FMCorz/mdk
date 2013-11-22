@@ -60,15 +60,32 @@ class Workplace(object):
         """Clone the official repository in a local cache"""
         cacheStable = self.getCachedRemote(False)
         cacheIntegration = self.getCachedRemote(True)
+
         if not os.path.isdir(cacheStable) and stable:
             logging.info('Cloning stable repository into cache...')
-            logging.info('This is going to take a while...')
-            process('%s clone --mirror %s %s' % (C.get('git'), C.get('remotes.stable'), cacheStable))
+
+            # For faster clone, we will copy the integration clone if it exists.
+            if os.path.isdir(cacheIntegration):
+                shutil.copytree(cacheIntegration, cacheStable)
+                repo = git.Git(cacheStable, C.get('git'))
+                repo.setRemote('origin', C.get('remotes.stable'))
+                # The repository is not updated at this stage, it has to be done manually.
+            else:
+                logging.info('This is going to take a while...')
+                process('%s clone --mirror %s %s' % (C.get('git'), C.get('remotes.stable'), cacheStable))
 
         if not os.path.isdir(cacheIntegration) and integration:
             logging.info('Cloning integration repository into cache...')
-            logging.info('Have a break, this operation is slow...')
-            process('%s clone --mirror %s %s' % (C.get('git'), C.get('remotes.integration'), cacheIntegration))
+
+            # For faster clone, we will copy the integration clone if it exists.
+            if os.path.isdir(cacheStable):
+                shutil.copytree(cacheStable, cacheIntegration)
+                repo = git.Git(cacheIntegration, C.get('git'))
+                repo.setRemote('origin', C.get('remotes.integration'))
+                # The repository is not updated at this stage, it has to be done manually.
+            else:
+                logging.info('Have a break, this operation is slow...')
+                process('%s clone --mirror %s %s' % (C.get('git'), C.get('remotes.integration'), cacheIntegration))
 
     def create(self, name=None, version='master', integration=False, useCacheAsRemote=False):
         """Creates a new instance of Moodle.
