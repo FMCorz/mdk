@@ -256,22 +256,30 @@ class Workplace(object):
     def resolve(self, name=None, path=None):
         """Try to find a Moodle instance based on its name, a path or the working directory"""
 
+        # A name was passed, is that a valid instance?
         if name != None:
             if self.isMoodle(name):
                 return self.get(name)
             return None
 
+        # If a path was not passed, let's use the current working directory.
         if path == None:
             path = os.getcwd()
         path = os.path.realpath(os.path.abspath(path))
 
         # Is this path in a Moodle instance?
         if path.startswith(self.path):
-            (head, tail) = os.path.split(path)
-            while head.startswith(self.path):
-                if self.isMoodle(tail):
-                    return self.get(tail)
+
+            # Get the relative path identifier/some/other/path
+            relative = os.path.relpath(path, self.path)
+
+            # Isolating the identifier, it should be the first directory
+            (head, tail) = os.path.split(relative)
+            while head:
                 (head, tail) = os.path.split(head)
+
+            if self.isMoodle(tail):
+                return self.get(tail)
 
         return False
 
