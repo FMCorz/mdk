@@ -48,6 +48,14 @@ class PhpunitCommand(Command):
             }
         ),
         (
+            ['-t', '--testcase'],
+            {
+                'default': None,
+                'help': 'testcase class to run. This sets --run.',
+                'metavar': 'testcase'
+            }
+        ),
+        (
             ['-u', '--unittest'],
             {
                 'default': None,
@@ -101,7 +109,7 @@ class PhpunitCommand(Command):
             M.initPHPUnit(force=args.force)
             logging.info('PHPUnit ready!')
 
-            if args.unittest:
+            if args.unittest or args.testcase:
                 args.run = True
 
             if args.run:
@@ -110,7 +118,9 @@ class PhpunitCommand(Command):
                     cmd.append('vendor/bin/phpunit')
                 else:
                     cmd.append('phpunit')
-                if args.unittest:
+                if args.testcase:
+                    cmd.append(args.testcase)
+                elif args.unittest:
                     cmd.append(args.unittest)
                 cmd = ' '.join(cmd)
                 process(cmd, M.get('path'), None, None)
