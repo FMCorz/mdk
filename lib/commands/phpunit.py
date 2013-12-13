@@ -51,7 +51,7 @@ class PhpunitCommand(Command):
             ['-t', '--testcase'],
             {
                 'default': None,
-                'help': 'testcase class to run. This sets --run.',
+                'help': 'testcase class to run. This sets --run. (From Moodle 2.6)',
                 'metavar': 'testcase'
             }
         ),
@@ -85,6 +85,10 @@ class PhpunitCommand(Command):
         # Check if installed
         if not M.get('installed'):
             raise Exception('This instance needs to be installed first')
+
+        # Check if testcase option is available.
+        if args.testcase and M.branch_compare('26', '<'):
+            self.argumentError('The --testcase option only works with Moodle 2.6 or greater.')
 
         # Install Composer for >= 2.5
         if M.branch_compare(25):
