@@ -90,8 +90,11 @@ class PhpunitCommand(Command):
         if args.testcase and M.branch_compare('26', '<'):
             self.argumentError('The --testcase option only works with Moodle 2.6 or greater.')
 
-        # Install Composer for >= 2.5
-        if M.branch_compare(25):
+        # Composer was introduced with PHP Unit, if the JSON file is there then we will use it
+        hasComposer = os.path.isfile(os.path.join(M.get('path'), 'composer.json'))
+
+        # Install Composer
+        if hasComposer:
             if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
                 logging.info('Installing Composer')
                 cliFile = 'phpunit_install_composer.php'
@@ -118,7 +121,7 @@ class PhpunitCommand(Command):
 
             if args.run:
                 cmd = []
-                if M.branch_compare(25):
+                if hasComposer:
                     cmd.append('vendor/bin/phpunit')
                 else:
                     cmd.append('phpunit')
