@@ -25,18 +25,6 @@
 #     ln -s bash_completion /etc/bash_completion.d/mdk
 #     source /etc/bash_completion.d/mdk
 
-function _gt() {
-    local BIN CUR OPTS
-    BIN="mdk"
-    CUR="${COMP_WORDS[COMP_CWORD]}"
-    OPTS=""
-    if [[ "${COMP_CWORD}" == 1 ]]; then
-        OPTS=$($BIN info -ln 2> /dev/null)
-    fi
-    COMPREPLY=( $(compgen -W "${OPTS}" -- ${CUR}) )
-    return 0
-}
-
 function _mdk() {
     local BIN CMD CUR PREV OPTS
     COMPREPLY=()
