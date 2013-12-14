@@ -57,10 +57,11 @@ class BehatCommand(Command):
             }
         ),
         (
-            ['-n', '--name'],
+            ['-n', '--testname'],
             {
+                'dest': 'testname',
                 'metavar': 'name',
-                'help': 'Only execute the feature elements which match part of the given name or regex.'
+                'help': 'only execute the feature elements which match part of the given name or regex'
             }
         ),
         (
@@ -75,7 +76,7 @@ class BehatCommand(Command):
             {
                 'action': 'store_true',
                 'dest': 'nojavascript',
-                'help': 'do not start Selenium and ignore Javascript (short for --tags=~@javascript). Cannot be combined with --tags.'
+                'help': 'do not start Selenium and ignore Javascript (short for --tags=~@javascript). Cannot be combined with --tags or --testname.'
             }
         ),
         (
@@ -198,12 +199,12 @@ class BehatCommand(Command):
             # Preparing Behat command
             cmd = ['vendor/bin/behat']
             if args.tags:
-                cmd.append('--tags=%s' % (args.tags))
+                cmd.append('--tags="%s"' % (args.tags))
 
-            if args.name:
-                cmd.append('--name=%s' % (args.name))
+            if args.testname:
+                cmd.append('--name="%s"' % (args.testname))
 
-            if not (args.tags or args.name) and nojavascript:
+            if not (args.tags or args.testname) and nojavascript:
                 cmd.append('--tags ~@javascript')
 
             cmd.append('--config=%s/behat/behat.yml' % (M.get('behat_dataroot')))
