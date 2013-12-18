@@ -22,35 +22,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
+from lib import tools, jira
+from lib.command import Command
+from lib.tools import question
 
-def getCommand(cmd):
-    """Lazy loading of a command class. Millseconds saved, hurray!"""
-    cls = cmd.capitalize() + 'Command'
-    return getattr(getattr(getattr(__import__('lib.%s.%s' % ('commands', cmd)), 'commands'), cmd), cls)
+class ResetCommand(Command):
 
-commandsList = [
-    'alias',
-    'backport',
-    'backup',
-    'behat',
-    'check',
-    'config',
-    'create',
-    'fix',
-    'info',
-    'init',
-    'install',
-    'phpunit',
-    'plugin',
-    'pull',
-    'purge',
-    'push',
-    'rebase',
-    'remove',
-    'reset',
-    'run',
-    'tracker',
-    'uninstall',
-    'update',
-    'upgrade'
-]
+    _arguments = [
+    ]
+    _description = 'Reset back to the main branch for this installation'
+
+    def run(self, args):
+
+        M = self.Wp.resolve()
+        if not M:
+            raise Exception('This is not a Moodle instance')
+
+        # Reading the information about the current instance.
+        branch = M.get('stablebranch')
+
+        if not M.git().checkout(branch):
+            raise Exception('Could not checkout branch %s' % (branch))
+        logging.info('Checked out branch %s' % (branch))
