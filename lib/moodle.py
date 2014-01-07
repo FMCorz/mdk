@@ -333,12 +333,20 @@ class Moodle(object):
         self.updateConfig('behat_prefix', behat_prefix)
 
         # Switch completely?
-        if switchcompletely:
-            self.updateConfig('behat_switchcompletely', switchcompletely)
-            self.updateConfig('behat_wwwroot', self.get('wwwroot'))
+        if self.branch_compare(27, '<'):
+            if switchcompletely:
+                self.updateConfig('behat_switchcompletely', switchcompletely)
+                self.updateConfig('behat_wwwroot', self.get('wwwroot'))
+            else:
+                self.removeConfig('behat_switchcompletely')
+                self.removeConfig('behat_wwwroot')
         else:
-            self.removeConfig('behat_switchcompletely')
-            self.removeConfig('behat_wwwroot')
+            # Defining wwwroot.
+            wwwroot = '%s://%s/' % (C.get('scheme'), C.get('behat.host'))
+            if C.get('path') != '' and C.get('path') != None:
+                wwwroot = wwwroot + C.get('path') + '/'
+            wwwroot = wwwroot + self.identifier
+            self.updateConfig('behat_wwwroot', wwwroot)
 
         # Force a cache purge
         self.purge()

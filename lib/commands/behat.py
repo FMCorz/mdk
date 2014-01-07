@@ -46,7 +46,7 @@ class BehatCommand(Command):
             ['-d', '--disable'],
             {
                 'action': 'store_true',
-                'help': 'disable Behat, runs the tests first if --run has been set.'
+                'help': 'disable Behat, runs the tests first if --run has been set. Ignored from 2.7.'
             }
         ),
         (
@@ -84,7 +84,7 @@ class BehatCommand(Command):
             {
                 'action': 'store_true',
                 'dest': 'switchcompletely',
-                'help': 'force the switch completely setting. This will be automatically enabled for PHP < 5.4'
+                'help': 'force the switch completely setting. This will be automatically enabled for PHP < 5.4. Ignored from 2.7.'
             }
         ),
         (
@@ -266,7 +266,8 @@ class BehatCommand(Command):
                     self.disable(M)
 
             else:
-                logging.info('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
+                if M.branch_compare(27, '<'):
+                    logging.info('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
                 if seleniumCommand:
                     logging.info('Launch Selenium (optional):\n %s' % (seleniumCommand))
                 logging.info('Launch Behat:\n %s' % (cmd))
