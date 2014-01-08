@@ -25,10 +25,11 @@ http://github.com/FMCorz/mdk
 import json
 from tools import question
 from config import Conf
-from urllib import urlencode, urlretrieve
+from urllib import urlencode
 from urlparse import urlparse
 from base64 import b64encode
 from datetime import datetime
+import re
 import logging
 import os
 import httplib
@@ -222,10 +223,12 @@ class Jira(object):
     @staticmethod
     def parseDate(value):
         """Parse a date returned by Jira API"""
-        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.000+0000')
+        # Strips the timezone information because of some issues with %z.
+        value = re.sub(r'[+-]\d+$', '', value)
+        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
 
     def search(self, query):
-        return self.request('search', data=urlencode({'jql': query, 'fields': 'id'}));
+        return self.request('search', data=urlencode({'jql': query, 'fields': 'id'}))
 
     def setCustomFields(self, key, updates):
         """Set a list of fields for this issue in Jira
