@@ -168,6 +168,19 @@ Change the value of the setting 'dirs.storage' to '/var/www/repositories'
 
     mdk config set dirs.storage /var/www/repositories
 
+
+css
+---
+
+CSS related functions.
+
+**Example**
+
+Compile the LESS files from Bootstrapbase
+
+    mdk css --compile
+
+
 fix
 ---
 

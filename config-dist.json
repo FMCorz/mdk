@@ -167,6 +167,8 @@
     "php": "/usr/bin/php",
     // Path to Java
     "java": "/usr/bin/java",
+    // Path to recess
+    "recess": "/usr/local/bin/recess",
 
     // Debug level of MDK. 'debug', 'info', 'warning', 'error' or 'critical'.
     "debug": "info",

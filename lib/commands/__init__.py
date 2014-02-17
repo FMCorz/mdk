@@ -36,6 +36,7 @@ commandsList = [
     'check',
     'config',
     'create',
+    'css',
     'fix',
     'info',
     'init',
