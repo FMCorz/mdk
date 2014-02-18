@@ -108,7 +108,7 @@ function _mdk() {
                 fi
                 ;;
             css)
-                OPTS="--compile"
+                OPTS="--compile --sheets --theme --watch"
                 ;;
             fix)
                 if [[ "$PREV" == "-n" || "$PREV" == "--name" ]]; then

@@ -52,12 +52,18 @@ Manual installation
     cd /opt
     sudo git clone git://github.com/FMCorz/mdk.git moodle-sdk
 
-### 2. Make executable and accessible
+### 2. Install the dependencies
+
+You will need the tool [pip](http://www.pip-installer.org/en/latest/installing.html) to install the packages required by Python.
+
+    sudo pip install -r /opt/moodle-sdk/requirements.txt
+
+### 3. Make executable and accessible
 
     sudo chmod +x /opt/moodle-sdk/mdk.py
     sudo ln -s /opt/moodle-sdk/mdk.py /usr/local/bin/mdk
 
-### 3. Set up the basics
+### 4. Set up the basics
 
 Assuming that you are using Apache, which is set up to serve the files from /var/www, leave the default values as they are in `mdk init`, except for your remote and the database passwords.
 
@@ -65,7 +71,7 @@ Assuming that you are using Apache, which is set up to serve the files from /var
     sudo ln -s ~/www /var/www/m
     sudo mdk init
 
-### 4. Done
+### 5. Done
 
 Try the following command to create a typical Stable Master instance (this will take some time because the cache is still empty):
 

@@ -38,15 +38,27 @@ class Css(object):
     def __init__(self, M):
         self._M = M
 
-    def compile(self, theme='bootstrapbase', sheets=['moodle', 'editor']):
+    def compile(self, theme='bootstrapbase', sheets=None):
         """Compile LESS sheets contained within a theme"""
 
-        cwd = os.path.join(self._M.get('path'), 'theme', theme, 'less')
-        if not os.path.isdir(cwd):
+        source = self.getThemeLessPath(theme)
+        dest = self.getThemeCssPath(theme)
+        if not os.path.isdir(source):
             raise Exception('Unknown theme %s, or less directory not found' % (theme))
 
-        source = os.path.join(self._M.get('path'), 'theme', theme, 'less')
-        dest = os.path.join(self._M.get('path'), 'theme', theme, 'style')
+        if not sheets:
+            # Guess the sheets from the theme less folder.
+            sheets = []
+            for candidate in os.listdir(source):
+                if os.path.isfile(os.path.join(source, candidate)) and candidate.endswith('.less'):
+                    sheets.append(os.path.splitext(candidate)[0])
+        elif type(sheets) != list:
+            sheets = [sheets]
+
+        if len(sheets) < 1:
+            logging.warning('Could not find any sheets')
+            return False
+
         hadErrors = False
 
         for name in sheets:
@@ -59,16 +71,25 @@ class Css(object):
                 continue
 
             try:
-                compiler = Recess(cwd, os.path.join(source, sheet), os.path.join(dest, destSheet))
+                compiler = Recess(source, os.path.join(source, sheet), os.path.join(dest, destSheet))
                 compiler.execute()
             except CssCompileFailed:
                 logging.warning('Failed compilation of %s' % (sheet))
                 hadErrors = True
                 continue
             else:
-                logging.info('Compiled %s' % (sheet))
+                logging.info('Compiled %s to %s' % (sheet, destSheet))
 
         return not hadErrors
+
+    def getThemeCssPath(self, theme):
+        return os.path.join(self.getThemePath(theme), 'style')
+
+    def getThemeLessPath(self, theme):
+        return os.path.join(self.getThemePath(theme), 'less')
+
+    def getThemePath(self, theme):
+        return os.path.join(self._M.get('path'), 'theme', theme)
 
 
 class Compiler(object):
