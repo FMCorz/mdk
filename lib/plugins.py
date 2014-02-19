@@ -42,6 +42,7 @@ class PluginManager(object):
     _pluginTypesPath = {
         'mod': '/mod',
         'auth': '/auth',
+        'calendartype': '/calendar/type',
         'enrol': '/enrol',
         'message': '/message/output',
         'block': '/blocks',
