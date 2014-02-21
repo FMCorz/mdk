@@ -43,9 +43,6 @@ mdk_set_config('themedesignermode', 1);
 // Do not cache JavaScript.
 mdk_set_config('cachejs', 0);
 
-// Do not use YUI combo loading.
-mdk_set_config('yuicomboloading', 0);
-
 // Disable modintro for lazy devs.
 mdk_set_config('requiremodintro', 0, 'book');
 mdk_set_config('requiremodintro', 0, 'folder');
