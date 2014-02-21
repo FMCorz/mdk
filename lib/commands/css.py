@@ -62,6 +62,14 @@ class CssCommand(Command):
             }
         ),
         (
+            ['-d', '--debug'],
+            {
+                'action': 'store_true',
+                'dest': 'debug',
+                'help': 'produce an unminified debugging version with source maps'
+            }
+        ),
+        (
             ['-w', '--watch'],
             {
                 'action': 'store_true',
@@ -113,6 +121,9 @@ class CssCommand(Command):
             if args.compile:
                 logging.info('Compiling theme \'%s\' on %s' % (args.theme, M.get('identifier')))
                 processor = css.Css(M)
+                processor.setDebug(args.debug)
+                if args.debug:
+                    processor.setCompiler('lessc')
                 processor.compile(theme=args.theme, sheets=args.sheets)
 
         # Setting up watchdog. This code should be improved when we will have more than a compile option.

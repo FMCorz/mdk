@@ -35,8 +35,17 @@ class Css(object):
 
     _M = None
 
+    _debug = False
+    _compiler = 'recess'
+
     def __init__(self, M):
         self._M = M
+
+    def setCompiler(self, compiler):
+        self._compiler = compiler
+
+    def setDebug(self, debug):
+        self._debug = debug
 
     def compile(self, theme='bootstrapbase', sheets=None):
         """Compile LESS sheets contained within a theme"""
@@ -71,7 +80,13 @@ class Css(object):
                 continue
 
             try:
-                compiler = Recess(source, os.path.join(source, sheet), os.path.join(dest, destSheet))
+                if self._compiler == 'recess':
+                    compiler = Recess(source, os.path.join(source, sheet), os.path.join(dest, destSheet))
+                elif self._compiler == 'lessc':
+                    compiler = Lessc(self.getThemeDir(), os.path.join(source, sheet), os.path.join(dest, destSheet))
+
+                compiler.setDebug(self._debug)
+
                 compiler.execute()
             except CssCompileFailed:
                 logging.warning('Failed compilation of %s' % (sheet))
@@ -88,14 +103,18 @@ class Css(object):
     def getThemeLessPath(self, theme):
         return os.path.join(self.getThemePath(theme), 'less')
 
+    def getThemeDir(self):
+        return os.path.join(self._M.get('path'), 'theme')
+
     def getThemePath(self, theme):
-        return os.path.join(self._M.get('path'), 'theme', theme)
+        return os.path.join(self.getThemeDir(), theme)
 
 
 class Compiler(object):
     """LESS compiler abstract"""
 
     _compress = True
+    _debug = False
     _cwd = None
     _source = None
     _dest = None
@@ -110,6 +129,9 @@ class Compiler(object):
 
     def setCompress(self, compress):
         self._compress = compress
+
+    def setDebug(self, debug):
+        self._debug = debug
 
 
 class Recess(Compiler):
@@ -133,6 +155,36 @@ class Recess(Compiler):
         # Saving to destination
         with open(self._dest, 'w') as f:
             f.write(out)
+
+
+class Lessc(Compiler):
+    """Lessc compiler"""
+
+    def execute(self):
+        executable = C.get('lessc')
+        if not executable:
+            raise Exception('Could not find executable path')
+
+        cmd = [executable]
+
+        sourcePath = os.path.relpath(self._source, self._cwd)
+        sourceDir = os.path.dirname(sourcePath)
+
+        if self._debug:
+            cmd.append('--source-map-rootpath=' + sourceDir)
+            cmd.append('--source-map-map-inline')
+            self.setCompress(False)
+
+        if self._compress:
+            cmd.append('--compress')
+
+        """Append the source and destination"""
+        cmd.append(sourcePath)
+        cmd.append(os.path.relpath(self._dest, self._cwd))
+
+        (code, out, err) = process(cmd, self._cwd)
+        if code != 0 or len(out) != 0:
+            raise CssCompileFailed('Error during compile')
 
 
 class CssCompileFailed(Exception):
