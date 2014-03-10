@@ -37,6 +37,12 @@ class Git(object):
         self.setPath(path)
         self.setBin(bin)
 
+    def add(self, path):
+        """Add a file/path"""
+        cmd = 'add %s' % (path)
+        result = self.execute(cmd)
+        return result[0] == 0
+
     def addRemote(self, name, remote):
         cmd = 'remote add %s %s' % (name, remote)
         result = self.execute(cmd)
@@ -59,6 +65,22 @@ class Git(object):
         cmd = 'checkout %s' % branch
         result = self.execute(cmd)
         return result[0] == 0
+
+    def commit(self, filepath=None):
+        """Wrapper for the commit command"""
+        cmd = 'commit'
+        if filepath:
+            cmd += ' -F %s' % (filepath)
+        result = self.execute(cmd)
+        return result[0] == 0
+
+    def conflictingFiles(self):
+        cmd = 'diff --name-only --diff-filter=U'
+        result = self.execute(cmd)
+        if result[0] == 0:
+            return result[1].strip().split('\n')
+        else:
+            return False
 
     def createBranch(self, branch, track=None):
         if track != None:
@@ -182,7 +204,11 @@ class Git(object):
         messages = self.log(count=count, since=since, path=path, format='%s')
         return messages.split('\n')[:-1]
 
-    def pick(self, refs=None, abort=None):
+    def pick(self, refs=None, abort=None, continu=None):
+        """Wrapper for the cherry-pick command
+
+        The typo in the argument 'continu' is voluntarily there, continue is a reserved word.
+        """
         args = ''
         if refs != None:
             if type(refs) == list:
@@ -190,6 +216,8 @@ class Git(object):
             args = refs
         elif abort != None:
             args = '--abort'
+        elif continu != None:
+            args = '--continue'
         cmd = 'cherry-pick %s' % (args)
         return self.execute(cmd)
 

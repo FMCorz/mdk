@@ -23,7 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-from lib import tools
+from lib import tools, css
 from lib.command import Command
 from lib.tools import yesOrNo
 
@@ -191,16 +191,40 @@ class BackportCommand(Command):
             logging.info('Cherry-picking %s' % (cherry))
             result = M2.git().pick(hashes)
             if result[0] != 0:
-                logging.error('Error while cherry-picking %s in %s.' % (cherry, name))
-                logging.debug(result[2])
-                if yesOrNo('The cherry-pick might still be in progress, would you like to abort it?'):
-                    result = M2.git().pick(abort=True)
-                    if result[0] > 0 and result[0] != 128:
-                        logging.error('Could not abort the cherry-pick!')
+
+                # Try to resolve the conflicts if any.
+                resolveConflicts = True
+                conflictsResolved = False
+                while resolveConflicts:
+
+                    # Check the list of possible conflicting files.
+                    conflictingFiles = M2.git().conflictingFiles()
+                    if conflictingFiles and len(conflictingFiles) == 1 and 'theme/bootstrapbase/style/moodle.css' in conflictingFiles:
+                        logging.info('Conflicts found in bootstrapbase moodle CSS, trying to auto resolve...')
+                        cssCompiler = css.Css(M2)
+                        if cssCompiler.compile(theme='bootstrapbase', sheets=['moodle']):
+                            M2.git().add('theme/bootstrapbase/style/moodle.css')
+                            # We need to commit manually to prevent the editor to open.
+                            M2.git().commit(filepath='.git/MERGE_MSG')
+                            result = M2.git().pick(continu=True)
+                            if result[0] == 0:
+                                resolveConflicts = False
+                                conflictsResolved = True
                     else:
-                        stashPop(stash)
-                logging.info('')
-                continue
+                        resolveConflicts = False
+
+                # We still have a dirty repository.
+                if not conflictsResolved:
+                    logging.error('Error while cherry-picking %s in %s.' % (cherry, name))
+                    logging.debug(result[2])
+                    if yesOrNo('The cherry-pick might still be in progress, would you like to abort it?'):
+                        result = M2.git().pick(abort=True)
+                        if result[0] > 0 and result[0] != 128:
+                            logging.error('Could not abort the cherry-pick!')
+                        else:
+                            stashPop(stash)
+                    logging.info('')
+                    continue
 
             # Pushing branch
             if args.push:
