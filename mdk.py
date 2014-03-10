@@ -38,9 +38,11 @@ C = Conf()
 try:
     debuglevel = getattr(logging, C.get('debug').upper())
 except AttributeError:
-    debuglevel = logging.WARNING
+    debuglevel = logging.INFO
 
+# Set logging levels.
 logging.basicConfig(format='%(message)s', level=debuglevel)
+logging.getLogger('requests').setLevel(logging.WARNING)  # Reset logging level of 'requests' module.
 
 availaliases = [str(x) for x in C.get('aliases').keys()]
 choices = sorted(commandsList + availaliases)

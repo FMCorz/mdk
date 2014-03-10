@@ -26,13 +26,14 @@ import os
 import re
 import logging
 import shutil
+from tempfile import gettempdir
 
 from tools import getMDLFromCommitMessage, mkdir, process, parseBranch
 from db import DB
 from config import Conf
 from git import Git, GitException
 from exceptions import InstallException, UpgradeNotAllowed
-from jira import Jira
+from jira import Jira, JiraException
 from scripts import Scripts
 
 C = Conf()
@@ -579,6 +580,59 @@ class Moodle(object):
         except Exception:
             raise Exception('Error while purging cache!')
 
+    def pushPatch(self, branch=None):
+        """Push a patch on the tracker, and remove the previous one"""
+
+        if branch == None:
+            branch = self.currentBranch()
+            if branch == 'HEAD':
+                raise Exception('Cannot create a patch from a detached branch')
+
+        # Parsing the branch
+        parsedbranch = parseBranch(branch, C.get('wording.branchRegex'))
+        if not parsedbranch:
+            raise Exception('Could not extract issue number from %s' % branch)
+        issue = 'MDL-%s' % (parsedbranch['issue'])
+        headcommit = self.headcommit(branch)
+
+        # Creating a patch file.
+        fileName = branch + '-mdk' + '.patch'
+        tmpPatchFile = os.path.join(gettempdir(), fileName)
+        if self.git().createPatch('%s...%s' % (headcommit, branch), saveTo=tmpPatchFile):
+
+            J = Jira()
+
+            # Checking if file with same name exists.
+            existingAttachmentId = None
+            existingAttachments = J.getIssue(issue, fields='attachment')
+            for existingAttachment in existingAttachments.get('fields', {}).get('attachment', {}):
+                if existingAttachment.get('filename') == fileName:
+                    # Found an existing attachment with the same name, we keep track of it.
+                    existingAttachmentId = existingAttachment.get('id')
+                    break
+
+            # Pushing patch to the tracker.
+            try:
+                logging.info('Uploading %s to the tracker' % (fileName))
+                J.upload(issue, tmpPatchFile)
+            except JiraException:
+                logging.error('Error while uploading the patch to the tracker')
+                return False
+            else:
+                if existingAttachmentId != None:
+                    # On success, deleting file that was there before.
+                    try:
+                        logging.info('Deleting older patch...')
+                        J.deleteAttachment(existingAttachmentId)
+                    except JiraException:
+                        logging.info('Could not delete older attachment')
+
+        else:
+            logging.error('Could not create a patch file')
+            return False
+
+        return True
+
     def reload(self):
         """Sets the value to be reloaded"""
         self._loaded = False
@@ -713,7 +767,7 @@ class Moodle(object):
         if not (fieldrepositoryurl or fieldbranch or fielddiffurl):
             logging.error('Cannot set tracker fields for this version (%s). The field names are not set in the config file.', version)
         else:
-            logging.info('Setting tracker fields: \n\t%s: %s \n\t%s: %s \n\t%s: %s' %
+            logging.info('Setting tracker fields: \n  %s: %s \n  %s: %s \n  %s: %s' %
                 (fieldrepositoryurl, repositoryurl, fieldbranch, branch, fielddiffurl, diffurl))
             J.setCustomFields(issue, {fieldrepositoryurl: repositoryurl, fieldbranch: branch, fielddiffurl: diffurl})
 

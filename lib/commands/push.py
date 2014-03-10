@@ -59,6 +59,13 @@ class PushCommand(Command):
                 }
             ),
             (
+                ['-p', '--patch'],
+                {
+                    'action': 'store_true',
+                    'help': 'instead of pushing to a remote, this will upload a patch file to the tracker. Security issues use this by default. This option discards most other flags.'
+                }
+            ),
+            (
                 ['-t', '--update-tracker'],
                 {
                     'const': True,
@@ -138,23 +145,37 @@ class PushCommand(Command):
                     print 'Exiting...'
                     return
 
-        # Pushing current branch
-        logging.info('Pushing branch %s to remote %s...' % (branch, remote))
-        result = M.git().push(remote, branch, force=args.force)
-        if result[0] != 0:
-            raise Exception(result[2])
+        J = jira.Jira()
 
-        # Update the tracker
-        if args.updatetracker != None:
-            ref = None if args.updatetracker == True else args.updatetracker
-            M.updateTrackerGitInfo(branch=branch, ref=ref)
+        # If the mode is not set to patch yet, and we can identify the MDL number.
+        if not args.patch and parsedbranch:
+            mdlIssue = 'MDL-%s' % (parsedbranch['issue'])
+            args.patch = J.isSecurityIssue(mdlIssue)
+            if args.patch:
+                logging.info('%s appears to be a security issue, attempting to upload a patch...' % (mdlIssue))
 
-        # Pushing stable branch
-        if args.includestable:
-            branch = M.get('stablebranch')
+        if args.patch:
+            if not M.pushPatch(branch):
+                return
+
+        else:
+            # Pushing current branch
             logging.info('Pushing branch %s to remote %s...' % (branch, remote))
-            result = M.git().push(remote, branch, force=args.forcestable)
+            result = M.git().push(remote, branch, force=args.force)
             if result[0] != 0:
                 raise Exception(result[2])
+
+            # Update the tracker
+            if args.updatetracker != None:
+                ref = None if args.updatetracker == True else args.updatetracker
+                M.updateTrackerGitInfo(branch=branch, ref=ref)
+
+            # Pushing stable branch
+            if args.includestable:
+                branch = M.get('stablebranch')
+                logging.info('Pushing branch %s to remote %s...' % (branch, remote))
+                result = M.git().push(remote, branch, force=args.forcestable)
+                if result[0] != 0:
+                    raise Exception(result[2])
 
         logging.info('Done.')

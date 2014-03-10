@@ -91,6 +91,18 @@ class Git(object):
         result = self.execute(cmd)
         return result[0] == 0
 
+    def createPatch(self, ref, saveTo=None):
+        cmd = 'format-patch %s --stdout' % (ref)
+        result = self.execute(cmd)
+        if result[0] != 0:
+            return False
+        elif saveTo != None:
+            with open(saveTo, 'w') as f:
+                f.write(result[1])
+                return True
+            return False
+        return result[1]
+
     def currentBranch(self):
         cmd = 'symbolic-ref -q HEAD'
         result = self.execute(cmd)

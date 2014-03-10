@@ -33,6 +33,8 @@ import re
 import logging
 import os
 import httplib
+import requests
+import mimetypes
 try:
     import keyring
 except:
@@ -61,6 +63,13 @@ class Jira(object):
     def __init__(self):
         self.version = {}
         self._load()
+
+    def deleteAttachment(self, attachmentId):
+        """Deletes an attachment"""
+        resp = self.request('attachment/%s' % str(attachmentId), method='DELETE')
+        if resp['status'] != 204:
+            raise JiraException('Could not delete the attachment')
+        return True
 
     def download(self, url, dest):
         """Download a URL to the destination while authenticating the user"""
@@ -129,6 +138,11 @@ class Jira(object):
         for (k, v) in self.version.items():
             info[k] = v
         return info
+
+    def isSecurityIssue(self, key):
+        """Return whether or not the issue could be a security issue"""
+        resp = self.getIssue(key, fields='security')
+        return True if resp.get('fields', {}).get('security', None) != None else False
 
     def _load(self):
         """Loads the information"""
@@ -260,6 +274,28 @@ class Jira(object):
 
         return True
 
+    def upload(self, key, filepath):
+        """Uploads a new attachment to the issue"""
+
+        uri = 'https://tracker.moodle.org' + self.uri + '/rest/api/' + str(self.apiversion) + '/issue/' + key + '/attachments'
+
+        mimetype = mimetypes.guess_type(filepath)[0]
+        if not mimetype:
+            mimetype = 'application/octet-stream'
+
+        files = {
+            'file': (os.path.basename(filepath), open(filepath, 'rb'), mimetype)
+        }
+
+        headers = {
+            'X-Atlassian-Token': 'nocheck'
+        }
+
+        resp = requests.post(uri, files=files, auth=requests.auth.HTTPBasicAuth(self.username, self.password), headers=headers)
+        if resp.status_code != 200:
+            raise JiraException('Could not upload file to Jira issue')
+
+        return True
 
 class JiraException(Exception):
     pass
