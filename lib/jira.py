@@ -79,20 +79,12 @@ class Jira(object):
 
     def download(self, url, dest):
         """Download a URL to the destination while authenticating the user"""
-        headers = {}
-        headers['Authorization'] = 'Basic %s' % (b64encode('%s:%s' % (self.username, self.password)))
 
-        if self.ssl:
-            r = httplib.HTTPSConnection(self.host)
-        else:
-            r = httplib.HTTPConnection(self.host)
-        r.request('GET', url, None, headers)
-
-        resp = r.getresponse()
-        if resp.status == 403:
+        r = requests.get(url, auth=requests.auth.HTTPBasicAuth(self.username, self.password))
+        if r.status_code == 403:
             raise JiraException('403 Request not authorized. %s %s' % ('GET', url))
 
-        data = resp.read()
+        data = r.text
         if len(data) > 0:
             f = open(dest, 'w')
             f.write(data)
@@ -208,37 +200,40 @@ class Jira(object):
         self._loaded = False
         return self._load()
 
-    def request(self, uri, method='GET', data='', headers={}):
+    def request(self, uri, method='GET', data='', params={}, headers={}, files=None):
         """Sends a request to the server and returns the response status and data"""
 
-        uri = self.uri + '/rest/api/' + str(self.apiversion) + '/' + uri.strip('/')
+        url = self.url + self.uri + '/rest/api/' + str(self.apiversion) + '/' + uri.strip('/')
+
+        # Define method to method to use.
         method = method.upper()
         if method == 'GET':
-            uri += '?%s' % (data)
-            data = ''
-
-        # Basic authentication
-        headers['Content-Type'] = 'application/json'
-        headers['Authorization'] = 'Basic %s' % (b64encode('%s:%s' % (self.username, self.password)))
-
-        if self.ssl:
-            r = httplib.HTTPSConnection(self.host)
+            call = requests.get
+        elif method == 'POST':
+            call = requests.post
+        elif method == 'PUT':
+            call = requests.put
+        elif method == 'DELETE':
+            call = requests.delete
         else:
-            r = httplib.HTTPConnection(self.host)
-        r.request(method, uri, data, headers)
+            raise JiraException('Unimplemented method')
 
-        resp = r.getresponse()
-        if resp.status == 403:
+        # Headers.
+        if not files:
+            headers['Content-Type'] = 'application/json'
+
+        # Call.
+        r = call(url, params=params, data=data, auth=requests.auth.HTTPBasicAuth(self.username, self.password),
+                headers=headers, files=files)
+        if r.status_code == 403:
             raise JiraException('403 Request not authorized. %s %s' % (method, uri))
 
-        data = resp.read()
-        if len(data) > 0:
-            try:
-                data = json.loads(data)
-            except ValueError:
-                raise JiraException('Could not parse JSON data. Data received:\n%s' % data)
+        try:
+            data = r.json()
+        except:
+            data = r.text
 
-        return {'status': resp.status, 'data': data}
+        return {'status': r.status_code, 'data': data}
 
     @staticmethod
     def parseDate(value):
@@ -248,7 +243,7 @@ class Jira(object):
         return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
 
     def search(self, query):
-        return self.request('search', data=urlencode({'jql': query, 'fields': 'id'}))
+        return self.request('search', params={'jql': query, 'fields': 'id'})
 
     def setCustomFields(self, key, updates):
         """Set a list of fields for this issue in Jira
@@ -283,7 +278,7 @@ class Jira(object):
     def upload(self, key, filepath):
         """Uploads a new attachment to the issue"""
 
-        uri = 'https://tracker.moodle.org' + self.uri + '/rest/api/' + str(self.apiversion) + '/issue/' + key + '/attachments'
+        uri = 'issue/' + key + '/attachments'
 
         mimetype = mimetypes.guess_type(filepath)[0]
         if not mimetype:
@@ -297,8 +292,8 @@ class Jira(object):
             'X-Atlassian-Token': 'nocheck'
         }
 
-        resp = requests.post(uri, files=files, auth=requests.auth.HTTPBasicAuth(self.username, self.password), headers=headers)
-        if resp.status_code != 200:
+        resp = self.request(uri, method='POST', files=files, headers=headers)
+        if resp.get('status') != 200:
             raise JiraException('Could not upload file to Jira issue')
 
         return True
