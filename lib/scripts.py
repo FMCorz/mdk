@@ -121,8 +121,14 @@ class Scripts(object):
         return cli
 
     @classmethod
-    def run(cls, script, path, cmdkwargs={}):
+    def run(cls, script, path, arguments=None, cmdkwargs={}):
         """Executes a script at in a certain directory"""
+
+        # Converts arguments to a string.
+        arguments = '' if arguments == None else arguments
+        if type(arguments) == list:
+            arguments = ' '.join(arguments)
+        arguments = ' ' + arguments
 
         cli = cls.find(script)
         if cli.endswith('.php'):
@@ -130,7 +136,8 @@ class Scripts(object):
             logging.debug('Copying %s to %s' % (cli, dest))
             shutil.copyfile(cli, dest)
 
-            cmd = '%s %s' % (C.get('php'), dest)
+            cmd = '%s %s %s' % (C.get('php'), dest, arguments)
+
             result = process(cmd, cwd=path, **cmdkwargs)
             os.remove(dest)
         elif cli.endswith('.sh'):
@@ -139,7 +146,7 @@ class Scripts(object):
             shutil.copyfile(cli, dest)
             os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
 
-            cmd = '%s' % (dest)
+            cmd = '%s %s' % (dest, arguments)
             result = process(cmd, cwd=path, **cmdkwargs)
             os.remove(dest)
         else:

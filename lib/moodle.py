@@ -607,9 +607,9 @@ class Moodle(object):
 
         self.reload()
 
-    def runScript(self, scriptname, **kwargs):
+    def runScript(self, scriptname, arguments=None, **kwargs):
         """Runs a script on the instance"""
-        return Scripts.run(scriptname, self.get('path'), cmdkwargs=kwargs)
+        return Scripts.run(scriptname, self.get('path'), arguments=arguments, cmdkwargs=kwargs)
 
     def update(self, remote=None):
         """Update the instance from the remote"""

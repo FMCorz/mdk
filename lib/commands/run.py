@@ -63,6 +63,14 @@ class RunCommand(Command):
             }
         ),
         (
+            ['-g', '--arguments'],
+            {
+                'help': 'a list of arguments to pass to the script. Use --arguments="--list of --arguments" if you need to use dashes. Otherwise add -- after the argument list.',
+                'metavar': 'arguments',
+                'nargs': '+'
+            }
+        ),
+        (
             ['script'],
             {
                 'nargs': '?',
@@ -107,7 +115,7 @@ class RunCommand(Command):
         for M in Mlist:
             logging.info('Running \'%s\' on \'%s\'' % (args.script, M.get('identifier')))
             try:
-                M.runScript(args.script, stderr=None, stdout=None)
+                M.runScript(args.script, stderr=None, stdout=None, arguments=args.arguments)
             except Exception as e:
                 logging.warning('Error while running the script on %s' % M.get('identifier'))
                 logging.debug(e)
