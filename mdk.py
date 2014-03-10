@@ -95,3 +95,4 @@ except Exception as e:
     info = sys.exc_info()
     logging.error('%s: %s', e.__class__.__name__, e)
     logging.debug(''.join(traceback.format_tb(info[2])))
+    sys.exit(1)
