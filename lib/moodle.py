@@ -596,7 +596,7 @@ class Moodle(object):
         headcommit = self.headcommit(branch)
 
         # Creating a patch file.
-        fileName = branch + '-mdk' + '.patch'
+        fileName = branch + '.mdk.patch'
         tmpPatchFile = os.path.join(gettempdir(), fileName)
         if self.git().createPatch('%s...%s' % (headcommit, branch), saveTo=tmpPatchFile):
 

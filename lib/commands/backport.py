@@ -23,7 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-from lib import tools, css
+from lib import tools, css, jira
 from lib.command import Command
 from lib.tools import yesOrNo
 
@@ -70,6 +70,14 @@ class BackportCommand(Command):
                     'dest': 'pushremote',
                     'help': 'the remote to push the branch to. Default is %s.' % self.C.get('myRemote'),
                     'metavar': 'remote'
+                }
+            ),
+            (
+                ['--patch'],
+                {
+                    'action': 'store_true',
+                    'dest': 'patch',
+                    'help': 'instead of pushing to a remote, this will upload a patch file to the tracker. Security issues use this by default if --push is set. This option discards most other flags.',
                 }
             ),
             (
@@ -125,6 +133,14 @@ class BackportCommand(Command):
         issue = parsedbranch['issue']
         suffix = parsedbranch['suffix']
         version = parsedbranch['version']
+
+        if args.push and not args.patch:
+            mdlIssue = 'MDL-%s' % (issue)
+            J = jira.Jira()
+            args.patch = J.isSecurityIssue(mdlIssue)
+            args.push = False
+            if args.patch:
+                logging.info('%s appears to be a security issue, switching to patch mode...' % (mdlIssue))
 
         # Original track
         originaltrack = tools.stableBranch(version)
@@ -243,6 +259,10 @@ class BackportCommand(Command):
                 if args.updatetracker != None:
                     ref = None if args.updatetracker == True else args.updatetracker
                     M2.updateTrackerGitInfo(branch=newbranch, ref=ref)
+
+            elif args.patch:
+                if not M2.pushPatch(newbranch):
+                    continue
 
             stashPop(stash)
 

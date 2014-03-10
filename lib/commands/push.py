@@ -152,7 +152,7 @@ class PushCommand(Command):
             mdlIssue = 'MDL-%s' % (parsedbranch['issue'])
             args.patch = J.isSecurityIssue(mdlIssue)
             if args.patch:
-                logging.info('%s appears to be a security issue, attempting to upload a patch...' % (mdlIssue))
+                logging.info('%s appears to be a security issue, switching to patch mode...' % (mdlIssue))
 
         if args.patch:
             if not M.pushPatch(branch):
