@@ -67,31 +67,63 @@ if not cmd:
         parser.print_help()
     sys.exit(0)
 
-# Looking up for an alias
-alias = C.get('aliases.%s' % cmd)
-if alias != None:
+def run_command(cmd, args):
+    cls = getCommand(cmd)
+    Cmd = cls(C)
+    Runner = CommandRunner(Cmd)
+    try:
+        Runner.run(args, prog='%s %s' % (os.path.basename(sys.argv[0]), cmd))
+    except Exception as e:
+        import traceback
+        info = sys.exc_info()
+        logging.error('%s: %s', e.__class__.__name__, e)
+        logging.debug(''.join(traceback.format_tb(info[2])))
+
+def check_alias(alias, passedargs):
     if alias.startswith('!'):
+        logging.debug('Found a command in alias "%s"', alias)
         cmd = alias[1:]
         i = 0
         # Replace $1, $2, ... with passed arguments
-        for arg in args:
+        for arg in passedargs:
             i += 1
             cmd = cmd.replace('$%d' % i, arg)
         # Remove unknown $[0-9]
         cmd = re.sub(r'\$[0-9]', '', cmd)
         result = process(cmd, stdout=None, stderr=None)
-        sys.exit(result[0])
+        return result[0]
     else:
+        logging.debug('Found an mdk action in alias "%s"', alias)
         cmd = alias.split(' ')[0]
-        args = alias.split(' ')[1:] + args
+        returnargs = alias.split(' ')[1:] + passedargs
+        return [ cmd, returnargs ]
 
-cls = getCommand(cmd)
-Cmd = cls(C)
-Runner = CommandRunner(Cmd)
-try:
-    Runner.run(args, prog='%s %s' % (os.path.basename(sys.argv[0]), cmd))
-except Exception as e:
-    import traceback
-    info = sys.exc_info()
-    logging.error('%s: %s', e.__class__.__name__, e)
-    logging.debug(''.join(traceback.format_tb(info[2])))
+# Looking up for an alias
+alias = C.get('aliases.%s' % cmd)
+if alias != None:
+    if isinstance(alias, list):
+        logging.debug('Found a list of aliases - running all of them')
+        result = 0
+        for command in alias:
+            result = check_alias(command, args)
+            if isinstance(result, list):
+                # We have a list containing the command and args, run it.
+                run_command(result[0], result[1])
+            elif (result != 0):
+                # A non-zero value was returned - exit now.
+                sys.exit(result)
+        # This is most likely a zero exit value, but return the passed
+        # value regardless in case it isn't.
+        sys.exit(result)
+    else:
+        logging.debug('Found a single alias')
+        result = check_alias(alias, args)
+        if isinstance(result, list):
+            # We have a list containing the command and args, run it.
+            run_command(result[0], result[1])
+        else:
+            # This is a single result from a command execution.
+            sys.exit(result)
+else:
+    # This is not an alias, just run the command.
+    run_command(cmd, args);
