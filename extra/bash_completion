@@ -65,7 +65,7 @@ function _mdk() {
                 ;;
             backport)
                 if [[ "$CUR" == -* ]]; then
-                    OPTS="--branch --remote --integration --dont-push --dont-fetch --push --push-to --force-push --versions --update-tracker"
+                    OPTS="--branch --remote --integration --dont-push --dont-fetch --patch --push --push-to --force-push --versions --update-tracker"
                 else
                     OPTS="-- $(_list_instances)"
                 fi
@@ -108,7 +108,7 @@ function _mdk() {
                 fi
                 ;;
             css)
-                OPTS="--compile --sheets --theme --watch"
+                OPTS="--compile --debug --sheets --theme --watch"
                 ;;
             fix)
                 if [[ "$PREV" == "-n" || "$PREV" == "--name" ]]; then
@@ -171,7 +171,7 @@ function _mdk() {
                 ;;
             push)
                 if [[ "$PREV" != "--branch" && "$PREV" != "-b" && "$PREV" != "--remote" && "$PREV" != "-r" ]]; then
-                    OPTS="--branch --remote --force --include-stable --force-stable --update-tracker"
+                    OPTS="--branch --remote --force --include-stable --force-stable --patch --update-tracker"
                     if [[ "$CUR" != -* ]]; then
                         OPTS="$OPTS $(_list_instances)"
                     fi
