@@ -764,7 +764,7 @@ class Moodle(object):
         fieldbranch = C.get('tracker.fieldnames.%s.branch' % version)
         fielddiffurl = C.get('tracker.fieldnames.%s.diffurl' % version)
 
-        if not (fieldrepositoryurl or fieldbranch or fielddiffurl):
+        if not fieldrepositoryurl or not fieldbranch or not fielddiffurl:
             logging.error('Cannot set tracker fields for this version (%s). The field names are not set in the config file.', version)
         else:
             logging.info('Setting tracker fields: \n  %s: %s \n  %s: %s \n  %s: %s' %

@@ -103,7 +103,7 @@ class Jira(object):
         """
 
         querystring = {'fields': fields, 'expand': 'names'}
-        resp = self.request('issue/%s' % (str(key)), data=urlencode(querystring))
+        resp = self.request('issue/%s' % (str(key)), params=querystring)
 
         if resp['status'] == 404:
             raise JiraException('Issue could not be found.')
@@ -260,11 +260,18 @@ class Jira(object):
         for updatename, updatevalue in updates.items():
             remotevalue = issue.get('named').get(updatename)
             if not remotevalue or remotevalue != updatevalue:
-                fieldkey = [k for k, v in issue.get('names').iteritems() if v == updatename][0]
-                update['fields'][fieldkey] = updatevalue
+                # Map the label of the field with the field code.
+                fieldKey = None
+                for k, v in issue.get('names').iteritems():
+                    if v == updatename:
+                        fieldKey = k
+                        break
+                if not fieldKey:
+                    raise JiraException('Could not find the field named \'%s\'' % (updatename))
+                update['fields'][fieldKey] = updatevalue
 
         if not update['fields']:
-            # No fields to update
+            # No fields to update.
             logging.info('No updates required')
             return True
 
