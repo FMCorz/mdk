@@ -124,7 +124,7 @@ class PluginManager(object):
             name = plugin
 
         else:
-            (t, name) = plugin.split('_', 2)
+            (t, name) = plugin.split('_', 1)
             if t == 'moodle':
                 t = 'core'
 
