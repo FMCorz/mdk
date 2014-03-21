@@ -100,7 +100,7 @@ function _mdk() {
                 fi
                 ;;
             create)
-                OPTS="--integration --install --run --version --suffix --engine"
+                OPTS="--identifier --integration --install --run --version --suffix --engine"
                 if [[ "$PREV" == "--engine" ]]; then
                     OPTS='mysqli pgsql'
                 elif [[ "$PREV" == "--run" ]]; then
