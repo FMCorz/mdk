@@ -148,6 +148,30 @@ class Jira(object):
 
         return issue
 
+    def getPullInfo(self, key):
+        """Get the pull information organised by branch"""
+
+        fields = self.getIssue(key).get('named')
+        infos = {
+            'repo': None,
+            'branches': {}
+        }
+
+        for key, value in C.get('tracker.fieldnames').iteritems():
+            if key == 'repositoryurl':
+                infos['repo'] = fields.get(value)
+
+            elif key == 'master' or key.isdigit():
+                infos['branches'][key] = {
+                    'branch': fields.get(value['branch']),
+                    'compare': fields.get(value['diffurl'])
+                }
+            else:
+                # We don't know that field...
+                continue
+
+        return infos
+
     def getServerInfo(self):
         """Load the version info from the jira server using a rest api call"""
         resp = self.request('serverInfo')
