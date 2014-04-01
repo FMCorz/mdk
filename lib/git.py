@@ -211,6 +211,12 @@ class Git(object):
 
         return stdout
 
+    def merge(self, ref):
+        """Wrapper for the merge command"""
+        cmd = 'merge %s' % (ref)
+        (returncode, stdout, stderr) = self.execute(cmd)
+        return returncode == 0
+
     def messages(self, count=10, since=None, path=None):
         """Return the latest titles of the commit messages"""
         messages = self.log(count=count, since=since, path=path, format='%s')

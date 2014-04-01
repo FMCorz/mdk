@@ -25,8 +25,7 @@ http://github.com/FMCorz/mdk
 import re
 import os
 import logging
-from datetime import datetime
-from lib import tools, jira
+from lib import tools, jira, fetch
 from lib.command import Command
 from lib.tools import question
 
@@ -38,7 +37,7 @@ class PullCommand(Command):
             ['-i', '--integration'],
             {
                 'action': 'store_true',
-                'help': 'checkout the stable branch before proceeding to the pull (Integration mode)'
+                'help': 'checkout the stable branch before proceeding to the pull. Short for --mode integration.'
             }
         ),
         (
@@ -46,7 +45,7 @@ class PullCommand(Command):
             {
                 'action': 'store_true',
                 'dest': 'nomerge',
-                'help': 'checkout the remote branch without merging. Also this does not work with patch files. (No merge mode)'
+                'help': 'checkout the remote branch without merging. Short for --mode checkout.'
             }
         ),
         (
@@ -54,14 +53,30 @@ class PullCommand(Command):
             {
                 'action': 'store_true',
                 'dest': 'fetchonly',
-                'help': 'only fetches the remote branch, you can then use FETCH_HEAD. Does not work with patch files. (Fetch mode)'
+                'help': 'only fetches the remote branch, you can then use FETCH_HEAD. Short for --mode fetch.'
             }
         ),
         (
             ['-t', '--testing'],
             {
                 'action': 'store_true',
-                'help': 'checkout a testing branch before proceeding to the pull (Testing mode)'
+                'help': 'checkout a testing branch before proceeding to the pull. Short for --mode testing.'
+            }
+        ),
+        (
+            ['-m', '--mode'],
+            {
+                'action': 'store',
+                'choices': ['checkout', 'fetch', 'integration', 'pull', 'testing'],
+                'default': 'pull',
+                'help': 'define the mode to use'
+            }
+        ),
+        (
+            ['-p', '--prompt'],
+            {
+                'action': 'store_true',
+                'help': 'prompts the user to choose the patch to download.'
             }
         ),
         (
@@ -82,8 +97,19 @@ class PullCommand(Command):
         if not M:
             raise Exception('This is not a Moodle instance')
 
-        if (args.testing and args.integration) or (args.testing and args.nomerge) or (args.integration and args.nomerge):
-            raise Exception('You cannot combine --integration, --testing or --no-merge')
+        # Get the mode.
+        mode = args.mode
+        if args.fetchonly:
+            mode = 'fetch'
+        elif args.nomerge:
+            mode = 'checkout'
+        elif args.testing:
+            mode = 'testing'
+        elif args.integration:
+            mode = 'integration'
+
+        # Prompt?
+        prompt = args.prompt
 
         # Tracker issue number.
         issuenb = args.issue
@@ -101,69 +127,29 @@ class PullCommand(Command):
 
         # Get information from Tracker
         logging.info('Retrieving information about %s from Moodle Tracker' % (mdl))
-        J = jira.Jira()
-        issueInfo = J.getIssue(mdl)
+        fetcher = fetch.FetchTracker(M)
 
-        mode = 'pull' if not args.fetchonly else 'fetchonly'
-        remoteUrl = issueInfo.get('named').get(self.C.get('tracker.fieldnames.repositoryurl'))
-        remoteBranch = issueInfo.get('named').get(self.C.get('tracker.fieldnames.%s.branch' % (branch)))
-        patchesToApply = []
+        try:
+            if not prompt:
+                fetcher.setFromTracker(mdl, branch)
+        except (fetch.FetchTrackerRepoException, fetch.FetchTrackerBranchException) as e:
+            prompt = True
 
-        if (args.nomerge or args.fetchonly) and (not remoteUrl or not remoteBranch):
-            # No merge and Fetch only require valid URL and branch
-            mode = None
+        if prompt:
+            patches = self.pickPatches(mdl)
+            if not patches:
+                raise Exception('Could not find any relevant information for a successful pull')
+            fetcher.usePatches(patches)
 
-        elif (not args.nomerge and not args.fetchonly) and (not remoteUrl or not remoteBranch):
-            # Attempting to find a patch
-            mode = None
-            attachments = issueInfo.get('fields').get('attachment')
-            patches = {}
-            for attachment in attachments:
-                if attachment['filename'].endswith('.patch'):
-                    patches[attachment['filename']] = attachment
-
-            if len(patches) > 0:
-                mapping = {}
-                i = 1
-                for key in sorted(patches.keys()):
-                    patch = patches[key]
-                    mapping[i] = patch
-                    date = jira.Jira.parseDate(patch['created'])
-                    print '{0:<2}: {1:<60} {2}'.format(i, patch['filename'][:60], datetime.strftime(date, '%Y-%m-%d %H:%M'))
-                    i += 1
-
-                ids = question('What patches would you like to apply?')
-                if ids:
-                    ids = re.split(r'\s*[, ]\s*', ids)
-                    for i in ids:
-                        i = int(i)
-                        if not i in mapping.keys():
-                            continue
-                        j = 0
-                        while True:
-                            mapping[i]['mdk-filename'] = mapping[i]['filename'] + (('.' + str(j)) if j > 0 else '')
-                            j += 1
-                            if not os.path.isfile(mapping[i]['mdk-filename']):
-                                break
-                        patchesToApply.append(mapping[i])
-                    mode = 'patch'
-            else:
-                mode = False
-
-        if not mode:
-            raise Exception('Did not find enough information to pull a patch.')
-
-        # Stash
-        stash = None
-        if mode != 'fetchonly':
-            stash = M.git().stash(untracked=True)
-            if stash[0] != 0:
-                raise Exception('Error while trying to stash your changes. Exiting...')
-            elif not stash[1].startswith('No local changes'):
-                logging.info('Stashed your local changes')
-
-        # Create a testing branch
-        if args.testing:
+        if mode == 'pull':
+            fetcher.pull()
+        elif mode == 'checkout':
+            fetcher.checkout()
+        elif mode == 'fetch':
+            fetcher.fetch()
+        elif mode == 'integration':
+            fetcher.pull(into=M.get('stablebranch'))
+        elif mode == 'testing':
             i = 0
             while True:
                 i += 1
@@ -171,100 +157,40 @@ class PullCommand(Command):
                 newBranch = M.generateBranchName(issue, suffix=suffix, version=branch)
                 if not M.git().hasBranch(newBranch):
                     break
-            track = '%s/%s' % (self.C.get('upstreamRemote'), M.get('stablebranch'))
-            if not M.git().createBranch(newBranch, track=track):
-                raise Exception('Could not create branch %s tracking %s' % (newBranch, track))
-            if not M.git().checkout(newBranch):
-                raise Exception('Could not checkout branch %s' % (newBranch))
-            logging.info('Checked out branch %s' % (newBranch))
+            fetcher.pull(into=newBranch)
 
-        # Checkout the stable branch
-        elif args.integration:
-            if not M.git().checkout(M.get('stablebranch')):
-                logging.error('Could not checkout branch %s' % (M.get('stablebranch')))
-            logging.info('Checked out branch %s' % (M.get('stablebranch')))
+    def pickPatches(self, mdl):
+        """Prompts the user to pick a patch"""
 
-        # Create a no-merge branch
-        elif args.nomerge:
-            i = 0
-            while True:
-                i += 1
-                suffix = 'nomerge' if i <= 1 else 'nomerge' + str(i)
-                newBranch = M.generateBranchName(issue, suffix=suffix, version=branch)
-                if not M.git().hasBranch(newBranch):
-                    break
-            track = '%s/%s' % (self.C.get('upstreamRemote'), M.get('stablebranch'))
-            if not M.git().createBranch(newBranch, track=track):
-                raise Exception('Could not create branch %s tracking %s' % (newBranch, track))
-            if not M.git().checkout(newBranch):
-                raise Exception('Could not checkout branch %s' % (newBranch))
-            logging.info('Checked out branch %s' % (newBranch))
-            mode = 'nomerge'
+        J = jira.Jira()
+        patches = J.getAttachments(mdl)
+        patches = {k: v for k, v in patches.items() if v.get('filename').endswith('.patch')}
+        toApply = []
 
-        # Let's pretend everything was fine at the start.
-        result = True
-        unstash = True
+        if len(patches) < 1:
+            return False
 
-        if mode == 'pull':
-            # Pull branch from tracker
-            logging.info('Pulling branch %s from %s into %s' % (remoteBranch, remoteUrl, M.currentBranch()))
-            result = M.git().pull(remote=remoteUrl, ref=remoteBranch)
-            if result[0] != 0:
-                logging.warning('Merge failed, please solve the conflicts and commit')
-                result = False
-                unstash = False
+        mapping = {}
+        i = 1
+        for key in sorted(patches.keys()):
+            patch = patches[key]
+            mapping[i] = patch
+            print '{0:<2}: {1:<60} {2}'.format(i, key[:60], datetime.strftime(patch.get('date'), '%Y-%m-%d %H:%M'))
+            i += 1
 
-        elif mode == 'fetchonly':
-            # Only fetches the branch from the remote
-            logging.info('Fetching branch %s from %s' % (remoteBranch, remoteUrl))
-            fetch = M.git().fetch(remote=remoteUrl, ref=remoteBranch)
-            if fetch[0] != 0:
-                logging.warning('Failed to fetch the remote branch')
-            else:
-                logging.info('Fetch successful, you can now use FETCH_HEAD')
+        while True:
+            try:
+                ids = question('What patches would you like to apply?')
+                if ids.lower() == 'ankit':
+                    logging.warning('Sorry, I am unable to punch a child at the moment...')
+                    continue
+                elif ids:
+                    ids = re.split(r'\s*[, ]\s*', ids)
+                    toApply = [mapping[int(i)] for i in ids if int(i) in mapping.keys()]
+            except ValueError:
+                logging.warning('Error while parsing the list of patches, try a little harder.')
+                continue
+            break
+        
+        return toApply
 
-        elif mode == 'patch':
-            # Apply a patch from tracker
-            files = []
-            for patch in patchesToApply:
-                dest = patch['mdk-filename']
-                logging.info('Downloading %s' % (patch['filename']))
-                if not J.download(patch['content'], dest):
-                    logging.error('Failed to download. Aborting...')
-                    result = False
-                    files = []
-                    break
-                files.append(dest)
-
-            if len(files) > 0:
-                logging.info('Applying patch(es)...')
-                if not M.git().apply(files):
-                    logging.warning('Could not apply the patch(es), please apply manually')
-                    result = False
-                else:
-                    for f in files:
-                        os.remove(f)
-
-        elif mode == 'nomerge':
-            # Checking out the patch without merging it.
-            logging.info('Fetching %s %s' % (remoteUrl, remoteBranch))
-            M.git().fetch(remote=remoteUrl, ref=remoteBranch)
-            logging.info('Hard reset to FETCH_HEAD')
-            M.git().reset('FETCH_HEAD', hard=True)
-
-        # Stash pop
-        if unstash and stash and not stash[1].startswith('No local changes'):
-            pop = M.git().stash(command='pop')
-            if pop[0] != 0:
-                logging.error('An error ocured while unstashing your changes')
-            else:
-                logging.info('Popped the stash')
-        elif not unstash and stash:
-            logging.warning('Note that some files have been left in your stash')
-
-        if result:
-            logging.info('Done.')
-
-        # TODO Tidy up the messy logic above!
-        # TODO Really, this needs some good tidy up!
-        # TODO I'm being serious... this needs to crazy clean up!!
