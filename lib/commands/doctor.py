@@ -29,7 +29,7 @@ from lib.command import Command
 from lib.tools import mkdir
 
 
-class CheckCommand(Command):
+class DoctorCommand(Command):
 
     _arguments = [
         (
@@ -43,7 +43,7 @@ class CheckCommand(Command):
             ['--all'],
             {
                 'action': 'store_true',
-                'help': 'Enable all the checks, this is the default'
+                'help': 'Enable all the checks'
             }
         ),
         (
@@ -52,7 +52,6 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the branch checked out on your integration instances'
             }
-
         ),
         (
             ['--cached'],
@@ -60,7 +59,6 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the cached repositories'
             }
-
         ),
         (
             ['--directories'],
@@ -68,7 +66,14 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the directories set in the config file'
             }
-
+        ),
+        (
+            ['--hi'],
+            {
+                'action': 'store_true',
+                'help': 'What you see it totally unrelated to what you get',
+                'silent': True
+            }
         ),
         (
             ['--remotes'],
@@ -76,7 +81,6 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the remotes of your instances'
             }
-
         ),
         (
             ['--wwwroot'],
@@ -84,21 +88,19 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the $CFG->wwwroot of your instances'
             }
-
         )
     ]
     _description = 'Perform several checks on your current installation'
 
     def run(self, args):
 
-        allChecks = True
-        if not args.all:
-            argsDict = vars(args)
-            commands = ['directories', 'cached', 'remotes', 'wwwroot', 'branch']
-            for i in commands:
-                if argsDict.get(i):
-                    allChecks = False
-                    break
+        optionsCount = sum([1 for k, v in vars(args).items() if v != False])
+        if optionsCount == 0 or (optionsCount == 1 and args.fix):
+            self.argumentError('You should probably tell me what symptoms you are experiencing')
+
+        allChecks = False
+        if args.all:
+            allChecks = True
 
         # Check directories
         if args.directories or allChecks:
@@ -119,6 +121,10 @@ class CheckCommand(Command):
         # Check the branches
         if args.branch or allChecks:
             self.branch(args)
+
+        # Check what you see is what you get
+        if args.hi:
+            self.hi(args)
 
     def branch(self, args):
         """Make sure the correct branch is checked out. Only on integration branches."""
@@ -197,6 +203,18 @@ class CheckCommand(Command):
                 if args.fix:
                     print '    Creating %s' % d
                     mkdir(d, 0777)
+
+    def hi(self, args):
+        """I wonder what is the purpose of this...
+
+            hint #1: 1341
+            hint #2: dobedobedoh
+        """
+
+        if args.fix:
+            print 'The horse is a noble animal'
+        else:
+            print '<em>Hi</em>'
 
     def remotes(self, args):
         """Check that the correct remotes are used"""

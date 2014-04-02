@@ -133,8 +133,14 @@ class CommandRunner(object):
                     for subargument in sub[1]:
                         sargs = subargument[0]
                         skwargs = subargument[1]
+                        if skwargs.has_key('silent'):
+                            del skwargs['silent']
+                            skwargs['help'] = argparse.SUPPRESS
                         subparser.add_argument(*sargs, **skwargs)
             else:
+                if kwargs.has_key('silent'):
+                    del kwargs['silent']
+                    kwargs['help'] = argparse.SUPPRESS
                 parser.add_argument(*args, **kwargs)
         args = parser.parse_args(sysargs)
 

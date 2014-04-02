@@ -203,6 +203,7 @@
     //   "upall": "update --all". `mdk upall` will execute `mdk update --all`
     //   "ls": "!ls -al". `mdk ls` will execute `ls -al`
     "aliases": {
+        "check": "doctor",
         "list": "info -l"
     }
 }
