@@ -24,6 +24,7 @@ http://github.com/FMCorz/mdk
 
 import os
 import shutil
+import imp
 from lib import git
 from lib.command import Command
 from lib.tools import mkdir
@@ -58,6 +59,13 @@ class DoctorCommand(Command):
             {
                 'action': 'store_true',
                 'help': 'Check the cached repositories'
+            }
+        ),
+        (
+            ['--dependencies'],
+            {
+                'action': 'store_true',
+                'help': 'Check various dependencies'
             }
         ),
         (
@@ -109,6 +117,10 @@ class DoctorCommand(Command):
         # Check the cached remotes
         if args.cached or allChecks:
             self.cachedRepositories(args)
+
+        # Check the dependencies
+        if args.dependencies or allChecks:
+            self.dependencies(args)
 
         # Check instances remotes
         if args.remotes or allChecks:
@@ -191,6 +203,34 @@ class DoctorCommand(Command):
                     if args.fix:
                         print '    Setting remote.origin.fetch to %s' % '+refs/*:refs/*'
                         repo.setConfig('remote.origin.fetch', '+refs/*:refs/*')
+
+    def dependencies(self, args):
+        """Check that various dependencies are met"""
+
+        print 'Checking dependencies'
+
+        hasErrors = False
+        for k in ['git', 'php', 'java', 'recess', 'lessc']:
+            path = self.C.get(k)
+            if not path or not os.path.isfile(path):
+                print '  The path to \'%s\' is invalid: %s' % (k, path)
+                hasErrors = True
+        if hasErrors and args.fix:
+            print '    Please manually fix the paths in your config file'
+
+        with open(os.path.join(os.path.dirname(__file__), '..', '..', 'requirements.txt'), 'r') as f:
+            hasErrors = False
+            for line in f:
+                # Striping the version number from the package.
+                # And yes, this is a horrible one liner and I'm not expecting anyone to debug it :D.
+                mod = line[:min([len(line)] + [line.find(v) for v in '<=>' if line.find(v) > -1])].strip()
+                try:
+                    imp.find_module(mod)
+                except ImportError:
+                    print '  Could not locate the module \'%s\'' % (mod)
+                    hasErrors = True
+            if hasErrors and args.fix:
+                print '    Try running \'pip -r requirements.txt\' from MDK\'s installation directory'
 
     def directories(self, args):
         """Check that the directories are valid"""

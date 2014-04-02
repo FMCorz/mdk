@@ -108,7 +108,7 @@ function _mdk() {
                 OPTS="--compile --debug --sheets --theme --watch"
                 ;;
             doctor)
-                OPTS="--all --branch --cached --directories --remotes --wwwroot"
+                OPTS="--all --branch --cached --dependencies --directories --remotes --wwwroot"
                 ;;
             fix)
                 if [[ "$PREV" == "-n" || "$PREV" == "--name" ]]; then
