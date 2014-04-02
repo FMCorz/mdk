@@ -138,8 +138,8 @@ class BackportCommand(Command):
             mdlIssue = 'MDL-%s' % (issue)
             J = jira.Jira()
             args.patch = J.isSecurityIssue(mdlIssue)
-            args.push = False
             if args.patch:
+                args.push = False
                 logging.info('%s appears to be a security issue, switching to patch mode...' % (mdlIssue))
 
         # Original track
