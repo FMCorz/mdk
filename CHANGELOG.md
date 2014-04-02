@@ -42,7 +42,7 @@ v0.4.2
 * New script `undev` to revert the changes of the script `dev`
 * `pull` has an option to fetch only
 * New script `less` to compile the less files from bootstrapbase
-* `run` can execut shell scripts
+* `run` can execute shell scripts
 * Auto complete for `behat` -f
 * Auto complete for `phpunit` -u
 * Shipping a bash script `extra/goto_instance` to jump to instances with auto complete
