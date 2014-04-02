@@ -130,7 +130,7 @@ class Jira(object):
         resp = self.request('issue/%s' % (str(key)), params=querystring)
 
         if resp['status'] == 404:
-            raise JiraException('Issue could not be found.')
+            raise JiraIssueNotFoundException('Issue could not be found.')
         elif not resp['status'] == 200:
             raise JiraException('The tracker is not available.')
 
@@ -353,5 +353,10 @@ class Jira(object):
 
         return True
 
+
 class JiraException(Exception):
+    pass
+
+
+class JiraIssueNotFoundException(JiraException):
     pass
