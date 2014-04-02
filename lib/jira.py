@@ -96,6 +96,33 @@ class Jira(object):
         """Returns a property of this instance"""
         return self.info().get(param, default)
 
+    def getAttachments(self, key):
+        """Get a dict of attachments
+
+            The keys are the filenames, the values are another dict containing:
+            - id: The file ID on the Tracker
+            - filename: The file name
+            - URL: The URL to download the file
+            - date: A datetime object representing the date at which the file was created
+            - mimetype: The mimetype of the file
+            - size: The size of the file in bytes
+            - author: The username of the author of the file
+        """
+        issueInfo = self.getIssue(key, fields='attachment')
+        results = issueInfo.get('fields').get('attachment', [])
+        attachments = {}
+        for attachment in results:
+            attachments[attachment.get('filename')] = {
+                'id': attachment.get('id'),
+                'filename': attachment.get('filename'),
+                'url': attachment.get('content'),
+                'date': Jira.parseDate(attachment.get('created')),
+                'mimetype': attachment.get('mimeType'),
+                'size': attachment.get('size'),
+                'author': attachment.get('author', {}).get('name'),
+            }
+        return attachments
+
     def getIssue(self, key, fields='*all,-comment'):
         """Load the issue info from the jira server using a rest api call.
 
@@ -120,6 +147,30 @@ class Jira(object):
                 issue['named'][namelist.get(fieldkey)] = fieldvalue
 
         return issue
+
+    def getPullInfo(self, key):
+        """Get the pull information organised by branch"""
+
+        fields = self.getIssue(key).get('named')
+        infos = {
+            'repo': None,
+            'branches': {}
+        }
+
+        for key, value in C.get('tracker.fieldnames').iteritems():
+            if key == 'repositoryurl':
+                infos['repo'] = fields.get(value)
+
+            elif key == 'master' or key.isdigit():
+                infos['branches'][key] = {
+                    'branch': fields.get(value['branch']),
+                    'compare': fields.get(value['diffurl'])
+                }
+            else:
+                # We don't know that field...
+                continue
+
+        return infos
 
     def getServerInfo(self):
         """Load the version info from the jira server using a rest api call"""
@@ -237,7 +288,7 @@ class Jira(object):
 
     @staticmethod
     def parseDate(value):
-        """Parse a date returned by Jira API"""
+        """Parse a date returned by Jira API and returns a datetime object."""
         # Strips the timezone information because of some issues with %z.
         value = re.sub(r'[+-]\d+$', '', value)
         return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
