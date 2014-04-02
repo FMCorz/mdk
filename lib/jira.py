@@ -25,14 +25,11 @@ http://github.com/FMCorz/mdk
 import json
 from tools import question
 from config import Conf
-from urllib import urlencode
 from urlparse import urlparse
-from base64 import b64encode
 from datetime import datetime
 import re
 import logging
 import os
-import httplib
 import requests
 import mimetypes
 try:
