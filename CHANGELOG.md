@@ -1,6 +1,27 @@
 Changelog
 =========
 
+v1.0
+----
+
+* Dropped official support for Python 2.6
+* Moving forward by using `pip` for external dependencies
+* New command `css` for CSS related tasks
+* New script to `enrol` users
+* `push` and `backport` commands can upload patches to the tracker
+* `pull` can be forced to check for patches rather than pull branches
+* Command `check` was renamed `doctor`
+* `doctor` can check for dependencies
+* Support for sourcemaps when compiling LESS - Andrew Nicols
+* Exit with error code 1 when an exception is thrown
+* `run` can pass arguments to scripts
+* Faster clone of cache on first `init`
+* `phpunit` accepts a testcase as argument
+* `.noupgrade` file can be used not to upgrade an instance
+* `behat` can run tests by name - Andrew Nicols
+* `remove` accepts `-f` as an argument - Andrew Nicols
+* The script `less` is deprecated
+
 v0.5
 ----
 
