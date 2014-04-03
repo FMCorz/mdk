@@ -6,7 +6,8 @@ A collection of tools meant to make developers' lives easier.
 Requirements
 ============
 
-- Python 2.7 (or Python 2.6 with the package _python-argparse_)
+- Linux or Mac OS
+- Python 2.7
 - MySQL or PostgreSQL
 
 Most of the tools work on Moodle 1.9 onwards, but some CLI scripts required by MDK might not be available in all versions.
@@ -22,11 +23,15 @@ Get some help on a command using:
 
     mdk <command> --help
 
+Also check the [wiki](https://github.com/FMCorz/mdk/wiki).
+
 Installation
 ============
 
 Ubuntu package
 --------------
+
+_This method is currently not recommended, the package is outdated. Maintainer wanted!_
 
     sudo apt-add-repository ppa:2x1cq-fred-7nqa6/ppa
     sudo apt-get update
@@ -43,6 +48,11 @@ Try the following command to create a typical Stable Master instance (this will 
     mdk list
 
 Now you should be able to access it from http://moodle-sdk/stable_master.
+
+Mac OS
+------
+
+Using [Homebrew](http://brew.sh/), please refer to this [formula](https://github.com/danpoltawski/homebrew-mdk).
 
 Manual installation
 -------------------
@@ -139,11 +149,6 @@ Get the instance ready for acceptance testing (Behat), and run the test feature(
     mdk behat -r --tags=@core_completion
 
 
-check
------
-
-Perform some checks on the environment to identify possible problems, and attempt to fix them automatically.
-
 create
 ------
 
@@ -185,6 +190,12 @@ CSS related functions.
 Compile the LESS files from Bootstrapbase
 
     mdk css --compile
+
+
+doctor
+------
+
+Perform some checks on the environment to identify possible problems, and attempt to fix them automatically.
 
 
 fix
@@ -394,6 +405,17 @@ You can write custom scripts and execute them on your instances using the comman
     $ php helloworld.php
 
 Scripts are very handy when it comes to performing more complexed tasks.
+
+Shipped scripts
+---------------
+
+The following scripts are available with MDK:
+
+* `dev`: Changes a portion of Moodle settings to enable development mode
+* `enrol`: Enrols users in any existing course
+* `undev`: Reverts the changes made by `dev`
+* `users`: Creates a set of users
+* `webservices`: Does all the set up of webservices for you
 
 License
 =======

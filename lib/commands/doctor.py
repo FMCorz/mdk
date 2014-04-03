@@ -24,12 +24,13 @@ http://github.com/FMCorz/mdk
 
 import os
 import shutil
+import imp
 from lib import git
 from lib.command import Command
 from lib.tools import mkdir
 
 
-class CheckCommand(Command):
+class DoctorCommand(Command):
 
     _arguments = [
         (
@@ -43,7 +44,7 @@ class CheckCommand(Command):
             ['--all'],
             {
                 'action': 'store_true',
-                'help': 'Enable all the checks, this is the default'
+                'help': 'Enable all the checks'
             }
         ),
         (
@@ -52,7 +53,6 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the branch checked out on your integration instances'
             }
-
         ),
         (
             ['--cached'],
@@ -60,7 +60,13 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the cached repositories'
             }
-
+        ),
+        (
+            ['--dependencies'],
+            {
+                'action': 'store_true',
+                'help': 'Check various dependencies'
+            }
         ),
         (
             ['--directories'],
@@ -68,7 +74,14 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the directories set in the config file'
             }
-
+        ),
+        (
+            ['--hi'],
+            {
+                'action': 'store_true',
+                'help': 'What you see it totally unrelated to what you get',
+                'silent': True
+            }
         ),
         (
             ['--remotes'],
@@ -76,7 +89,6 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the remotes of your instances'
             }
-
         ),
         (
             ['--wwwroot'],
@@ -84,21 +96,19 @@ class CheckCommand(Command):
                 'action': 'store_true',
                 'help': 'Check the $CFG->wwwroot of your instances'
             }
-
         )
     ]
     _description = 'Perform several checks on your current installation'
 
     def run(self, args):
 
-        allChecks = True
-        if not args.all:
-            argsDict = vars(args)
-            commands = ['directories', 'cached', 'remotes', 'wwwroot', 'branch']
-            for i in commands:
-                if argsDict.get(i):
-                    allChecks = False
-                    break
+        optionsCount = sum([1 for k, v in vars(args).items() if v != False])
+        if optionsCount == 0 or (optionsCount == 1 and args.fix):
+            self.argumentError('You should probably tell me what symptoms you are experiencing')
+
+        allChecks = False
+        if args.all:
+            allChecks = True
 
         # Check directories
         if args.directories or allChecks:
@@ -107,6 +117,10 @@ class CheckCommand(Command):
         # Check the cached remotes
         if args.cached or allChecks:
             self.cachedRepositories(args)
+
+        # Check the dependencies
+        if args.dependencies or allChecks:
+            self.dependencies(args)
 
         # Check instances remotes
         if args.remotes or allChecks:
@@ -119,6 +133,10 @@ class CheckCommand(Command):
         # Check the branches
         if args.branch or allChecks:
             self.branch(args)
+
+        # Check what you see is what you get
+        if args.hi:
+            self.hi(args)
 
     def branch(self, args):
         """Make sure the correct branch is checked out. Only on integration branches."""
@@ -186,6 +204,34 @@ class CheckCommand(Command):
                         print '    Setting remote.origin.fetch to %s' % '+refs/*:refs/*'
                         repo.setConfig('remote.origin.fetch', '+refs/*:refs/*')
 
+    def dependencies(self, args):
+        """Check that various dependencies are met"""
+
+        print 'Checking dependencies'
+
+        hasErrors = False
+        for k in ['git', 'php', 'java', 'recess', 'lessc']:
+            path = self.C.get(k)
+            if not path or not os.path.isfile(path):
+                print '  The path to \'%s\' is invalid: %s' % (k, path)
+                hasErrors = True
+        if hasErrors and args.fix:
+            print '    Please manually fix the paths in your config file'
+
+        with open(os.path.join(os.path.dirname(__file__), '..', '..', 'requirements.txt'), 'r') as f:
+            hasErrors = False
+            for line in f:
+                # Striping the version number from the package.
+                # And yes, this is a horrible one liner and I'm not expecting anyone to debug it :D.
+                mod = line[:min([len(line)] + [line.find(v) for v in '<=>' if line.find(v) > -1])].strip()
+                try:
+                    imp.find_module(mod)
+                except ImportError:
+                    print '  Could not locate the module \'%s\'' % (mod)
+                    hasErrors = True
+            if hasErrors and args.fix:
+                print '    Try running \'pip -r requirements.txt\' from MDK\'s installation directory'
+
     def directories(self, args):
         """Check that the directories are valid"""
 
@@ -197,6 +243,18 @@ class CheckCommand(Command):
                 if args.fix:
                     print '    Creating %s' % d
                     mkdir(d, 0777)
+
+    def hi(self, args):
+        """I wonder what is the purpose of this...
+
+            hint #1: 1341
+            hint #2: dobedobedoh
+        """
+
+        if args.fix:
+            print 'The horse is a noble animal'
+        else:
+            print '<em>Hi</em>'
 
     def remotes(self, args):
         """Check that the correct remotes are used"""

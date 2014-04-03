@@ -2,6 +2,11 @@
 #
 # Compile the Less files of Bootstrap base.
 #
+# Deprecated script, please refer to the CSS command.
+
+echo "This script is deprecated, please use:"
+echo "  mdk css --compile"
+echo ""
 
 P=`mdk info -v path`
 if [[ -z "$(which recess)" ]]; then

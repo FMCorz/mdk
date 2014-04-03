@@ -25,14 +25,11 @@ http://github.com/FMCorz/mdk
 import json
 from tools import question
 from config import Conf
-from urllib import urlencode
 from urlparse import urlparse
-from base64 import b64encode
 from datetime import datetime
 import re
 import logging
 import os
-import httplib
 import requests
 import mimetypes
 try:
@@ -133,7 +130,7 @@ class Jira(object):
         resp = self.request('issue/%s' % (str(key)), params=querystring)
 
         if resp['status'] == 404:
-            raise JiraException('Issue could not be found.')
+            raise JiraIssueNotFoundException('Issue could not be found.')
         elif not resp['status'] == 200:
             raise JiraException('The tracker is not available.')
 
@@ -356,5 +353,10 @@ class Jira(object):
 
         return True
 
+
 class JiraException(Exception):
+    pass
+
+
+class JiraIssueNotFoundException(JiraException):
     pass
