@@ -255,7 +255,10 @@ class BehatCommand(Command):
                     sleep(3)
 
                 # Running the tests
-                process(cmd, M.path, None, None)
+                try:
+                    process(cmd, M.path, None, None)
+                except KeyboardInterrupt:
+                    pass
 
                 # Kill the remaining processes
                 if phpServer:
