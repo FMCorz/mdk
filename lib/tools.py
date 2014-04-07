@@ -130,8 +130,12 @@ def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
     if type(cmd) != list:
         cmd = shlex.split(str(cmd))
     logging.debug(' '.join(cmd))
-    proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
-    (out, err) = proc.communicate()
+    try:
+        proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
+        (out, err) = proc.communicate()
+    except KeyboardInterrupt as e:
+        proc.kill()
+        raise e
     return (proc.returncode, out, err)
 
 
