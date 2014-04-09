@@ -24,7 +24,6 @@ http://github.com/FMCorz/mdk
 
 import argparse
 import sys
-import workplace
 
 
 class Command(object):
@@ -46,15 +45,12 @@ class Command(object):
             )
         ]
     _description = 'Undocumented command'
-    _loadWorkplace = True
 
     __C = None
     __Wp = None
 
     def __init__(self, config):
         self.__C = config
-        if self._loadWorkplace:
-            self.__Wp = workplace.Workplace()
 
     def argumentError(self, message):
         raise CommandArgumentError(message)
@@ -76,6 +72,9 @@ class Command(object):
 
     @property
     def Wp(self):
+        if not self.__Wp:
+            import workplace
+            self.__Wp = workplace.Workplace()
         return self.__Wp
 
 

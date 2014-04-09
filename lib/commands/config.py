@@ -88,7 +88,6 @@ class ConfigCommand(Command):
         )
     ]
     _description = 'Manage your configuration'
-    _loadWorkplace = False
 
     def dictDisplay(self, data, ident=0):
         for name in sorted(data.keys()):

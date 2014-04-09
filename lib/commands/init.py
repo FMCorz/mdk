@@ -45,7 +45,6 @@ class InitCommand(Command):
         )
     ]
     _description = 'Initialise MDK'
-    _loadWorkplace = False
 
     def resolve_directory(self, path, user):
         if path.startswith('~'):

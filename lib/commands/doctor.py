@@ -143,7 +143,11 @@ class DoctorCommand(Command):
 
         print 'Checking integration instances branches'
 
+        if not self._checkWorkplace():
+            return
+
         instances = self.Wp.list(integration=True)
+
         for identifier in instances:
             M = self.Wp.get(identifier)
             stablebranch = M.get('stablebranch')
@@ -260,6 +264,10 @@ class DoctorCommand(Command):
         """Check that the correct remotes are used"""
 
         print 'Checking remotes'
+
+        if not self._checkWorkplace():
+            return
+
         remotes = {
             'mine': self.C.get('remotes.mine'),
             'stable': self.Wp.getCachedRemote() if self.C.get('useCacheAsUpstreamRemote') else self.C.get('remotes.stable'),
@@ -291,6 +299,10 @@ class DoctorCommand(Command):
         """Check the wwwroot of the instances"""
 
         print 'Checking wwwroot'
+
+        if not self._checkWorkplace():
+            return
+
         instances = self.Wp.resolveMultiple(self.Wp.list())
 
         wwwroot = '%s://%s/' % (self.C.get('scheme'), self.C.get('host'))
@@ -308,3 +320,12 @@ class DoctorCommand(Command):
                     if args.fix:
                         print '    Setting %s on %s' % (expected, M.get('identifier'))
                         M.updateConfig('wwwroot', expected)
+
+    def _checkWorkplace(self, indent=2):
+        """Returns whether the workplace is available or, and print a message if it is not."""
+        try:
+            self.Wp
+        except ImportError:
+            print ' ' * indent + 'The workplace could not be loaded, did you install the dependencies?'
+            return False
+        return True
