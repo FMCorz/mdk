@@ -127,7 +127,7 @@ class BackportCommand(Command):
             branch = M.currentBranch()
 
         # Parsing the branch
-        parsedbranch = tools.parseBranch(branch, self.C.get('wording.branchRegex'))
+        parsedbranch = tools.parseBranch(branch)
         if not parsedbranch:
             raise Exception('Could not extract issue number from %s' % branch)
         issue = parsedbranch['issue']

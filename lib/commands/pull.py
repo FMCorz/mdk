@@ -114,7 +114,7 @@ class PullCommand(Command):
         # Tracker issue number.
         issuenb = args.issue
         if not issuenb:
-            parsedbranch = tools.parseBranch(M.currentBranch(), self.C.get('wording.branchRegex'))
+            parsedbranch = tools.parseBranch(M.currentBranch())
             if not parsedbranch:
                 raise Exception('Could not extract issue number from %s' % M.currentBranch())
             issuenb = parsedbranch['issue']

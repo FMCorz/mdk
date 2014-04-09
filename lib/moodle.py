@@ -243,7 +243,7 @@ class Moodle(object):
         smartSearch = C.get('smartHeadCommitSearch')
 
         # Parsing the branch
-        parsedbranch = parseBranch(branch, C.get('wording.branchRegex'))
+        parsedbranch = parseBranch(branch)
         if parsedbranch:
             issue = 'MDL-%s' % (parsedbranch['issue'])
         else:
@@ -589,7 +589,7 @@ class Moodle(object):
                 raise Exception('Cannot create a patch from a detached branch')
 
         # Parsing the branch
-        parsedbranch = parseBranch(branch, C.get('wording.branchRegex'))
+        parsedbranch = parseBranch(branch)
         if not parsedbranch:
             raise Exception('Could not extract issue number from %s' % branch)
         issue = 'MDL-%s' % (parsedbranch['issue'])
@@ -725,7 +725,7 @@ class Moodle(object):
                 raise Exception('Cannot update the tracker when on detached branch')
 
         # Parsing the branch
-        parsedbranch = parseBranch(branch, C.get('wording.branchRegex'))
+        parsedbranch = parseBranch(branch)
         if not parsedbranch:
             raise Exception('Could not extract issue number from %s' % branch)
         issue = 'MDL-%s' % (parsedbranch['issue'])

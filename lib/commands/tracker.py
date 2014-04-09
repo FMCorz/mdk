@@ -59,7 +59,7 @@ class TrackerCommand(Command):
         if not args.issue:
             M = self.Wp.resolve()
             if M:
-                parsedbranch = parseBranch(M.currentBranch(), self.C.get('wording.branchRegex'))
+                parsedbranch = parseBranch(M.currentBranch())
                 if parsedbranch:
                     issue = parsedbranch['issue']
         else:

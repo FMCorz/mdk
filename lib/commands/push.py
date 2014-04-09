@@ -120,7 +120,7 @@ class PushCommand(Command):
             branch = args.branch
 
         # Extra test to see if the commit message is correct. This prevents easy typos in branch or commit messages.
-        parsedbranch = tools.parseBranch(branch, self.C.get('wording.branchRegex'))
+        parsedbranch = tools.parseBranch(branch)
         if parsedbranch or branch != M.get('stablebranch'):
             message = M.git().messages(count=1)[0]
 

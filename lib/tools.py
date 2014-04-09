@@ -127,8 +127,8 @@ def mkdir(path, perms=0755):
     os.umask(oldumask)
 
 
-def parseBranch(branch, pattern):
-    pattern = re.compile(pattern, flags=re.I)
+def parseBranch(branch):
+    pattern = re.compile(C.get('wording.branchRegex'), flags=re.I)
     result = pattern.search(branch)
     if not result:
         return False
