@@ -35,18 +35,6 @@ class BackupDBEngineNotSupported(Exception):
     pass
 
 
-class ConfigFileNotFound(Exception):
-    pass
-
-
-class ConfigFileCouldNotBeLoaded(Exception):
-    pass
-
-
-class ConfigFileCouldNotBeSaved(Exception):
-    pass
-
-
 class ConflictInScriptName(Exception):
     pass
 

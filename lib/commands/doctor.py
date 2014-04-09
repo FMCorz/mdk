@@ -214,7 +214,7 @@ class DoctorCommand(Command):
         print 'Checking dependencies'
 
         hasErrors = False
-        for k in ['git', 'php', 'java', 'recess', 'lessc']:
+        for k in ['git', 'php', 'java', 'recess', 'lessc', 'editor']:
             path = self.C.get(k)
             if not path or not os.path.isfile(path):
                 print '  The path to \'%s\' is invalid: %s' % (k, path)

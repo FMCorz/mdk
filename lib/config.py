@@ -26,7 +26,6 @@ import os
 import json
 import re
 import copy
-from exceptions import ConfigFileCouldNotBeLoaded, ConfigFileNotFound, ConfigFileCouldNotBeSaved
 
 
 class ConfigObject(object):
@@ -289,3 +288,15 @@ class Conf(Config):
         """Set a new setting"""
         super(Conf, self).set(name, value)
         self.save()
+
+
+class ConfigFileNotFound(Exception):
+    pass
+
+
+class ConfigFileCouldNotBeLoaded(Exception):
+    pass
+
+
+class ConfigFileCouldNotBeSaved(Exception):
+    pass

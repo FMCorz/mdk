@@ -171,6 +171,8 @@
     "recess": "/usr/local/bin/recess",
     // Path to lessc
     "lessc": "/usr/local/bin/lessc",
+    // Path to your favourite editor
+    "editor": "/usr/bin/vim",
 
     // Debug level of MDK. 'debug', 'info', 'warning', 'error' or 'critical'.
     "debug": "info",

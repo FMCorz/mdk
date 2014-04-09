@@ -22,7 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 from lib.command import Command
+from lib.tools import launchEditor, yesOrNo
+from lib.config import ConfigObject, ConfigFileCouldNotBeLoaded
 
 
 class ConfigCommand(Command):
@@ -34,6 +37,12 @@ class ConfigCommand(Command):
                 'help': 'the action to perform',
                 'metavar': 'action',
                 'sub-commands': {
+                    'edit': (
+                        {
+                            'help': 'opens the config file in an editor'
+                        },
+                        []
+                    ),
                     'flatlist': (
                         {
                             'help': 'flat list of the settings'
@@ -109,6 +118,32 @@ class ConfigCommand(Command):
     def run(self, args):
         if args.action == 'list':
             self.dictDisplay(self.C.get(), 0)
+
+        elif args.action == 'edit':
+            f = self.C.userFile
+            success = None
+
+            while True:
+                tmpfile = launchEditor(filepath=f, suffix='.json')
+                co = ConfigObject()
+                try:
+                    co.loadFromFile(tmpfile)
+                except ConfigFileCouldNotBeLoaded:
+                    success = False
+                    logging.error('I could not load the file, you probably screwed up the JSON...')
+                    if yesOrNo('Would you like to continue editing? If not the changes will be discarded.'):
+                        f = tmpfile
+                        continue
+                    else:
+                        break
+                else:
+                    success = True
+                    break
+
+            if success:
+                with open(tmpfile, 'r') as new:
+                    with open(self.C.userFile, 'w') as current:
+                        current.write(new.read())
 
         elif args.action == 'flatlist':
             self.flatDisplay(self.C.get())

@@ -32,7 +32,10 @@ import threading
 import getpass
 import logging
 import hashlib
+import tempfile
+from lib.config import Conf
 
+C = Conf()
 
 def yesOrNo(q):
     while True:
@@ -85,7 +88,6 @@ def getMDLFromCommitMessage(message):
 def get_current_user():
     """Attempt to get the currently logged in user"""
     username = 'root'
-    import os
     try:
         username = os.getlogin()
     except OSError:
@@ -95,6 +97,21 @@ def get_current_user():
         except:
             pass
     return username
+
+
+def launchEditor(filepath=None, suffix='.tmp'):
+    """Launchs up an editor
+
+    If filepath is passed, the content of the file is used to populate the editor.
+
+    This returns the path to the saved file.
+    """
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmpfile:
+        with open(filepath, 'r') as f:
+            tmpfile.write(f.read())
+            tmpfile.flush()
+        subprocess.call([C.get('editor'), tmpfile.name])
+    return tmpfile.name
 
 
 def md5file(filepath):
