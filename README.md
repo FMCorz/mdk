@@ -9,6 +9,7 @@ Requirements
 - Linux or Mac OS
 - Python 2.7
 - MySQL or PostgreSQL
+- Git v1.7.7 or greater
 
 Most of the tools work on Moodle 1.9 onwards, but some CLI scripts required by MDK might not be available in all versions.
 
