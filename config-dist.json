@@ -198,7 +198,8 @@
     "masterBranch": 27,
 
     // Aliases for MDK commands.
-    // An alias starting with a ! will be executed through the command line.
+    // An alias starting with a ! will be executed through the command line. Those also
+    // can use placeholders for arguments: $1, $2, ...
     // Examples:
     //   "upall": "update --all". `mdk upall` will execute `mdk update --all`
     //   "ls": "!ls -al". `mdk ls` will execute `ls -al`
