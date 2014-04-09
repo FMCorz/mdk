@@ -204,6 +204,7 @@
     //   "ls": "!ls -al". `mdk ls` will execute `ls -al`
     "aliases": {
         "check": "doctor",
-        "list": "info -l"
+        "list": "info -l",
+        "theme": "!mdk info -v theme -e $1 $2"
     }
 }
