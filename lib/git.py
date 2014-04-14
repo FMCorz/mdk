@@ -129,12 +129,17 @@ class Git(object):
 
         logging.debug(' '.join(cmd))
 
-        proc = subprocess.Popen(cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=path
-        )
-        (stdout, stderr) = proc.communicate()
+        try:
+            proc = subprocess.Popen(cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=path
+            )
+            (stdout, stderr) = proc.communicate()
+        except KeyboardInterrupt as e:
+            proc.kill()
+            raise e
+
         return (proc.returncode, stdout, stderr)
 
     def fetch(self, remote='', ref=''):
