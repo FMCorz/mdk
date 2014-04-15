@@ -106,11 +106,14 @@ def launchEditor(filepath=None, suffix='.tmp'):
 
     This returns the path to the saved file.
     """
+    editor = resolveEditor()
+    if not editor:
+        raise Exception('Could not locate the editor')
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmpfile:
         with open(filepath, 'r') as f:
             tmpfile.write(f.read())
             tmpfile.flush()
-        subprocess.call([C.get('editor'), tmpfile.name])
+        subprocess.call([editor, tmpfile.name])
     return tmpfile.name
 
 
@@ -154,6 +157,19 @@ def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
         proc.kill()
         raise e
     return (proc.returncode, out, err)
+
+
+def resolveEditor():
+    """Try to resolve the editor that the user would want to use.
+       This does actually checks if it is executable"""
+    editor = C.get('editor')
+    if not editor:
+        editor = os.environ.get('EDITOR')
+    if not editor:
+        editor = os.environ.get('VISUAL')
+    if not editor and os.path.isfile('/usr/bin/editor'):
+        editor = '/usr/bin/editor'
+    return editor
 
 
 def downloadProcessHook(count, size, total):

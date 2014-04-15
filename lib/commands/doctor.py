@@ -25,9 +25,10 @@ http://github.com/FMCorz/mdk
 import os
 import shutil
 import imp
+import subprocess
 from lib import git
 from lib.command import Command
-from lib.tools import mkdir
+from lib.tools import mkdir, resolveEditor
 
 
 class DoctorCommand(Command):
@@ -213,8 +214,9 @@ class DoctorCommand(Command):
 
         print 'Checking dependencies'
 
+        # Check binaries.
         hasErrors = False
-        for k in ['git', 'php', 'java', 'recess', 'lessc', 'editor']:
+        for k in ['git', 'php', 'java', 'recess', 'lessc']:
             path = self.C.get(k)
             if not path or not os.path.isfile(path):
                 print '  The path to \'%s\' is invalid: %s' % (k, path)
@@ -222,6 +224,7 @@ class DoctorCommand(Command):
         if hasErrors and args.fix:
             print '    Please manually fix the paths in your config file'
 
+        # Check PIP modules.
         with open(os.path.join(os.path.dirname(__file__), '..', '..', 'requirements.txt'), 'r') as f:
             hasErrors = False
             for line in f:
@@ -235,6 +238,21 @@ class DoctorCommand(Command):
                     hasErrors = True
             if hasErrors and args.fix:
                 print '    Try running \'pip -r requirements.txt\' from MDK\'s installation directory'
+
+        # Checking editor.
+        editor = resolveEditor()
+        if editor:
+            try:
+                # Check if it is callable.
+                proc = subprocess.Popen(editor, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                proc.kill()
+            except OSError:
+                editor = None
+
+        if not editor:
+            print '  Could not resolve the path to your editor'
+            if args.fix:
+                print '    Set $EDITOR, /usr/bin/editor, or use: mdk config set editor [path]'
 
     def directories(self, args):
         """Check that the directories are valid"""
