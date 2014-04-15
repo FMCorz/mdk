@@ -147,7 +147,6 @@ class Recess(Compiler):
         if self._compress:
             cmd.append('--compress')
 
-
         (code, out, err) = process(cmd, self._cwd)
         if code != 0 or len(out) == 0:
             raise CssCompileFailed('Error during compile')
@@ -178,7 +177,7 @@ class Lessc(Compiler):
         if self._compress:
             cmd.append('--compress')
 
-        """Append the source and destination"""
+        # Append the source and destination.
         cmd.append(sourcePath)
         cmd.append(os.path.relpath(self._dest, self._cwd))
 
