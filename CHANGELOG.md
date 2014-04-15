@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v1.1
+----
+
+* Sub processes are killed when using CTRL + C
+* Default alias `theme` to set a theme - Andrew Nicols
+* `config` has a new sub command `edit`
+
 v1.0
 ----
 
@@ -21,6 +28,7 @@ v1.0
 * `behat` can run tests by name - Andrew Nicols
 * `remove` accepts `-f` as an argument - Andrew Nicols
 * The script `less` is deprecated
+* `backport` command resolves conflicts with CSS from LESS in theme_bootstrapbase
 
 v0.5
 ----
