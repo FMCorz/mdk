@@ -25,6 +25,7 @@ http://github.com/FMCorz/mdk
 import re
 import os
 import logging
+from datetime import datetime
 from lib import tools, jira, fetch
 from lib.command import Command
 from lib.tools import question
@@ -191,6 +192,6 @@ class PullCommand(Command):
                 logging.warning('Error while parsing the list of patches, try a little harder.')
                 continue
             break
-        
+
         return toApply
 
