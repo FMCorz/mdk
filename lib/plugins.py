@@ -42,6 +42,7 @@ class PluginManager(object):
     _pluginTypesPath = {
         'mod': '/mod',
         'auth': '/auth',
+        'availability': '/availability/condition',
         'calendartype': '/calendar/type',
         'enrol': '/enrol',
         'message': '/message/output',
@@ -70,7 +71,7 @@ class PluginManager(object):
         'theme': '/theme',
         'local': '/local'
     }
-    _supportSubtypes = ['mod', 'editor', 'local']
+    _supportSubtypes = ['mod', 'editor', 'local', 'tool']
 
     @classmethod
     def extract(cls, f, plugin, M, override=False):
