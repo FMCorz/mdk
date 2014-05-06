@@ -59,7 +59,7 @@ class Fetch(object):
         git = self.M.git()
         logging.info('Fetching %s from %s' % (self.ref, self.repo))
         result = git.fetch(remote=self.repo, ref=self.ref)
-        if result[0] != 0:
+        if not result:
             raise FetchException('Error while fetching %s from %s' % (self.ref, self.repo))
 
     def _merge(self):

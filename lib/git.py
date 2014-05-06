@@ -144,7 +144,8 @@ class Git(object):
 
     def fetch(self, remote='', ref=''):
         cmd = 'fetch %s %s' % (remote, ref)
-        return self.execute(cmd)
+        result = self.execute(cmd)
+        return result[0] == 0
 
     def getConfig(self, name):
         cmd = 'config --get %s' % name
