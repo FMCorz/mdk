@@ -195,6 +195,7 @@ class PluginManager(object):
         """
 
         subtypes = {}
+        path = os.path.realpath(os.path.abspath(path))
         if M:
             path = '/' + path.replace(M.get('path'), '').strip('/')
             admindir = M.get('admin', 'admin')

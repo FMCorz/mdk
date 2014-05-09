@@ -171,6 +171,8 @@
     "recess": "/usr/local/bin/recess",
     // Path to lessc
     "lessc": "/usr/local/bin/lessc",
+    // Path to shifter
+    "shifter": "/usr/bin/shifter",
     // Path to your favourite editor. Set to null to guess it from the System environment.
     "editor": null,
 

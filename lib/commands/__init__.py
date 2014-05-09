@@ -41,6 +41,7 @@ commandsList = [
     'info',
     'init',
     'install',
+    'js',
     'phpunit',
     'plugin',
     'pull',
