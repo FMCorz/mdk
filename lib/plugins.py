@@ -134,6 +134,7 @@ class PluginManager(object):
     @classmethod
     def getSubtypes(cls, M):
         """Get the sub plugins declared in an instance"""
+        regex = re.compile(r'\s*(?P<brackets>[\'"])(.*?)(?P=brackets)\s*=>\s*(?P=brackets)(.*?)(?P=brackets)')
         subtypes = {}
         for t in cls._supportSubtypes:
             path = cls.getTypeDirectory(t, M)
@@ -144,8 +145,6 @@ class PluginManager(object):
                 subpluginsfile = os.path.join(path, d, 'db', 'subplugins.php')
                 if not os.path.isfile(subpluginsfile):
                     continue
-
-                regex = re.compile(r'^\s*(?P<brackets>[\'"])(.*)(?P=brackets)\s*=>\s*(?P=brackets)(.*)(?P=brackets)')
 
                 searchOpen = False
                 f = open(subpluginsfile, 'r')
@@ -158,6 +157,11 @@ class PluginManager(object):
                         if search:
                             for match in search:
                                 subtypes[match[1]] = match[2].replace('admin/', '{admin}/')
+
+                    # Exit when we find a semi-colon.
+                    if searchOpen and ';' in line:
+                        break
+
         return subtypes
 
     @classmethod
