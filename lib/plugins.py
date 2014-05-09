@@ -211,7 +211,7 @@ class PluginManager(object):
                         search = regex.findall(line)
                         if search:
                             for match in search:
-                                subtypes[match[1]] = match[2].replace('admin/', '{admin}/')
+                                subtypes[match[1]] = '/' + match[2].replace('admin/', '{admin}/').lstrip('/')
 
                     # Exit when we find a semi-colon.
                     if searchOpen and ';' in line:
