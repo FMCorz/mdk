@@ -187,6 +187,55 @@ class PluginManager(object):
         return path
 
     @classmethod
+    def getSubsystemOrPluginFromPath(cls, path, M=None):
+        """Get a subsystem from a path. Path should be relative to dirroot or M should be passed.
+
+        This returns a tuple containing the name of the subsystem or plugin type, and the plugin name
+        if we could resolve one.
+        """
+
+        subtypes = {}
+        if M:
+            path = '/' + path.replace(M.get('path'), '').strip('/')
+            admindir = M.get('admin', 'admin')
+            if path.startswith('/' + admindir):
+                path = re.sub(r'^/%s' % admindir, '/{admin}', path)
+            subtypes = cls.getSubtypes(M)
+        path = '/' + path.lstrip('/')
+
+        pluginOrSubsystem = None
+        pluginName = None
+        candidate = path
+        head = True
+        tail = None
+        while head and head != '/' and not pluginOrSubsystem:
+            # Check subsystems.
+            for k, v in cls._subSystems.iteritems():
+                if v == candidate:
+                    pluginOrSubsystem = k
+                    break
+
+            # Check plugin types.
+            if not pluginOrSubsystem:
+                for k, v in cls._pluginTypesPath.iteritems():
+                    if v == candidate:
+                        pluginOrSubsystem = k
+                        pluginName = tail
+                        break
+
+            # Check sub plugin types.
+            if not pluginOrSubsystem:
+                for k, v in subtypes.iteritems():
+                    if v == candidate:
+                        pluginOrSubsystem = k
+                        pluginName = tail
+                        break
+            (head, tail) = os.path.split(candidate)
+            candidate = head
+
+        return (pluginOrSubsystem, pluginName)
+
+    @classmethod
     def getSubtypes(cls, M):
         """Get the sub plugins declared in an instance"""
         regex = re.compile(r'\s*(?P<brackets>[\'"])(.*?)(?P=brackets)\s*=>\s*(?P=brackets)(.*?)(?P=brackets)')
