@@ -39,6 +39,43 @@ C = Conf()
 
 class PluginManager(object):
 
+    _subSystems = {
+        'admin': '/{admin}',
+        'auth': '/auth',
+        'availability': '/availability',
+        'backup': '/backup/util/ui',
+        'badges': '/badges',
+        'block': '/blocks',
+        'blog': '/blog',
+        'cache': '/cache',
+        'calendar': '/calendar',
+        'cohort': '/cohort',
+        'course': '/course',
+        'editor': '/lib/editor',
+        'enrol': '/enrol',
+        'files': '/files',
+        'form': '/lib/form',
+        'grades': '/grade',
+        'grading': '/grade/grading',
+        'group': '/group',
+        'message': '/message',
+        'mnet': '/mnet',
+        'my': '/my',
+        'notes': '/notes',
+        'plagiarism': '/plagiarism',
+        'portfolio': '/portfolio',
+        'publish': '/course/publish',
+        'question': '/question',
+        'rating': '/rating',
+        'register': '/{admin}/registration',
+        'repository': '/repository',
+        'rss': '/rss',
+        'role': '/{admin}/roles',
+        'tag': '/tag',
+        'user': '/user',
+        'webservice': '/webservice'
+    }
+
     _pluginTypesPath = {
         'mod': '/mod',
         'auth': '/auth',
@@ -130,6 +167,24 @@ class PluginManager(object):
                 t = 'core'
 
         return (t, name)
+
+    @classmethod
+    def getSubsystems(cls):
+        """Return the list of subsytems and their relative directory"""
+        return cls._subSystems
+
+    @classmethod
+    def getSubsystemDirectory(cls, subsystem, M=None):
+        """Return the subsystem directory, absolute if M is passed"""
+        path = cls._subSystems.get(subsystem)
+        if not path:
+            raise ValueError('Unknown subsystem')
+
+        if M:
+            path = path.replace('{admin}', M.get('admin', 'admin'))
+            path = os.path.join(M.get('path'), path.strip('/'))
+
+        return path
 
     @classmethod
     def getSubtypes(cls, M):
