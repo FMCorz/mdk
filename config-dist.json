@@ -157,6 +157,8 @@
     "dataDir": "moodledata",
     // The name of the www directory
     "wwwDir": "moodle",
+    // The name of the js documentation directory
+    "jsDocDir": "yuidocs",
 
     // The default engine to use when not specified
     "defaultEngine": "mysqli",
@@ -173,6 +175,8 @@
     "lessc": "/usr/local/bin/lessc",
     // Path to shifter
     "shifter": "/usr/bin/shifter",
+    // Path to yuidoc
+    "yuidoc": "/usr/bin/yuidoc",
     // Path to your favourite editor. Set to null to guess it from the System environment.
     "editor": null,
 

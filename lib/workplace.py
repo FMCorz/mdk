@@ -36,13 +36,15 @@ C = Conf()
 
 class Workplace(object):
 
-    def __init__(self, path=None, wwwDir=None, dataDir=None):
+    def __init__(self, path=None, wwwDir=None, dataDir=None, jsDocDir=None):
         if path == None:
             path = C.get('dirs.storage')
         if wwwDir == None:
             wwwDir = C.get('wwwDir')
         if dataDir == None:
             dataDir = C.get('dataDir')
+        if jsDocDir == None:
+            jsDocDir = C.get('jsDocDir')
 
         # Directory paths
         self.path = os.path.abspath(os.path.realpath(os.path.expanduser(path)))
@@ -55,6 +57,7 @@ class Workplace(object):
         # Directory names
         self.wwwDir = wwwDir
         self.dataDir = dataDir
+        self.jsDocDir = jsDocDir
 
     def checkCachedClones(self, stable=True, integration=True):
         """Clone the official repository in a local cache"""
@@ -97,6 +100,7 @@ class Workplace(object):
         installDir = os.path.join(self.path, name)
         wwwDir = os.path.join(installDir, self.wwwDir)
         dataDir = os.path.join(installDir, self.dataDir)
+        jsDocDir = os.path.join(installDir, self.jsDocDir)
         linkDir = os.path.join(self.www, name)
 
         if self.isMoodle(name):
@@ -109,6 +113,7 @@ class Workplace(object):
         mkdir(installDir, 0755)
         mkdir(wwwDir, 0755)
         mkdir(dataDir, 0777)
+        mkdir(jsDocDir, 0777)
 
         repository = self.getCachedRemote(integration)
 
@@ -236,6 +241,8 @@ class Workplace(object):
             return os.path.join(base, self.wwwDir)
         elif mode == 'data':
             return os.path.join(base, self.dataDir)
+        elif mode == 'jsdocdir':
+            return os.path.join(base, self.jsDocDir)
         else:
             return base
 
