@@ -199,7 +199,7 @@
     "useCacheAsUpstreamRemote": true,
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 27,
+    "masterBranch": 28,
 
     // Aliases for MDK commands.
     // An alias starting with a ! will be executed through the command line. Those also
