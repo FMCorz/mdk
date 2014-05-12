@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.2
+----
+
+* New `js` command
+
 v1.1
 ----
 
