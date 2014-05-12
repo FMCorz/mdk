@@ -210,12 +210,6 @@ class PluginManager(object):
         head = True
         tail = None
         while head and head != '/' and not pluginOrSubsystem:
-            # Check subsystems.
-            for k, v in cls._subSystems.iteritems():
-                if v == candidate:
-                    pluginOrSubsystem = k
-                    break
-
             # Check plugin types.
             if not pluginOrSubsystem:
                 for k, v in cls._pluginTypesPath.iteritems():
@@ -231,6 +225,13 @@ class PluginManager(object):
                         pluginOrSubsystem = k
                         pluginName = tail
                         break
+
+            # Check subsystems.
+            for k, v in cls._subSystems.iteritems():
+                if v == candidate:
+                    pluginOrSubsystem = k
+                    break
+
             (head, tail) = os.path.split(candidate)
             candidate = head
 
