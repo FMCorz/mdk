@@ -238,6 +238,18 @@ Run the command line installation script with all parameters set on an existing 
     mdk install --engine mysqli stable_master
 
 
+js
+--
+
+JS related functions.
+
+**Example**
+
+Compile the JS modules in Atto
+
+    mdk js shift --plugin editor_atto
+
+
 phpunit
 -------
 
