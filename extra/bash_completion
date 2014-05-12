@@ -49,7 +49,7 @@ function _mdk() {
     if [[ "${COMP_CWORD}" == 1 ]]; then
         # List the commands and aliases.
         # Ignoring these commands on purpose: init
-        OPTS="alias backport backup behat config create css doctor fix info install phpunit plugin purge pull push rebase remove run tracker uninstall update upgrade"
+        OPTS="alias backport backup behat config create css doctor fix info install js phpunit plugin purge pull push rebase remove run tracker uninstall update upgrade"
         OPTS="$OPTS $($BIN alias list 2> /dev/null | cut -d ':' -f 1)"
     else
         # List of options according to the command.
@@ -139,6 +139,19 @@ function _mdk() {
                             OPTS="$OPTS $(_list_instances)"
                         fi
                     ;;
+                esac
+                ;;
+            js)
+                OPTS="--plugin --module"
+                case "$PREV" in
+                    js)
+                        OPTS="shift"
+                        ;;
+                    *)
+                        if [[ "$CUR" != -* ]]; then
+                            OPTS="$OPTS $(_list_instances)"
+                        fi
+                        ;;
                 esac
                 ;;
             plugin)
