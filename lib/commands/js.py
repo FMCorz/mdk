@@ -24,6 +24,9 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
+import time
+import watchdog.events
+import watchdog.observers
 from lib.command import Command
 from lib import js, plugins
 
@@ -61,14 +64,14 @@ class JsCommand(Command):
                                         'help': 'the name of the module in the plugin or subsystem. If omitted all the modules will be shifted, except we are in a module.'
                                     }
                                 ),
-                                # (
-                                #     ['-w', '--watch'],
-                                #     {
-                                #         'action': 'store_true',
-                                #         'dest': 'watch',
-                                #         'help': 'watch for changes to re-shift'
-                                #     }
-                                # ),
+                                (
+                                    ['-w', '--watch'],
+                                    {
+                                        'action': 'store_true',
+                                        'dest': 'watch',
+                                        'help': 'watch for changes to re-shift'
+                                    }
+                                ),
                                 (
                                     ['names'],
                                     {
@@ -102,6 +105,7 @@ class JsCommand(Command):
         mpath = Mlist[0].get('path')
         relpath = cwd.replace(mpath, '').strip('/')
 
+        # TODO Put that logic somewhere else because it is going to be re-used, I'm sure.
         if not args.plugin:
             (subsystemOrPlugin, pluginName) = plugins.PluginManager.getSubsystemOrPluginFromPath(cwd, Mlist[0])
             if subsystemOrPlugin:
@@ -124,10 +128,56 @@ class JsCommand(Command):
                 args.module = module
                 logging.info("I guessed the JS module to work on as '%s'" % (args.module))
 
-
         for M in Mlist:
             if len(Mlist) > 1:
                 logging.info('Let\'s shift everything you wanted on \'%s\'' % (M.get('identifier')))
 
             processor = js.Js(M)
             processor.shift(subsystemOrPlugin=args.plugin, module=args.module)
+
+        if args.watch:
+            observer = watchdog.observers.Observer()
+
+            for M in Mlist:
+                processor = js.Js(M)
+                processorArgs = {'subsystemOrPlugin': args.plugin, 'module': args.module}
+                handler = JsShiftWatcher(M, processor, processorArgs)
+                observer.schedule(handler, processor.getYUISrcPath(**processorArgs), recursive=True)
+                logging.info('Watchdog set up on %s, waiting for changes...' % (M.get('identifier')))
+
+            observer.start()
+
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                observer.stop()
+            finally:
+                observer.join()
+
+
+class JsShiftWatcher(watchdog.events.FileSystemEventHandler):
+
+    _processor = None
+    _args = None
+    _ext = ['.js', '.json']
+    _M = None
+
+    def __init__(self, M, processor, args):
+        super(self.__class__, self).__init__()
+        self._M = M
+        self._processor = processor
+        self._args = args
+
+    def on_modified(self, event):
+        self.process(event)
+
+    def process(self, event):
+        if event.is_directory:
+            return
+        elif not os.path.splitext(event.src_path)[1] in self._ext:
+            return
+
+        logging.info('[%s] Changes detected!' % (self._M.get('identifier')))
+        # How about handling exceptions here?
+        self._processor.shift(**self._args)
