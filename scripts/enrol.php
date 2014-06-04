@@ -49,9 +49,10 @@ function mdk_get_role($username) {
 
 $sql = "SELECT id, username
           FROM {user}
-         WHERE username LIKE 's%'
+         WHERE (username LIKE 's%'
             OR username LIKE 't%'
-            OR username LIKE 'm%'";
+            OR username LIKE 'm%')
+           AND deleted = 0";
 $users = $DB->get_recordset_sql($sql, array());
 $courses = $DB->get_records_select('course', 'id > ?', array(1), '', 'id, startdate');
 $plugin = new enrol_manual_plugin();
