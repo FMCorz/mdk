@@ -135,15 +135,16 @@ def parseBranch(branch):
     result = pattern.search(branch)
     if not result:
         return False
-    result = {
+
+    parsed = {
         'issue': result.group(pattern.groupindex['issue']),
         'version': result.group(pattern.groupindex['version'])
     }
     try:
-        result['suffix'] = result.group(pattern.groupindex['suffix'])
+        parsed['suffix'] = result.group(pattern.groupindex['suffix'])
     except:
-        result['suffix'] = None
-    return result
+        parsed['suffix'] = None
+    return parsed
 
 
 def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
