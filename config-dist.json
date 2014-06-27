@@ -33,6 +33,8 @@
 
     // Database access
     "db": {
+        // Name prefix for all databases created by mdk. Affects the database name only, not the tables.
+        "namePrefix": "",
         "mysqli": {
             "host": "localhost",
             "port": "3306",

@@ -183,6 +183,10 @@ class CreateCommand(Command):
 
             # Checking database
             dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()[:28]
+            prefixDbname = self.C.get('db.namePrefix')
+            if prefixDbname == None:
+                prefixDbname = '';
+            dbname = prefixDbname + dbname
             db = DB(engine, self.C.get('db.%s' % engine))
             dropDb = False
             if db.dbexists(dbname):
