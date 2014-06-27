@@ -430,6 +430,16 @@ class Moodle(object):
         except InstallException:
             logging.warning('Could not append $CFG->sessioncookiepath to config.php')
 
+        # Add forced $CFG to the config.php if some are globally defined
+        forceCfg = C.get('forceCfg')
+        if isinstance(forceCfg, dict):
+            logging.info('Setting up forced $CFG variables in the config.php ...')
+            for cfgKey, cfgValue in forceCfg.iteritems():
+                try:
+                    self.addConfig(cfgKey, cfgValue)
+                except InstallException:
+                    logging.warning('Could not append $CFG->%s to config.php' % cfgKey)
+
         self.reload()
 
     def isInstalled(self):
