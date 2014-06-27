@@ -419,7 +419,10 @@ class Moodle(object):
         configFile = os.path.join(self.path, 'config.php')
         os.chmod(configFile, 0666)
         try:
-            self.addConfig('sessioncookiepath', '/%s/' % self.identifier)
+            if C.get('path') != '' and C.get('path') != None:
+                self.addConfig('sessioncookiepath', '/%s/%s/' % (C.get('path'), self.identifier))
+            else:
+                self.addConfig('sessioncookiepath', '/%s/' % self.identifier)
         except InstallException:
             logging.warning('Could not append $CFG->sessioncookiepath to config.php')
 
