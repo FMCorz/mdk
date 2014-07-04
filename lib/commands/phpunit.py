@@ -64,6 +64,14 @@ class PhpunitCommand(Command):
             }
         ),
         (
+            ['--filter'],
+            {
+                'default': None,
+                'help': 'Filter to pass through to phpunit. This sets --run.',
+                'metavar': 'filter'
+            }
+        ),
+        (
             ['name'],
             {
                 'default': None,
@@ -116,7 +124,7 @@ class PhpunitCommand(Command):
             M.initPHPUnit(force=args.force)
             logging.info('PHPUnit ready!')
 
-            if args.unittest or args.testcase:
+            if args.unittest or args.testcase or args.filter:
                 args.run = True
 
             if args.run:
@@ -129,6 +137,8 @@ class PhpunitCommand(Command):
                     cmd.append(args.testcase)
                 elif args.unittest:
                     cmd.append(args.unittest)
+                elif args.filter:
+                    cmd.append('--filter=%s' % args.filter)
                 cmd = ' '.join(cmd)
                 process(cmd, M.get('path'), None, None)
         except Exception as e:
