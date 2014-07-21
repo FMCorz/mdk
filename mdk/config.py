@@ -227,8 +227,8 @@ class Conf(Config):
             userfile = os.path.expanduser('~/.moodle-sdk/config.json')
         self.userFile = userfile
         files = [
-            os.path.join(os.path.dirname(__file__), '..', 'config-dist.json'),
-            os.path.join(os.path.dirname(__file__), '..', 'config.json'),
+            os.path.join(os.path.dirname(__file__), 'config-dist.json'),
+            os.path.join(os.path.dirname(__file__), 'config.json'),
             '/etc/moodle-sdk/config.json',
             self.userFile,
         ]
