@@ -79,6 +79,10 @@ $settings = $settingspage->settings;
 $default = $settings->cachejs->get_defaultsetting();
 mdk_set_config('cachejs', $default);
 
+// Re-enable core_string_manager application caching
+$settingspage = $adminroot->locate('langsettings', true);
+mdk_set_config('langstringcache', $settingspage->settings->langstringcache->get_defaultsetting());
+
 // Do not use YUI combo loading.
 $default = $settings->yuicomboloading->get_defaultsetting();
 mdk_set_config('yuicomboloading', $default);

@@ -43,6 +43,9 @@ mdk_set_config('themedesignermode', 1);
 // Do not cache JavaScript.
 mdk_set_config('cachejs', 0);
 
+// Prevent core_string_manager application caching
+mdk_set_config('langstringcache', 0);
+
 // Do not use YUI combo loading.
 mdk_set_config('yuicomboloading', 0);
 
