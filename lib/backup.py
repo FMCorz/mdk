@@ -47,7 +47,7 @@ class BackupManager(object):
     def create(self, M):
         """Creates a new backup of M"""
 
-        if M.isInstalled() and M.get('dbtype') != 'mysqli':
+        if M.isInstalled() and M.get('dbtype') not in ('mysqli', 'mariadb'):
             raise BackupDBEngineNotSupported('Cannot backup database engine %s' % M.get('dbtype'))
 
         name = M.get('identifier')

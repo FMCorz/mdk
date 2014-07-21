@@ -53,7 +53,7 @@ class DB(object):
         self.engine = engine
         self.options = options
 
-        if engine == 'mysqli':
+        if engine in ('mysqli', 'mariadb'):
 
             if 'fuckfred' in options['passwd']:
                 raise Exception('Could not establish connexion with MySQL, bad language used!')
@@ -102,7 +102,7 @@ class DB(object):
 
         columns = []
 
-        if self.engine == 'mysqli':
+        if self.engine in ('mysqli', 'mariadb'):
             logging.debug('DESCRIBE %s' % table)
             self.cur.execute('DESCRIBE %s' % table)
             for column in self.cur.fetchall():
@@ -119,7 +119,7 @@ class DB(object):
         except:
             pass
 
-        if self.engine == 'mysqli':
+        if self.engine in ('mysqli', 'mariadb'):
             sql = 'CREATE DATABASE `%s` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci' % db
         elif self.engine == 'pgsql':
             sql = 'CREATE DATABASE "%s" WITH ENCODING \'UNICODE\'' % db
@@ -135,7 +135,7 @@ class DB(object):
     def dbexists(self, db):
 
         count = None
-        if self.engine == 'mysqli':
+        if self.engine in ('mysqli', 'mariadb'):
             sql = "SELECT COUNT('*') FROM information_schema.SCHEMATA WHERE SCHEMA_NAME LIKE '%s'" % db
 
         elif self.engine == 'pgsql':
@@ -156,7 +156,7 @@ class DB(object):
         except:
             pass
 
-        if self.engine == 'mysqli':
+        if self.engine in ('mysqli', 'mariadb'):
             sql = 'DROP DATABASE `%s`' % db
         elif self.engine == 'pgsql':
             sql = 'DROP DATABASE "%s"' % db
@@ -172,7 +172,7 @@ class DB(object):
     def dump(self, fd, prefix=''):
         """Dump a database to the file descriptor passed"""
 
-        if self.engine != 'mysqli':
+        if self.engine not in ('mysqli', 'mariadb'):
             raise Exception('Function dump not supported by %s' % self.engine)
         if not type(fd) == file:
             raise Exception('Passed parameter is not a file object')
@@ -209,7 +209,7 @@ class DB(object):
 
     def selectdb(self, db):
 
-        if self.engine == 'mysqli':
+        if self.engine in ('mysqli', 'mariadb'):
             self.cur.execute('USE %s' % db)
 
         elif self.engine == 'pgsql':
@@ -243,7 +243,7 @@ class DB(object):
 
         tables = []
 
-        if self.engine == 'mysqli':
+        if self.engine in ('mysqli', 'mariadb'):
             self.cur.execute('SHOW TABLES')
             for row in self.cur.fetchall():
                 tables.append(row[0])

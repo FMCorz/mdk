@@ -99,7 +99,7 @@ function _mdk() {
             create)
                 OPTS="--identifier --integration --install --run --version --suffix --engine"
                 if [[ "$PREV" == "--engine" ]]; then
-                    OPTS='mysqli pgsql'
+                    OPTS='mariadb mysqli pgsql'
                 elif [[ "$PREV" == "--run" ]]; then
                     OPTS="$(_list_scripts)"
                 fi
@@ -129,7 +129,7 @@ function _mdk() {
                 OPTS="--engine --fullname --run"
                 case "$PREV" in
                     -e|--engine)
-                        OPTS="mysqli pgsql"
+                        OPTS="mariadb mysqli pgsql"
                         ;;
                     -r|--run)
                         OPTS="$(_list_scripts)"

@@ -33,6 +33,12 @@
 
     // Database access
     "db": {
+        "mariadb": {
+            "host": "localhost",
+            "port": "3306",
+            "user": "root",
+            "passwd": "root"
+        },
         "mysqli": {
             "host": "localhost",
             "port": "3306",
@@ -67,6 +73,7 @@
         "integration": "Integration",
         "master": "Master",
         "stable": "Stable",
+        "mariadb": "MariaDB",
         "mysqli": "MySQL",
         "pgsql": "PostgreSQL"
     },

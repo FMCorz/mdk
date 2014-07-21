@@ -42,7 +42,7 @@ class InstallCommand(Command):
                 ['-e', '--engine'],
                 {
                 'action': 'store',
-                  'choices': ['mysqli', 'pgsql'],
+                  'choices': ['mariadb', 'mysqli', 'pgsql'],
                   'default': self.C.get('defaultEngine'),
                   'help': 'database engine to use',
                   'metavar': 'engine'
