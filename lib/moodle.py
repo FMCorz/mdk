@@ -383,11 +383,11 @@ class Moodle(object):
         if dataDir == None or not os.path.isdir(dataDir):
             raise InstallException('Cannot install instance without knowing where the data directory is')
         if dbname == None:
-            dbname = re.sub(r'[^a-zA-Z0-9]', '', self.identifier).lower()[:28]
+            dbname = re.sub(r'[^a-zA-Z0-9]', '', self.identifier).lower()
             prefixDbname = C.get('db.namePrefix')
-            if prefixDbname == None:
-                prefixDbname = '';
-            dbname = prefixDbname + dbname
+            if prefixDbname:
+                dbname = prefixDbname + dbname
+            dbname = dbname[:28]
         if engine == None:
             engine = C.get('defaultEngine')
         if fullname == None:

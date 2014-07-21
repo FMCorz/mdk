@@ -182,11 +182,11 @@ class CreateCommand(Command):
         if args.install:
 
             # Checking database
-            dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()[:28]
+            dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()
             prefixDbname = self.C.get('db.namePrefix')
-            if prefixDbname == None:
-                prefixDbname = '';
-            dbname = prefixDbname + dbname
+            if prefixDbname:
+                dbname = prefixDbname + dbname
+            dbname = dbname[:28]
             db = DB(engine, self.C.get('db.%s' % engine))
             dropDb = False
             if db.dbexists(dbname):
