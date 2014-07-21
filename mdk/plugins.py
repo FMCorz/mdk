@@ -31,8 +31,8 @@ import zipfile
 import re
 import shutil
 from tempfile import gettempdir
-from config import Conf
-import tools
+from .config import Conf
+from . import tools
 
 C = Conf()
 

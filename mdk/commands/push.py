@@ -23,10 +23,9 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-import re
-from lib import tools, jira
-from lib.command import Command
-from lib.tools import getMDLFromCommitMessage
+from .. import tools, jira
+from ..command import Command
+from ..tools import getMDLFromCommitMessage
 
 
 class PushCommand(Command):

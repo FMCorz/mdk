@@ -24,8 +24,8 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
-from tools import process
-from config import Conf
+from .tools import process
+from .config import Conf
 
 C = Conf()
 

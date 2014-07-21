@@ -24,8 +24,8 @@ http://github.com/FMCorz/mdk
 
 import sys
 import logging
-from lib.command import Command
-from lib.exceptions import UpgradeNotAllowed
+from ..command import Command
+from ..exceptions import UpgradeNotAllowed
 
 class UpgradeCommand(Command):
 

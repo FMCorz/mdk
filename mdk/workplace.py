@@ -25,11 +25,11 @@ http://github.com/FMCorz/mdk
 import os
 import shutil
 import logging
-from tools import mkdir, process, stableBranch
-from exceptions import CreateException
-from config import Conf
-import git
-import moodle
+from .tools import mkdir, process, stableBranch
+from .exceptions import CreateException
+from .config import Conf
+from . import git
+from . import moodle
 
 C = Conf()
 

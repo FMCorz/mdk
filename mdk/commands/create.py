@@ -25,10 +25,10 @@ http://github.com/FMCorz/mdk
 import re
 import logging
 
-from lib.db import DB
-from lib.command import Command
-from lib.tools import yesOrNo
-from lib.exceptions import CreateException, InstallException
+from ..db import DB
+from ..command import Command
+from ..tools import yesOrNo
+from ..exceptions import CreateException, InstallException
 
 
 class CreateCommand(Command):

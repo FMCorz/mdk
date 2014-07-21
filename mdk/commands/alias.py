@@ -23,7 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import argparse
-from lib.command import Command
+from ..command import Command
 
 
 class AliasCommand(Command):

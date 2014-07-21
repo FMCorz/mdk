@@ -26,9 +26,9 @@ import os
 import shutil
 import stat
 import logging
-from tools import process
-from config import Conf
-from exceptions import ScriptNotFound, ConflictInScriptName, UnsupportedScript
+from .tools import process
+from .config import Conf
+from .exceptions import ScriptNotFound, ConflictInScriptName, UnsupportedScript
 
 C = Conf()
 

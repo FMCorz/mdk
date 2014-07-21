@@ -28,11 +28,11 @@ import time
 import logging
 from distutils.dir_util import copy_tree
 
-from tools import chmodRecursive
-from db import DB
-from config import Conf
-from workplace import Workplace
-from exceptions import *
+from .tools import chmodRecursive
+from .db import DB
+from .config import Conf
+from .workplace import Workplace
+from .exceptions import *
 
 C = Conf()
 jason = 'info.json'

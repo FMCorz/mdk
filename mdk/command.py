@@ -73,8 +73,8 @@ class Command(object):
     @property
     def Wp(self):
         if not self.__Wp:
-            import workplace
-            self.__Wp = workplace.Workplace()
+            from .workplace import Workplace
+            self.__Wp = Workplace()
         return self.__Wp
 
 

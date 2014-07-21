@@ -23,9 +23,9 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-from lib import tools, css, jira
-from lib.command import Command
-from lib.tools import yesOrNo
+from .. import tools, css, jira
+from ..command import Command
+from ..tools import yesOrNo
 
 
 class BackportCommand(Command):

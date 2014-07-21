@@ -24,7 +24,7 @@ http://github.com/FMCorz/mdk
 
 
 import logging
-from lib.command import Command
+from ..command import Command
 
 
 class FixCommand(Command):

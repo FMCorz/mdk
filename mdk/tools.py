@@ -33,7 +33,7 @@ import getpass
 import logging
 import hashlib
 import tempfile
-from lib.config import Conf
+from .config import Conf
 
 C = Conf()
 

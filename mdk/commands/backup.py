@@ -25,9 +25,9 @@ http://github.com/FMCorz/mdk
 import time
 import logging
 from distutils.errors import DistutilsFileError
-from lib.command import Command
-from lib import backup
-from lib.exceptions import *
+from .. import backup
+from ..command import Command
+from ..exceptions import *
 
 
 class BackupCommand(Command):

@@ -23,8 +23,8 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-from lib.command import Command
-from lib.scripts import Scripts
+from ..command import Command
+from ..scripts import Scripts
 
 
 class RunCommand(Command):

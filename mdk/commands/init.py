@@ -29,8 +29,8 @@ import pwd
 import subprocess
 import logging
 
-from lib.command import Command
-from lib.tools import question, get_current_user, mkdir
+from ..command import Command
+from ..tools import question, get_current_user, mkdir
 
 
 class InitCommand(Command):
@@ -112,7 +112,7 @@ class InitCommand(Command):
             pass
 
         # Loading the configuration.
-        from lib.config import Conf as Config
+        from ..config import Conf as Config
         C = Config(userfile=userconfigfile)
 
         # Asks the user what needs to be asked.

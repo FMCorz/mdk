@@ -24,9 +24,9 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
-from tools import process
-from config import Conf
-from plugins import PluginManager
+from .tools import process
+from .config import Conf
+from .plugins import PluginManager
 
 C = Conf()
 

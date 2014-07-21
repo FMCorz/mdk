@@ -28,13 +28,13 @@ import logging
 import shutil
 from tempfile import gettempdir
 
-from tools import getMDLFromCommitMessage, mkdir, process, parseBranch
-from db import DB
-from config import Conf
-from git import Git, GitException
-from exceptions import InstallException, UpgradeNotAllowed
-from jira import Jira, JiraException
-from scripts import Scripts
+from .tools import getMDLFromCommitMessage, mkdir, process, parseBranch
+from .db import DB
+from .config import Conf
+from .git import Git, GitException
+from .exceptions import InstallException, UpgradeNotAllowed
+from .jira import Jira, JiraException
+from .scripts import Scripts
 
 C = Conf()
 

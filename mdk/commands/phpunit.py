@@ -26,8 +26,8 @@ import logging
 import os
 import gzip
 import urllib
-from lib.command import Command
-from lib.tools import process
+from ..command import Command
+from ..tools import process
 
 
 class PhpunitCommand(Command):

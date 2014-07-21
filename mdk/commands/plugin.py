@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-from lib.plugins import *
-from lib.command import Command
+from ..plugins import *
+from ..command import Command
 
 
 class PluginCommand(Command):

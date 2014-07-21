@@ -26,9 +26,9 @@ import re
 import os
 import logging
 from datetime import datetime
-from lib import tools, jira, fetch
-from lib.command import Command
-from lib.tools import question
+from .. import tools, jira, fetch
+from ..command import Command
+from ..tools import question
 
 
 class PullCommand(Command):

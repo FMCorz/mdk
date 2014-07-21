@@ -27,8 +27,8 @@ import os
 import time
 import watchdog.events
 import watchdog.observers
-from lib.command import Command
-from lib import js, plugins
+from ..command import Command
+from .. import js, plugins
 
 
 class JsCommand(Command):

@@ -27,11 +27,11 @@ import argparse
 import os
 import re
 import logging
-from lib.command import CommandRunner
-from lib.commands import getCommand, commandsList
-from lib.config import Conf
-from lib.tools import process
-from version import __version__
+from .command import CommandRunner
+from .commands import getCommand, commandsList
+from .config import Conf
+from .tools import process
+from .version import __version__
 
 C = Conf()
 

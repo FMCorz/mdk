@@ -23,9 +23,9 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-from lib.command import Command
-from lib.tools import launchEditor, yesOrNo
-from lib.config import ConfigObject, ConfigFileCouldNotBeLoaded
+from ..command import Command
+from ..tools import launchEditor, yesOrNo
+from ..config import ConfigObject, ConfigFileCouldNotBeLoaded
 
 
 class ConfigCommand(Command):

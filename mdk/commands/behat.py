@@ -28,8 +28,8 @@ import re
 import logging
 import gzip
 from time import sleep
-from lib.command import Command
-from lib.tools import process, ProcessInThread, downloadProcessHook
+from ..command import Command
+from ..tools import process, ProcessInThread, downloadProcessHook
 
 
 class BehatCommand(Command):

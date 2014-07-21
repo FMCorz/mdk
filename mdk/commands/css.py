@@ -27,8 +27,8 @@ import os
 import time
 import watchdog.events
 import watchdog.observers
-from lib.command import Command
-from lib import css
+from .. import css
+from ..command import Command
 
 
 class CssCommand(Command):

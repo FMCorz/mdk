@@ -24,9 +24,9 @@ http://github.com/FMCorz/mdk
 
 import os
 import logging
-from lib import db
-from lib.command import Command
-from lib.tools import mkdir
+from .. import db
+from ..command import Command
+from ..tools import mkdir
 
 DB = db.DB
 

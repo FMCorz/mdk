@@ -26,9 +26,9 @@ import os
 import shutil
 import imp
 import subprocess
-from lib import git
-from lib.command import Command
-from lib.tools import mkdir, resolveEditor
+from .. import git
+from ..command import Command
+from ..tools import mkdir, resolveEditor
 
 
 class DoctorCommand(Command):

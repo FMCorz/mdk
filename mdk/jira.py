@@ -23,8 +23,8 @@ http://github.com/FMCorz/mdk
 """
 
 import json
-from tools import question
-from config import Conf
+from .tools import question
+from .config import Conf
 from urlparse import urlparse
 from datetime import datetime
 import re

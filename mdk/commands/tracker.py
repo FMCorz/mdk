@@ -25,9 +25,9 @@ http://github.com/FMCorz/mdk
 from datetime import datetime
 import textwrap
 import re
-from lib.command import Command
-from lib.jira import Jira
-from lib.tools import parseBranch
+from ..command import Command
+from ..jira import Jira
+from ..tools import parseBranch
 
 
 class TrackerCommand(Command):
