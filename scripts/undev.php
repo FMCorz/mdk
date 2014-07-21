@@ -71,6 +71,15 @@ $default = $settings->themedesignermode->get_defaultsetting();
 mdk_set_config('themedesignermode', $default);
 
 
+// Language settings.
+$settingspage = $adminroot->locate('langsettings', true);
+$settings = $settingspage->settings;
+
+// Restore core_string_manager application caching.
+$default = $settings->langstringcache->get_defaultsetting();
+mdk_set_config('langstringcache', $default);
+
+
 // Javascript settings.
 $settingspage = $adminroot->locate('ajax', true);
 $settings = $settingspage->settings;
@@ -78,10 +87,6 @@ $settings = $settingspage->settings;
 // Do not cache JavaScript.
 $default = $settings->cachejs->get_defaultsetting();
 mdk_set_config('cachejs', $default);
-
-// Re-enable core_string_manager application caching
-$settingspage = $adminroot->locate('langsettings', true);
-mdk_set_config('langstringcache', $settingspage->settings->langstringcache->get_defaultsetting());
 
 // Do not use YUI combo loading.
 $default = $settings->yuicomboloading->get_defaultsetting();
