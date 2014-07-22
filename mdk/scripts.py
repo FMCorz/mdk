@@ -26,6 +26,7 @@ import os
 import shutil
 import stat
 import logging
+from pkg_resources import resource_filename
 from .tools import process
 from .config import Conf
 from .exceptions import ScriptNotFound, ConflictInScriptName, UnsupportedScript
@@ -47,8 +48,17 @@ class Scripts(object):
             dirs = ['~/.moodle-sdk']
             if C.get('dirs.moodle') != None:
                 dirs.insert(0, C.get('dirs.moodle'))
+
             dirs.append('/etc/moodle-sdk')
-            dirs.append(os.path.join(os.path.dirname(__file__), '..'))
+
+            # Directory within the package.
+            # This can point anywhere when the package is installed, or to the folder containing the module when it is not.
+            packageDir = resource_filename('mdk', 'scripts')
+            dirs.append(os.path.split(packageDir)[0])
+
+            # Legacy: directory part of the root git repository, only if we can be sure that the parent directory is still MDK.
+            if os.path.isfile(os.path.join(os.path.dirname(__file__), '..', 'mdk.py')):
+                dirs.append(os.path.join(os.path.dirname(__file__), '..'))
 
             i = 0
             for d in dirs:
