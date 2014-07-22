@@ -1,7 +1,7 @@
 Custom scripts
 ==============
 
-This directory is meant to host scripts to be run on an instance. They are called using the command `run`.
+This directory is meant to host scripts to be run on an instance. They are called using the command ``run``.
 
 The format of the script is recognised using its extension.
 
