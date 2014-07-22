@@ -36,4 +36,4 @@ executable installed with the package is recommended.
 """
 
 import runpy
-runpy.run_module('mdk')
+a = runpy.run_module('mdk', None, '__main__')
