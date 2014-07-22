@@ -1,3 +1,4 @@
 keyring
+psycopg2>=2.4.5
 requests>=2.2.1
 watchdog

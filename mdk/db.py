@@ -30,12 +30,7 @@ except:
     # If it is not found, fallback on the one shipped with MDK.
     import pymysql as mysql
 
-try:
-    # Try to import the library python-psycopg2.
-    import psycopg2 as pgsql
-except:
-    # If it is not found, fallback on the one shipped with MDK.
-    from bpgsql import bpgsql as pgsql
+import psycopg2 as pgsql
 
 
 # TODO: Clean up the mess caused by the different engines and libraries.
@@ -68,23 +63,13 @@ class DB(object):
             self.cur = self.conn.cursor()
 
         elif engine == 'pgsql':
-            try:
-                # psycopg2.
-                self.conn = pgsql.connect(
-                    host=str(options['host']),
-                    port=int(options['port']),
-                    user=str(options['user']),
-                    password=str(options['passwd'])
-                )
-            except Exception:
-                # bpsql.
-                self.conn = pgsql.connect(
-                    host=str(options['host']),
-                    port=int(options['port']),
-                    username=str(options['user']),
-                    password=str(options['passwd']),
-                    dbname=''
-                )
+            # psycopg2.
+            self.conn = pgsql.connect(
+                host=str(options['host']),
+                port=int(options['port']),
+                user=str(options['user']),
+                password=str(options['passwd'])
+            )
             try:
                 self.cur = self.conn.cursor()
             except:
@@ -218,24 +203,15 @@ class DB(object):
             if self.conn:
                 self.conn.close()
 
-            try:
-                # psycopg2.
-                self.conn = pgsql.connect(
-                    host=str(self.options['host']),
-                    port=int(self.options['port']),
-                    user=str(self.options['user']),
-                    password=str(self.options['passwd']),
-                    database=str(db)
-                )
-            except Exception:
-                # bpsql.
-                self.conn = pgsql.connect(
-                    host=str(self.options['host']),
-                    port=int(self.options['port']),
-                    username=str(self.options['user']),
-                    password=str(self.options['passwd']),
-                    dbname=str(db)
-                )
+            # psycopg2.
+            self.conn = pgsql.connect(
+                host=str(self.options['host']),
+                port=int(self.options['port']),
+                user=str(self.options['user']),
+                password=str(self.options['passwd']),
+                database=str(db)
+            )
+
 
             self.cur = self.conn.cursor()
 
