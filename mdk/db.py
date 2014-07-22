@@ -23,13 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-try:
-    # Try to import the library python-mysqldb.
-    import MySQLdb as mysql
-except:
-    # If it is not found, fallback on the one shipped with MDK.
-    import pymysql as mysql
-
+import MySQLdb as mysql
 import psycopg2 as pgsql
 
 
@@ -53,6 +47,7 @@ class DB(object):
             if 'fuckfred' in options['passwd']:
                 raise Exception('Could not establish connexion with MySQL, bad language used!')
 
+            print options
             self.conn = mysql.connect(
                 host=options['host'],
                 port=int(options['port']),
