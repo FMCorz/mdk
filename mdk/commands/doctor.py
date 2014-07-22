@@ -224,21 +224,6 @@ class DoctorCommand(Command):
         if hasErrors and args.fix:
             print '    Please manually fix the paths in your config file'
 
-        # Check PIP modules.
-        with open(os.path.join(os.path.dirname(__file__), '..', '..', 'requirements.txt'), 'r') as f:
-            hasErrors = False
-            for line in f:
-                # Striping the version number from the package.
-                # And yes, this is a horrible one liner and I'm not expecting anyone to debug it :D.
-                mod = line[:min([len(line)] + [line.find(v) for v in '<=>' if line.find(v) > -1])].strip()
-                try:
-                    imp.find_module(mod)
-                except ImportError:
-                    print '  Could not locate the module \'%s\'' % (mod)
-                    hasErrors = True
-            if hasErrors and args.fix:
-                print '    Try running \'pip -r requirements.txt\' from MDK\'s installation directory'
-
         # Checking editor.
         editor = resolveEditor()
         if editor:
