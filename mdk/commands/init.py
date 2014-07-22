@@ -54,10 +54,6 @@ class InitCommand(Command):
 
     def run(self, args):
 
-        # Check root.
-        if os.getuid() != 0:
-            raise Exception('You must execute this as root.\n  sudo mdk init')
-
         # Check what user we want to initialise for.
         while True:
             username = question('What user are you initialising MDK for?', get_current_user())
@@ -97,20 +93,6 @@ class InitCommand(Command):
             open(userconfigfile, 'w')
             os.chown(userconfigfile, user.pw_uid, usergroup.gr_gid)
 
-        # If the group moodle-sdk exists, then we want to add the user to it.
-        try:
-            group = grp.getgrnam('moodle-sdk')
-            if not username in group.gr_mem:
-                logging.info('Adding user %s to group %s.' % (username, group.gr_name))
-                # This command does not work for some reason...
-                # os.initgroups(username, group.gr_gid)
-                chgrp = subprocess.Popen(['usermod', '-a', '-G', 'moodle-sdk', username])
-                chgrp.wait()
-        except KeyError:
-            # Raised when the group has not been found.
-            group = None
-            pass
-
         # Loading the configuration.
         from ..config import Conf as Config
         C = Config(userfile=userconfigfile)
@@ -126,9 +108,13 @@ class InitCommand(Command):
             except:
                 logging.error('Error while creating directory %s' % www)
                 continue
-            else:
-                C.set('dirs.www', www)
-                break
+
+            if not os.access(www, os.W_OK):
+                logging.error('You need to have permission to write to that directory.\nPlease fix or use another directory.')
+                continue
+
+            C.set('dirs.www', www)
+            break
 
         while True:
             storage = question('Where do you want to store your Moodle instances?', C.get('dirs.storage'))
@@ -144,9 +130,13 @@ class InitCommand(Command):
             except:
                 logging.error('Error while creating directory %s' % storage)
                 continue
-            else:
-                C.set('dirs.storage', storage)
-                break
+
+            if not os.access(storage, os.W_OK):
+                logging.error('You need to have permission to write to that directory.\nPlease fix or use another directory.')
+                continue
+
+            C.set('dirs.storage', storage)
+            break
 
         # The default configuration file should point to the right directory for dirs.mdk,
         # we will just ensure that it exists.
