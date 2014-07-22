@@ -1,5 +1,5 @@
-keyring
+keyring>=3.5
 MySQL-python>=1.2.3
 psycopg2>=2.4.5
 requests>=2.2.1
-watchdog
+watchdog>=0.8.0
