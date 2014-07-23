@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v1.3
+----
+
+- Changed directory structure to make MDK a python package
+- Dev scripts disable string caching - David Mudrak
+- Added support for MariaDB
+- ``phpunit`` accepts the parameter ``--filter`` - Andrew Nicols
+
 v1.2
 ----
 
