@@ -28,6 +28,11 @@ from setuptools import setup, find_packages
 # Load version number.
 execfile('mdk/version.py')
 
+# Get the long description from the relevant file.
+longDescription = ''
+with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
+    longDescription = f.read()
+
 # Load the requirements.
 requirements = []
 with open('requirements.txt') as f:
@@ -49,6 +54,7 @@ setup(
     name='moodle-sdk',
     version=__version__,
     description='Moodle Development Kit',
+    long_description=longDescription,
     license='MIT',
 
     url='https://github.com/FMCorz/mdk',
