@@ -29,38 +29,36 @@ Also check the `wiki <https://github.com/FMCorz/mdk/wiki>`_.
 Installation
 ============
 
-Ubuntu package
---------------
+Python package (recommended)
+----------------------------
 
-*This method is currently not recommended, the package is outdated. Maintainer wanted!*
+You need the `pip <http://www.pip-installer.org/en/latest/installing.html>`_ to do this::
 
-::
+    sudo pip install moodle-sdk
+    mdk init
 
-    sudo apt-add-repository ppa:2x1cq-fred-7nqa6/ppa
-    sudo apt-get update
-    sudo apt-get install moodle-sdk
-    # Most settings are probably good as they are, just configure your remote and database engines.
-    sudo mdk init
-    # The next line prevents you from logging out and in again.
-    sudo su `whoami`
+That's it!
 
-You're done!
-Try the following command to create a typical Stable Master instance (this will take some time because the cache is still empty)
+### Optional
 
-::
+Activate auto completion::
+    
+    sudo ln -s $(python -c "import os, pkg_resources; print os.path.abspath(pkg_resources.resource_filename('mdk', 'tools/bash_completion'))")
 
-    mdk create
-    mdk list
+Activate ``gt`` and ``gtd`` commands::
 
-Now you should be able to access it from ``http://moodle-sdk/stable_master``.
+    echo $(python -c "import os, pkg_resources; print '. ' + os.path.abspath(pkg_resources.resource_filename('mdk', 'tools/goto_instance'))") >> ~/.bashrc
+    echo $(python -c "import os, pkg_resources; print '. ' + os.path.abspath(pkg_resources.resource_filename('mdk', 'tools/goto_instance.bash_completion'))") >> ~/.bashrc
 
-Mac OS
-------
+
+Homebrew
+--------
 
 Using `Homebrew <http://brew.sh/>`_, please refer to this `formula <https://github.com/danpoltawski/homebrew-mdk>`_.
 
-Manual installation
--------------------
+
+Git
+---
 
 ### 1. Clone the repository
 
@@ -92,18 +90,23 @@ Assuming that you are using Apache, which is set up to serve the files from /var
 
     mkdir ~/www
     sudo ln -s ~/www /var/www/m
-    sudo mdk init
+    mdk init
 
-### 5. Done
+You're all set.
 
-Try the following command to create a typical Stable Master instance (this will take some time because the cache is still empty):
+### Optional
 
-::
+To activate bash completion::
 
-    mdk create
-    mdk list
+    sudo ln -s /opt/moodle-sdk/extra/bash_completion /etc/bash_completion.d/moodle-sdk
 
-Now you should be able to access it from http://localhost/m/stable_master.
+To activate goto commands (``gt`` and ``gtd``), add the following to ~/.bashrc::
+
+    if [ -f /opt/moodle-sdk/extra/goto_instance ]; then
+        . /opt/moodle-sdk/extra/goto_instance
+        . /opt/moodle-sdk/extra/goto_instance.bash_completion
+    fi
+
 
 Command list
 ============
