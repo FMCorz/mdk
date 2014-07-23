@@ -29,8 +29,8 @@ Also check the `wiki <https://github.com/FMCorz/mdk/wiki>`_.
 Installation
 ============
 
-Python package (recommended)
-----------------------------
+Python package
+--------------
 
 You need the `pip <http://www.pip-installer.org/en/latest/installing.html>`_ to do this::
 
@@ -38,17 +38,6 @@ You need the `pip <http://www.pip-installer.org/en/latest/installing.html>`_ to 
     mdk init
 
 That's it!
-
-### Optional
-
-Activate auto completion::
-    
-    sudo ln -s $(python -c "import os, pkg_resources; print os.path.abspath(pkg_resources.resource_filename('mdk', 'tools/bash_completion'))")
-
-Activate ``gt`` and ``gtd`` commands::
-
-    echo $(python -c "import os, pkg_resources; print '. ' + os.path.abspath(pkg_resources.resource_filename('mdk', 'tools/goto_instance'))") >> ~/.bashrc
-    echo $(python -c "import os, pkg_resources; print '. ' + os.path.abspath(pkg_resources.resource_filename('mdk', 'tools/goto_instance.bash_completion'))") >> ~/.bashrc
 
 
 Homebrew
@@ -60,14 +49,16 @@ Using `Homebrew <http://brew.sh/>`_, please refer to this `formula <https://gith
 Git
 ---
 
-### 1. Clone the repository
+1. Clone the repository
+~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
     cd /opt
     sudo git clone git://github.com/FMCorz/mdk.git moodle-sdk
 
-### 2. Install the dependencies
+2. Install the dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You will need the tool `pip <http://www.pip-installer.org/en/latest/installing.html>`_ to install the packages required by Python.
 
@@ -75,14 +66,16 @@ You will need the tool `pip <http://www.pip-installer.org/en/latest/installing.h
 
     sudo pip install -r /opt/moodle-sdk/requirements.txt
 
-### 3. Make executable and accessible::
+3. Make executable and accessible
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
     sudo chmod +x /opt/moodle-sdk/mdk.py
     sudo ln -s /opt/moodle-sdk/mdk.py /usr/local/bin/mdk
 
-### 4. Set up the basics
+4. Set up the basics
+~~~~~~~~~~~~~~~~~~~~
 
 Assuming that you are using Apache, which is set up to serve the files from /var/www, leave the default values as they are in ``mdk init``, except for your remote and the database passwords.
 
@@ -94,7 +87,8 @@ Assuming that you are using Apache, which is set up to serve the files from /var
 
 You're all set.
 
-### Optional
+Optional
+~~~~~~~~
 
 To activate bash completion::
 
