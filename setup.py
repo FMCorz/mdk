@@ -43,12 +43,7 @@ scripts = []
 for f in os.listdir(os.path.join(os.path.dirname(__file__), 'mdk', 'scripts')):
     if f == 'README.rst':
         continue
-    scripts.append('mdk/scripts/%s' % (f))
-
-# Get the content of the extra folder.
-tools = []
-for f in os.listdir(os.path.join(os.path.dirname(__file__), 'extra')):
-    tools.append('extra/%s' % (f))
+    scripts.append('scripts/%s' % (f))
 
 setup(
     name='moodle-sdk',
@@ -75,12 +70,8 @@ setup(
     keywords='mdk moodle moodle-sdk',
 
     packages=find_packages(),
-    package_data={'mdk': ['config-dist.json']},
+    package_data={'mdk': ['config-dist.json'] + scripts},
     install_requires=requirements,
-    data_files=[
-        ('scripts', scripts),
-        ('tools', tools)
-    ],
     include_package_data=True,
 
     entry_points={

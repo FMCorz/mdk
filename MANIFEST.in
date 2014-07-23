@@ -2,4 +2,3 @@ include *.txt
 include *.md
 include mdk/config-dist.json
 include mdk/scripts/*
-include extra/*
