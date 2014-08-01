@@ -25,6 +25,7 @@ http://github.com/FMCorz/mdk
 import logging
 import os
 import time
+import datetime
 import watchdog.events
 import watchdog.observers
 from ..command import Command
@@ -178,6 +179,6 @@ class JsShiftWatcher(watchdog.events.FileSystemEventHandler):
         elif not os.path.splitext(event.src_path)[1] in self._ext:
             return
 
-        logging.info('[%s] Changes detected!' % (self._M.get('identifier')))
+        logging.info('[%s] (%s) Changes detected!' % (self._M.get('identifier'), datetime.datetime.now().strftime('%H:%M:%S')))
         # How about handling exceptions here?
         self._processor.shift(**self._args)
