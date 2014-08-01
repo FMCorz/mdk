@@ -180,5 +180,8 @@ class JsShiftWatcher(watchdog.events.FileSystemEventHandler):
             return
 
         logging.info('[%s] (%s) Changes detected!' % (self._M.get('identifier'), datetime.datetime.now().strftime('%H:%M:%S')))
-        # How about handling exceptions here?
-        self._processor.shift(**self._args)
+
+        try:
+            self._processor.shift(**self._args)
+        except js.ShifterCompileFailed:
+            logging.error(' /!\ Error: Compile failed!')
