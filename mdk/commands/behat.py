@@ -113,6 +113,22 @@ class BehatCommand(Command):
             }
         ),
         (
+            ['-x', '--xvfb'],
+            {
+                'action':   'store_true',
+                'dest':     'xvfb',
+                'help':     'Use XVFB when starting selenium'
+            }
+        ),
+        (
+            ['-X', '--no-xvfb'],
+            {
+                'action':   'store_true',
+                'dest':     'noxvfb',
+                'help':     'Do not use XVFB when starting selenium'
+            }
+        ),
+        (
             ['name'],
             {
                 'default': None,
@@ -222,6 +238,14 @@ class BehatCommand(Command):
             seleniumCommand = None
             if seleniumPath:
                 seleniumCommand = '%s -jar %s' % (self.C.get('java'), seleniumPath)
+
+                usexvfb = ((self.C.get('xvfb') and not args.noxvfb) or
+                          (not self.C.get('xvfb') and args.xvfb and not args.noxvfb))
+                if usexvfb:
+                    xvfbPath = self.C.get('xvfb-run')
+                    seleniumCommand = '%s %s' % (xvfbPath, seleniumCommand)
+                    if not os.path.isfile(xvfbPath):
+                        raise Exception('xvfb-run command could not be found in the specified location %s' % (xvfbPath));
 
             olderThan27 = M.branch_compare(27, '<')
 
