@@ -29,7 +29,7 @@ import logging
 import gzip
 from time import sleep
 from ..command import Command
-from ..tools import process, ProcessInThread, downloadProcessHook
+from ..tools import process, ProcessInThread, downloadProcessHook, question
 
 
 class BehatCommand(Command):
@@ -192,8 +192,17 @@ class BehatCommand(Command):
 
         # Run cli
         try:
+
+            # If Oracle, ask the user for a Behat prefix, if not set.
+            prefix = M.get('behat_prefix')
+            if M.get('dbtype') == 'oci' and (not prefix or len(prefix) > 2):
+                while not prefix or len(prefix) > 2:
+                    prefix = question('What prefix would you like to use? (Oracle, max 2 chars)')
+            else:
+                prefix = None
+
             logging.info('Initialising Behat, please be patient!')
-            M.initBehat(switchcompletely=args.switchcompletely)
+            M.initBehat(switchcompletely=args.switchcompletely, prefix=prefix)
             logging.info('Behat ready!')
 
             # Preparing Behat command

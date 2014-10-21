@@ -314,7 +314,7 @@ class Moodle(object):
             else:
                 raise exception
 
-    def initBehat(self, switchcompletely=False):
+    def initBehat(self, switchcompletely=False, prefix=None):
         """Initialise the Behat environment"""
 
         if self.branch_compare(25, '<'):
@@ -330,8 +330,15 @@ class Moodle(object):
         self.updateConfig('behat_dataroot', behat_dataroot)
 
         # Set Behat DB prefix
-        behat_prefix = 'zbehat_'
-        self.updateConfig('behat_prefix', behat_prefix)
+        currentPrefix = self.get('behat_prefix')
+        behat_prefix = prefix or 'zbehat_'
+
+        if not currentPrefix:
+            self.updateConfig('behat_prefix', behat_prefix)
+        elif currentPrefix != behat_prefix and self.get('dbtype') != 'oci':
+            # Warn that a prefix is already set and we did not change it.
+            # No warning for Oracle as we need to set it to something else.
+            logging.warning('Behat prefix not changed, already set to \'%s\', expected \'%s\'.' % (currentPrefix, behat_prefix))
 
         # Switch completely?
         if self.branch_compare(26, '<'):
