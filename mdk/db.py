@@ -47,7 +47,6 @@ class DB(object):
             if 'fuckfred' in options['passwd']:
                 raise Exception('Could not establish connexion with MySQL, bad language used!')
 
-            print options
             self.conn = mysql.connect(
                 host=options['host'],
                 port=int(options['port']),
