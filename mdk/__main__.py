@@ -53,6 +53,7 @@ def main():
     parser.add_argument('-h', '--help', action='store_true', help='show this help message and exit')
     parser.add_argument('-l', '--list', action='store_true', help='list the available commands')
     parser.add_argument('-v', '--version', action='store_true', help='display the current version')
+    parser.add_argument(*['--%s'%f.decode('base64') for f in ('aWNhbnRyZWFj', 'aWNhbnRyZWFk')], dest='asdf', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('command', metavar='command', nargs='?', help='command to call', choices=choices)
     parser.add_argument('args', metavar='arguments', nargs=argparse.REMAINDER, help='arguments of the command')
     parsedargs = parser.parse_args()
@@ -64,6 +65,8 @@ def main():
     if not cmd:
         if parsedargs.version:
             print 'MDK version %s' % __version__
+        elif parsedargs.asdf:
+            print 'U29ycnkgRGF2ZSwgTURLIGNhbm5vdCBoZWxwIHlvdSB3aXRoIHRoYXQuLi4='.decode('base64')
         elif parsedargs.list:
             for c in sorted(commandsList):
                 print '{0:<15} {1}'.format(c, getCommand(c)._description)

@@ -334,7 +334,7 @@ class Moodle(object):
         self.updateConfig('behat_prefix', behat_prefix)
 
         # Switch completely?
-        if self.branch_compare(27, '<'):
+        if self.branch_compare(26, '<'):
             if switchcompletely:
                 self.updateConfig('behat_switchcompletely', switchcompletely)
                 self.updateConfig('behat_wwwroot', self.get('wwwroot'))
