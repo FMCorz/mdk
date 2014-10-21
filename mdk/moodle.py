@@ -314,7 +314,7 @@ class Moodle(object):
             else:
                 raise exception
 
-    def initBehat(self, switchcompletely=False, prefix=None):
+    def initBehat(self, switchcompletely=False, force=False, prefix=None):
         """Initialise the Behat environment"""
 
         if self.branch_compare(25, '<'):
@@ -333,7 +333,7 @@ class Moodle(object):
         currentPrefix = self.get('behat_prefix')
         behat_prefix = prefix or 'zbehat_'
 
-        if not currentPrefix:
+        if not currentPrefix or force:
             self.updateConfig('behat_prefix', behat_prefix)
         elif currentPrefix != behat_prefix and self.get('dbtype') != 'oci':
             # Warn that a prefix is already set and we did not change it.
@@ -358,6 +358,12 @@ class Moodle(object):
 
         # Force a cache purge
         self.purge()
+
+        # Force dropping the tables if there are any.
+        if force:
+            result = self.cli('admin/tool/behat/cli/util.php', args='--drop', stdout=None, stderr=None)
+            if result[0] != 0:
+                raise Exception('Error while initialising Behat. Please try manually.')
 
         # Run the init script.
         result = self.cli('admin/tool/behat/cli/init.php', stdout=None, stderr=None)

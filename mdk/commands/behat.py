@@ -50,6 +50,13 @@ class BehatCommand(Command):
             }
         ),
         (
+            ['--force'],
+            {
+                'action': 'store_true',
+                'help': 'force behat re-init and reset the variables in the config file.'
+            }
+        ),
+        (
             ['-f', '--feature'],
             {
                 'metavar': 'path',
@@ -195,14 +202,14 @@ class BehatCommand(Command):
 
             # If Oracle, ask the user for a Behat prefix, if not set.
             prefix = M.get('behat_prefix')
-            if M.get('dbtype') == 'oci' and (not prefix or len(prefix) > 2):
+            if M.get('dbtype') == 'oci' and (args.force or not prefix or len(prefix) > 2):
                 while not prefix or len(prefix) > 2:
                     prefix = question('What prefix would you like to use? (Oracle, max 2 chars)')
             else:
                 prefix = None
 
             logging.info('Initialising Behat, please be patient!')
-            M.initBehat(switchcompletely=args.switchcompletely, prefix=prefix)
+            M.initBehat(switchcompletely=args.switchcompletely, force=args.force, prefix=prefix)
             logging.info('Behat ready!')
 
             # Preparing Behat command
