@@ -47,7 +47,7 @@ $capabilities = fetch_context_capabilities($context);
 foreach ($capabilities as $capability) {
     assign_capability($capability->name, CAP_ALLOW, $roleid, $context->id, true);
 }
-mark_context_dirty($context->path);
+$context->mark_dirty();
 
 // Create a new service with all functions for the user.
 $webservicemanager = new webservice();
