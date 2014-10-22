@@ -239,14 +239,14 @@ class BehatCommand(Command):
             if seleniumPath:
                 seleniumCommand = '%s -jar %s' % (self.C.get('java'), seleniumPath)
 
-            olderThan27 = M.branch_compare(27, '<')
+            olderThan26 = M.branch_compare(26, '<')
 
             if args.run:
                 logging.info('Preparing Behat testing')
 
                 # Preparing PHP Server
                 phpServer = None
-                if olderThan27 and not M.get('behat_switchcompletely'):
+                if olderThan26 and not M.get('behat_switchcompletely'):
                     logging.info('Starting standalone PHP server')
                     kwargs = {}
                     kwargs['cwd'] = M.get('path')
@@ -287,7 +287,7 @@ class BehatCommand(Command):
                     self.disable(M)
 
             else:
-                if olderThan27:
+                if olderThan26:
                     logging.info('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
                 if seleniumCommand:
                     logging.info('Launch Selenium (optional):\n %s' % (seleniumCommand))
