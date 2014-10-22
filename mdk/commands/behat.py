@@ -27,6 +27,7 @@ import urllib
 import re
 import logging
 import gzip
+from tempfile import gettempdir
 from time import sleep
 from ..command import Command
 from ..tools import process, ProcessInThread, downloadProcessHook, question
@@ -261,6 +262,17 @@ class BehatCommand(Command):
                     if args.seleniumverbose:
                         kwargs['stdout'] = None
                         kwargs['stderr'] = None
+                    else:
+                        # Logging Selenium to a temporary file, this can be useful, and also it appears
+                        # that Selenium hangs when stderr is not buffered.
+                        fileOutPath = os.path.join(gettempdir(), 'selenium_%s_out.log' % (M.get('identifier')))
+                        fileErrPath = os.path.join(gettempdir(), 'selenium_%s_err.log' % (M.get('identifier')))
+                        tmpfileOut = open(fileOutPath, 'w')
+                        tmpfileErr = open(fileErrPath, 'w')
+                        logging.debug('Logging Selenium output to: %s' % (fileOutPath))
+                        logging.debug('Logging Selenium errors to: %s' % (fileErrPath))
+                        kwargs['stdout'] = tmpfileOut
+                        kwargs['stderr'] = tmpfileErr
                     seleniumServer = ProcessInThread(seleniumCommand, **kwargs)
                     seleniumServer.start()
 
