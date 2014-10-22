@@ -27,7 +27,7 @@ import os
 import gzip
 import urllib
 from ..command import Command
-from ..tools import process
+from ..tools import process, question
 
 
 class PhpunitCommand(Command):
@@ -121,7 +121,16 @@ class PhpunitCommand(Command):
 
         # Run cli
         try:
-            M.initPHPUnit(force=args.force)
+
+            # If Oracle, ask the user for a Behat prefix, if not set.
+            prefix = M.get('phpunit_prefix')
+            if M.get('dbtype') == 'oci' and (args.force or not prefix or len(prefix) > 2):
+                while not prefix or len(prefix) > 2:
+                    prefix = question('What prefix would you like to use? (Oracle, max 2 chars)')
+            else:
+                prefix = None
+
+            M.initPHPUnit(force=args.force, prefix=prefix)
             logging.info('PHPUnit ready!')
 
             if args.unittest or args.testcase or args.filter:

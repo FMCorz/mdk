@@ -281,7 +281,7 @@ class Moodle(object):
 
         return headcommit
 
-    def initPHPUnit(self, force=False):
+    def initPHPUnit(self, force=False, prefix=None):
         """Initialise the PHPUnit environment"""
 
         if self.branch_compare(23, '<'):
@@ -294,8 +294,15 @@ class Moodle(object):
             mkdir(phpunit_dataroot, 0777)
 
         # Set PHPUnit prefix
-        phpunit_prefix = 'phpu_'
-        self.updateConfig('phpunit_prefix', phpunit_prefix)
+        currentPrefix = self.get('phpunit_prefix')
+        phpunit_prefix = prefix or 'phpu_'
+
+        if not currentPrefix or force:
+            self.updateConfig('phpunit_prefix', phpunit_prefix)
+        elif currentPrefix != phpunit_prefix and self.get('dbtype') != 'oci':
+            # Warn that a prefix is already set and we did not change it.
+            # No warning for Oracle as we need to set it to something else.
+            logging.warning('PHPUnit prefix not changed, already set to \'%s\', expected \'%s\'.' % (currentPrefix, phpunit_prefix))
 
         result = (None, None, None)
         exception = None
