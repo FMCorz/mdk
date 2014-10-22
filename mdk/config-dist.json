@@ -163,7 +163,9 @@
         // From 2.7 Behat requires a different wwwroot than the one set in config.php.
         // MDK assumes that the only thing that will differ between the wwwroot and
         // behat wwwroot is the host, nothing else. Use a ServerAlias or /etc/hosts entries.
-        "host": "127.0.0.1"
+        "host": "127.0.0.1",
+        // The number of seconds the behat command will sleep after launching the PHP Server, or Selenium.
+        "launchSleep": 5
     },
 
     // The name of the data directory

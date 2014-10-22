@@ -268,7 +268,9 @@ class BehatCommand(Command):
 
                 # Sleep for a few seconds before starting Behat
                 if phpServer or seleniumServer:
-                    sleep(3)
+                    launchSleep = int(self.C.get('behat.launchSleep'))
+                    logging.debug('Waiting for %d seconds to allow Selenium and/or the PHP Server to start ' % (launchSleep))
+                    sleep(launchSleep)
 
                 # Running the tests
                 try:
