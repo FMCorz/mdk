@@ -361,7 +361,11 @@ class Moodle(object):
             if C.get('path') != '' and C.get('path') != None:
                 wwwroot = wwwroot + C.get('path') + '/'
             wwwroot = wwwroot + self.identifier
-            self.updateConfig('behat_wwwroot', wwwroot)
+            currentWwwroot = self.get('behat_wwwroot')
+            if not currentWwwroot or force:
+                self.updateConfig('behat_wwwroot', wwwroot)
+            elif currentWwwroot != wwwroot:
+                logging.warning('Behat wwwroot not changed, already set to \'%s\', expected \'%s\'.' % (currentWwwroot, wwwroot))
 
         # Force a cache purge
         self.purge()
