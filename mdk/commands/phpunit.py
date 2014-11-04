@@ -51,7 +51,7 @@ class PhpunitCommand(Command):
             ['-t', '--testcase'],
             {
                 'default': None,
-                'help': 'testcase class to run. This sets --run. (From Moodle 2.6)',
+                'help': 'testcase class to run (From Moodle 2.6)',
                 'metavar': 'testcase'
             }
         ),
@@ -59,7 +59,7 @@ class PhpunitCommand(Command):
             ['-u', '--unittest'],
             {
                 'default': None,
-                'help': 'test file to run. This sets --run.',
+                'help': 'test file to run',
                 'metavar': 'path'
             }
         ),
@@ -67,7 +67,7 @@ class PhpunitCommand(Command):
             ['--filter'],
             {
                 'default': None,
-                'help': 'Filter to pass through to PHPUnit. This sets --run.',
+                'help': 'filter to pass through to PHPUnit',
                 'metavar': 'filter'
             }
         ),
@@ -133,22 +133,23 @@ class PhpunitCommand(Command):
             M.initPHPUnit(force=args.force, prefix=prefix)
             logging.info('PHPUnit ready!')
 
-            if args.unittest or args.testcase or args.filter:
-                args.run = True
+            cmd = []
+            if hasComposer:
+                cmd.append('vendor/bin/phpunit')
+            else:
+                cmd.append('phpunit')
+
+            if args.testcase:
+                cmd.append(args.testcase)
+            elif args.unittest:
+                cmd.append(args.unittest)
+            elif args.filter:
+                cmd.append('--filter="%s"' % args.filter)
 
             if args.run:
-                cmd = []
-                if hasComposer:
-                    cmd.append('vendor/bin/phpunit')
-                else:
-                    cmd.append('phpunit')
-                if args.testcase:
-                    cmd.append(args.testcase)
-                elif args.unittest:
-                    cmd.append(args.unittest)
-                elif args.filter:
-                    cmd.append('--filter="%s"' % args.filter)
-                cmd = ' '.join(cmd)
                 process(cmd, M.get('path'), None, None)
+            else:
+                logging.info('Start PHPUnit:\n %s' % (' '.join(cmd)))
+
         except Exception as e:
             raise e
