@@ -28,6 +28,7 @@ import gzip
 import urllib
 from ..command import Command
 from ..tools import process, question
+from ..phpunit import PHPUnit
 
 
 class PhpunitCommand(Command):
@@ -98,11 +99,11 @@ class PhpunitCommand(Command):
         if args.testcase and M.branch_compare('26', '<'):
             self.argumentError('The --testcase option only works with Moodle 2.6 or greater.')
 
-        # Composer was introduced with PHP Unit, if the JSON file is there then we will use it
-        hasComposer = os.path.isfile(os.path.join(M.get('path'), 'composer.json'))
+        # Create the Unit test object.
+        PU = PHPUnit(self.Wp, M)
 
         # Install Composer
-        if hasComposer:
+        if PU.usesComposer():
             if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
                 logging.info('Installing Composer')
                 cliFile = 'phpunit_install_composer.php'
@@ -130,26 +131,18 @@ class PhpunitCommand(Command):
             else:
                 prefix = None
 
-            M.initPHPUnit(force=args.force, prefix=prefix)
-            logging.info('PHPUnit ready!')
+            PU.init(force=args.force, prefix=prefix)
 
-            cmd = []
-            if hasComposer:
-                cmd.append('vendor/bin/phpunit')
-            else:
-                cmd.append('phpunit')
-
-            if args.testcase:
-                cmd.append(args.testcase)
-            elif args.unittest:
-                cmd.append(args.unittest)
-            elif args.filter:
-                cmd.append('--filter="%s"' % args.filter)
+            kwargs = {
+                'testcase': args.testcase,
+                'unittest': args.unittest,
+                'filter': args.filter
+            }
 
             if args.run:
-                process(cmd, M.get('path'), None, None)
+                PU.run(**kwargs)
             else:
-                logging.info('Start PHPUnit:\n %s' % (' '.join(cmd)))
+                logging.info('Start PHPUnit:\n %s' % (' '.join(PU.getCommand(**kwargs))))
 
         except Exception as e:
             raise e
