@@ -92,6 +92,13 @@ class DoctorCommand(Command):
             }
         ),
         (
+            ['--symlink'],
+            {
+                'action': 'store_true',
+                'help': 'Check the symlinks of the instances'
+            }
+        ),
+        (
             ['--wwwroot'],
             {
                 'action': 'store_true',
@@ -130,6 +137,10 @@ class DoctorCommand(Command):
         # Check instances wwwroot
         if args.wwwroot or allChecks:
             self.wwwroot(args)
+
+        # Check instances symlink
+        if args.symlink or allChecks:
+            self.symlink(args)
 
         # Check the branches
         if args.branch or allChecks:
@@ -251,6 +262,19 @@ class DoctorCommand(Command):
                     print '    Creating %s' % d
                     mkdir(d, 0777)
 
+        if not self._checkWorkplace():
+            return
+
+        # Checking extra directory.
+        instances = self.Wp.list()
+        for identifier in instances:
+            d = self.Wp.getPath(identifier, 'extra')
+            if not os.path.isdir(d):
+                print '  %s does not exist' % d
+                if args.fix:
+                    print '    Creating %s' % d
+                    mkdir(d, 0777)
+
     def hi(self, args):
         """I wonder what is the purpose of this...
 
@@ -262,6 +286,32 @@ class DoctorCommand(Command):
             print 'The horse is a noble animal'
         else:
             print '<em>Hi</em>'
+
+    def symlink(self, args):
+        """Check that the symlinks exist"""
+
+        print 'Checking symlinks'
+
+        if not self._checkWorkplace():
+            return
+
+        instances = self.Wp.list()
+        for identifier in instances:
+
+            wwwLink = os.path.join(self.Wp.www, identifier)
+            if not os.path.exists(wwwLink):
+                print '  Missing link to www for %s' % (identifier)
+                if args.fix:
+                    print '    Creating www symlink for %s' % (identifier)
+                    os.symlink(self.Wp.getPath(identifier, 'www'), wwwLink)
+
+            extraLink = os.path.join(self.Wp.getMdkWebDir(), identifier)
+            if not os.path.exists(extraLink):
+                print '  Missing link to extra for %s' % (identifier)
+                if args.fix:
+                    print '    Creating extra symlink for %s' % (identifier)
+                    os.symlink(self.Wp.getPath(identifier, 'extra'), extraLink)
+
 
     def remotes(self, args):
         """Check that the correct remotes are used"""

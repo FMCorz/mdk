@@ -36,13 +36,38 @@ C = Conf()
 
 class Workplace(object):
 
-    def __init__(self, path=None, wwwDir=None, dataDir=None):
+    """The name of the directory that contains the PHP files"""
+    wwwDir = None
+
+    """The name of the directory that contains Moodle data"""
+    dataDir = None
+
+    """The name of the directory that contains extra files"""
+    extraDir = None
+
+    """The name of the directory that makes extraDir web accessible, see getMdkWebDir"""
+    mdkDir = None
+
+    """The path to the storage directory"""
+    path = None
+
+    """The path to MDK cache"""
+    cache = None
+
+    """The path to the web accessible directory"""
+    www = None
+
+    def __init__(self, path=None, wwwDir=None, dataDir=None, extraDir=None, mdkDir=None):
         if path == None:
             path = C.get('dirs.storage')
         if wwwDir == None:
             wwwDir = C.get('wwwDir')
         if dataDir == None:
             dataDir = C.get('dataDir')
+        if extraDir == None:
+            extraDir = C.get('extraDir')
+        if mdkDir == None:
+            mdkDir = C.get('mdkDir')
 
         # Directory paths
         self.path = os.path.abspath(os.path.realpath(os.path.expanduser(path)))
@@ -55,6 +80,8 @@ class Workplace(object):
         # Directory names
         self.wwwDir = wwwDir
         self.dataDir = dataDir
+        self.extraDir = extraDir
+        self.mdkDir = mdkDir
 
     def checkCachedClones(self, stable=True, integration=True):
         """Clone the official repository in a local cache"""
@@ -94,10 +121,15 @@ class Workplace(object):
         if name == None:
             name = self.generateInstanceName(version, integration=integration)
 
-        installDir = os.path.join(self.path, name)
-        wwwDir = os.path.join(installDir, self.wwwDir)
-        dataDir = os.path.join(installDir, self.dataDir)
+        if name == self.mdkDir:
+            raise Exception('A Moodle instance cannot be called \'%s\', this is a reserved word.' % self.mdkDir)
+
+        installDir = self.getPath(name)
+        wwwDir = self.getPath(name, 'www')
+        dataDir = self.getPath(name, 'data')
+        extraDir = self.getPath(name, 'extra')
         linkDir = os.path.join(self.www, name)
+        extraLinkDir = os.path.join(self.getMdkWebDir(), name)
 
         if self.isMoodle(name):
             raise CreateException('The Moodle instance %s already exists' % name)
@@ -109,6 +141,7 @@ class Workplace(object):
         mkdir(installDir, 0755)
         mkdir(wwwDir, 0755)
         mkdir(dataDir, 0777)
+        mkdir(extraDir, 0777)
 
         repository = self.getCachedRemote(integration)
 
@@ -123,6 +156,12 @@ class Workplace(object):
             logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (wwwDir, linkDir))
         else:
             os.symlink(wwwDir, linkDir)
+
+        # Symlink to extra.
+        if os.path.isfile(extraLinkDir) or os.path.isdir(extraLinkDir):
+            logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (extraDir, extraLinkDir))
+        else:
+            os.symlink(extraDir, extraLinkDir)
 
         # Symlink to dataDir in wwwDir
         if type(C.get('symlinkToData')) == str:
@@ -171,6 +210,14 @@ class Workplace(object):
 
         # Deleting the possible symlink
         link = os.path.join(self.www, name)
+        if os.path.islink(link):
+            try:
+                os.remove(link)
+            except Exception:
+                pass
+
+        # Delete the extra dir symlink
+        link = os.path.join(self.getMdkWebDir(), name)
         if os.path.islink(link):
             try:
                 os.remove(link)
@@ -229,6 +276,14 @@ class Workplace(object):
         else:
             return os.path.join(self.cache, 'moodle.git')
 
+    def getMdkWebDir(self):
+        """Return (and create) the special MDK web directory."""
+        mdkExtra = os.path.join(self.www, self.mdkDir)
+        if not os.path.exists(mdkExtra):
+            mkdir(mdkExtra, 0777)
+
+        return mdkExtra
+
     def getPath(self, name, mode=None):
         """Returns the path of an instance base on its name"""
         base = os.path.join(self.path, name)
@@ -236,6 +291,8 @@ class Workplace(object):
             return os.path.join(base, self.wwwDir)
         elif mode == 'data':
             return os.path.join(base, self.dataDir)
+        elif mode == 'extra':
+            return os.path.join(base, self.extraDir)
         else:
             return base
 

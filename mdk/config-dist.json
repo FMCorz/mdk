@@ -168,10 +168,14 @@
         "launchSleep": 5
     },
 
-    // The name of the data directory
+    // The name of the data directory (in dirs.storage/instanceName/)
     "dataDir": "moodledata",
-    // The name of the www directory
+    // The name of the www directory (in dirs.storage/instanceName/)
     "wwwDir": "moodle",
+    // The name of the extra directory, it will be used to store different things of an instance (in dirs.storage/instanceName/)
+    "extraDir": "extra",
+    // The name of the web accessible directory that MDK uses to give access to the extraDirs (created in dirs.www/).
+    "mdkDir": "mdk",
 
     // The default engine to use when not specified
     "defaultEngine": "mysqli",
