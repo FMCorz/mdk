@@ -428,6 +428,8 @@ class Workplace(object):
 
             if verbose:
                 logging.info('Fetching cached repository %s...', os.path.basename(cache))
+            else:
+                logging.debug('Fetching cached repository %s...', os.path.basename(cache))
             if not repo.fetch():
                 raise Exception('Could not fetch in repository %s' % (cache))
 

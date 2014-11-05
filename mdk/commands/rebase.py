@@ -121,7 +121,7 @@ class RebaseCommand(Command):
 
         # Updating cache remotes
         logging.info('Updating cached repositories')
-        self.Wp.updateCachedClones()
+        self.Wp.updateCachedClones(verbose=False)
 
         # Loops over instances to rebase
         for M in Mlist:
