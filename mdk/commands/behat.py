@@ -88,6 +88,14 @@ class BehatCommand(Command):
             }
         ),
         (
+            ['-D', '--no-dump'],
+            {
+                'action': 'store_false',
+                'dest': 'faildump',
+                'help': 'use the standard command without fancy screenshots or output to a directory'
+            }
+        ),
+        (
             ['-s', '--switch-completely'],
             {
                 'action': 'store_true',
@@ -209,8 +217,11 @@ class BehatCommand(Command):
             else:
                 prefix = None
 
+            outputDir = self.Wp.getExtraDir(M.get('identifier'), 'behat')
+            outpurUrl = self.Wp.getUrl(M.get('identifier'), extra='behat')
+
             logging.info('Initialising Behat, please be patient!')
-            M.initBehat(switchcompletely=args.switchcompletely, force=args.force, prefix=prefix)
+            M.initBehat(switchcompletely=args.switchcompletely, force=args.force, prefix=prefix, faildumppath=outputDir)
             logging.info('Behat ready!')
 
             # Preparing Behat command
@@ -223,6 +234,10 @@ class BehatCommand(Command):
 
             if not (args.tags or args.testname) and nojavascript:
                 cmd.append('--tags ~@javascript')
+
+            if args.faildump:
+                cmd.append('--format="progress,progress,html,failed"')
+                cmd.append('--out=",{0}/progress.txt,{0}/status.html,{0}/failed.txt"'.format(outputDir))
 
             cmd.append('--config=%s/behat/behat.yml' % (M.get('behat_dataroot')))
 
@@ -286,6 +301,8 @@ class BehatCommand(Command):
 
                 # Running the tests
                 try:
+                    if args.faildump:
+                        logging.info('More output can be found at:\n %s\n %s', outputDir, outpurUrl)
                     process(cmd, M.path, None, None)
                 except KeyboardInterrupt:
                     pass
@@ -301,6 +318,8 @@ class BehatCommand(Command):
                     self.disable(M)
 
             else:
+                if args.faildump:
+                    logging.info('More output will be accessible at:\n %s\n %s', outputDir, outpurUrl)
                 if olderThan26:
                     logging.info('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
                 if seleniumCommand:

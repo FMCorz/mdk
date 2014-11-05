@@ -285,7 +285,7 @@ class Moodle(object):
         """Initialise the PHPUnit environment"""
         raise Exception('This method is deprecated, use phpunit.PHPUnit.init() instead.')
 
-    def initBehat(self, switchcompletely=False, force=False, prefix=None):
+    def initBehat(self, switchcompletely=False, force=False, prefix=None, faildumppath=None):
         """Initialise the Behat environment"""
 
         if self.branch_compare(25, '<'):
@@ -303,6 +303,13 @@ class Moodle(object):
         # Set Behat DB prefix
         currentPrefix = self.get('behat_prefix')
         behat_prefix = prefix or 'zbehat_'
+
+        # Set behat_faildump_path
+        currentFailDumpPath = self.get('behat_faildump_path')
+        if faildumppath and currentFailDumpPath != faildumppath:
+            self.updateConfig('behat_faildump_path', faildumppath)
+        else:
+            self.removeConfig('behat_faildump_path')
 
         if not currentPrefix or force:
             self.updateConfig('behat_prefix', behat_prefix)
