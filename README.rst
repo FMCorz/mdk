@@ -295,6 +295,11 @@ Compile the JS modules in Atto
     mdk js shift --plugin editor_atto
 
 
+Generate the complete YUI API documentation
+
+    mdk js doc
+
+
 phpunit
 -------
 

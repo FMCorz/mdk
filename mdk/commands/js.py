@@ -83,6 +83,22 @@ class JsCommand(Command):
                                     }
                                 )
                             ]
+                        ),
+                        'doc': (
+                            {
+                                'help': 'keen to generate documentation?'
+                            },
+                            [
+                                (
+                                    ['names'],
+                                    {
+                                        'default': None,
+                                        'help': 'name of the instances',
+                                        'metavar': 'names',
+                                        'nargs': '*'
+                                    }
+                                )
+                            ]
                         )
                     }
             }
@@ -93,6 +109,8 @@ class JsCommand(Command):
     def run(self, args):
         if args.mode == 'shift':
             self.shift(args)
+        if args.mode == 'doc':
+            self.document(args)
 
 
     def shift(self, args):
@@ -155,6 +173,24 @@ class JsCommand(Command):
                 observer.stop()
             finally:
                 observer.join()
+
+    def document(self, args):
+        """The docmentation mode"""
+
+        Mlist = self.Wp.resolveMultiple(args.names)
+        if len(Mlist) < 1:
+            raise Exception('No instances to work on. Exiting...')
+
+        cwd = os.path.realpath(os.path.abspath(os.getcwd()))
+        mpath = Mlist[0].get('path')
+        relpath = cwd.replace(mpath, '').strip('/')
+
+        for M in Mlist:
+            if len(Mlist) > 1:
+                logging.info('Let\'s document everything you wanted on \'%s\'' % (M.get('identifier')))
+
+            processor = js.Js(M)
+            processor.document(self.Wp.getPath(M.get('identifier'), 'jsdocdir'))
 
 
 class JsShiftWatcher(watchdog.events.FileSystemEventHandler):

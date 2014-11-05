@@ -62,6 +62,13 @@ class Js(object):
             shifter.setCwd(path)
             shifter.compile()
 
+    def document(self, outdir=None):
+        """Runs documentator"""
+
+        path = self._M.get('path')
+        documentor = Documentor(path, outdir)
+        documentor.compile();
+
     def getYUISrcPath(self, subsystemOrPlugin, module=None):
         """Returns the path to the module, or the component"""
 
@@ -101,6 +108,40 @@ class Shifter(object):
     def setCwd(self, cwd):
         self._cwd = cwd
 
+class Documentor(object):
 
+    _cwd = None
+
+    _outdir = None
+
+    def __init__(self, cwd=None, outdir=None):
+        self.setCwd(cwd)
+        self.setOutdir(outdir)
+
+    def compile(self):
+        """Runs the yuidoc command in cwd"""
+        executable = C.get('yuidoc')
+        if not executable or not os.path.isfile(executable):
+            raise Exception('Could not find executable path %s' % (executable))
+
+        cmd = [executable, '--outdir', self._outdir]
+
+        logging.info("Generating YUI documentation to %s. This may take a while" % self._outdir)
+        (code, out, err) = process(cmd, cwd=self._cwd)
+        if code != 0:
+            raise YuidocCompileFailed('Error whilst generating documentation')
+        else:
+            logging.info('Documentation generation complete. Take a peek at %s'
+                    % self._outdir)
+
+    def setCwd(self, cwd):
+        self._cwd = cwd
+
+    def setOutdir(self, outdir):
+        self._outdir = outdir
+
+
+class YuidocCompileFailed(Exception):
+    pass
 class ShifterCompileFailed(Exception):
     pass
