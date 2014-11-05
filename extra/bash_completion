@@ -216,7 +216,7 @@ function _mdk() {
                 fi
                 ;;
             update)
-                OPTS="--integration --stable --all --upgrade --update-cache --proceed"
+                OPTS="--integration --stable --all --upgrade --update-cache"
                 if [[ "$CUR" != -* ]]; then
                     OPTS="$OPTS $(_list_instances)"
                 fi
