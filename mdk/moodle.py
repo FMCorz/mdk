@@ -283,43 +283,7 @@ class Moodle(object):
 
     def initPHPUnit(self, force=False, prefix=None):
         """Initialise the PHPUnit environment"""
-
-        if self.branch_compare(23, '<'):
-            raise Exception('PHPUnit is only available from Moodle 2.3')
-
-        # Set PHPUnit data root
-        phpunit_dataroot = self.get('dataroot') + '_phpu'
-        self.updateConfig('phpunit_dataroot', phpunit_dataroot)
-        if not os.path.isdir(phpunit_dataroot):
-            mkdir(phpunit_dataroot, 0777)
-
-        # Set PHPUnit prefix
-        currentPrefix = self.get('phpunit_prefix')
-        phpunit_prefix = prefix or 'phpu_'
-
-        if not currentPrefix or force:
-            self.updateConfig('phpunit_prefix', phpunit_prefix)
-        elif currentPrefix != phpunit_prefix and self.get('dbtype') != 'oci':
-            # Warn that a prefix is already set and we did not change it.
-            # No warning for Oracle as we need to set it to something else.
-            logging.warning('PHPUnit prefix not changed, already set to \'%s\', expected \'%s\'.' % (currentPrefix, phpunit_prefix))
-
-        result = (None, None, None)
-        exception = None
-        try:
-            if force:
-                result = self.cli('/admin/tool/phpunit/cli/util.php', args='--drop', stdout=None, stderr=None)
-            result = self.cli('/admin/tool/phpunit/cli/init.php', stdout=None, stderr=None)
-        except Exception as exception:
-            pass
-
-        if exception != None or result[0] > 0:
-            if result[0] == 129:
-                raise Exception('PHPUnit is not installed on your system')
-            elif result[0] > 0:
-                raise Exception('Something wrong with PHPUnit configuration')
-            else:
-                raise exception
+        raise Exception('This method is deprecated, use phpunit.PHPUnit.init() instead.')
 
     def initBehat(self, switchcompletely=False, force=False, prefix=None):
         """Initialise the Behat environment"""
