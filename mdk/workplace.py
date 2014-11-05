@@ -276,6 +276,18 @@ class Workplace(object):
         else:
             return os.path.join(self.cache, 'moodle.git')
 
+    def getExtraDir(self, name, subdir=None):
+        """Return the path to the extra directory of an instance
+
+        This also creates the directory if does not exist.
+        """
+        path = self.getPath(name, 'extra')
+        if subdir:
+            path = os.path.join(path, subdir)
+        if not os.path.exists(path):
+            mkdir(path, 0777)
+        return path
+
     def getMdkWebDir(self):
         """Return (and create) the special MDK web directory."""
         mdkExtra = os.path.join(self.www, self.mdkDir)
@@ -295,6 +307,21 @@ class Workplace(object):
             return os.path.join(base, self.extraDir)
         else:
             return base
+
+    def getUrl(self, name, extra=None):
+        """Return the URL to an instance, or to its extra directory if extra is passed"""
+        base = '%s://%s' % (C.get('scheme'), C.get('host'))
+
+        if C.get('path') != '' and C.get('path') != None:
+            base = '%s/%s' % (base, C.get('path'))
+
+        wwwroot = None
+        if not extra:
+            wwwroot = '%s/%s' % (base, name)
+        else:
+            wwwroot = '%s/%s/%s/%s' % (base, self.mdkDir, name, extra)
+
+        return wwwroot
 
     def isMoodle(self, name):
         """Checks whether a Moodle instance exist under this name"""

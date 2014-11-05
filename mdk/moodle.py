@@ -398,12 +398,14 @@ class Moodle(object):
             info[k] = v
         return info
 
-    def install(self, dbname=None, engine=None, dataDir=None, fullname=None, dropDb=False):
+    def install(self, dbname=None, engine=None, dataDir=None, fullname=None, dropDb=False, wwwroot=None):
         """Launch the install script of an Instance"""
 
         if self.isInstalled():
             raise InstallException('Instance already installed!')
 
+        if not wwwroot:
+            raise InstallException('Cannot install without a value for wwwroot')
         if dataDir == None or not os.path.isdir(dataDir):
             raise InstallException('Cannot install instance without knowing where the data directory is')
         if dbname == None:
@@ -429,12 +431,6 @@ class Moodle(object):
         else:
             db.createdb(dbname)
         db.selectdb(dbname)
-
-        # Defining wwwroot.
-        wwwroot = '%s://%s/' % (C.get('scheme'), C.get('host'))
-        if C.get('path') != '' and C.get('path') != None:
-            wwwroot = wwwroot + C.get('path') + '/'
-        wwwroot = wwwroot + self.identifier
 
         logging.info('Installing %s...' % self.identifier)
         cli = 'admin/cli/install.php'

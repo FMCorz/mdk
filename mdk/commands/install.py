@@ -93,7 +93,8 @@ class InstallCommand(Command):
         kwargs = {
             'engine': engine,
             'fullname': fullname,
-            'dataDir': dataDir
+            'dataDir': dataDir,
+            'wwwroot': self.Wp.getUrl(name)
         }
         M.install(**kwargs)
 

@@ -24,7 +24,6 @@ http://github.com/FMCorz/mdk
 
 import os
 import shutil
-import imp
 import subprocess
 from .. import git
 from ..command import Command
@@ -358,16 +357,13 @@ class DoctorCommand(Command):
 
         instances = self.Wp.resolveMultiple(self.Wp.list())
 
-        wwwroot = '%s://%s/' % (self.C.get('scheme'), self.C.get('host'))
-        if self.C.get('path') != '' and self.C.get('path') != None:
-            wwwroot = wwwroot + self.C.get('path') + '/'
 
         for M in instances:
             if not M.isInstalled():
                 continue
             else:
                 actual = M.get('wwwroot')
-                expected = wwwroot + M.get('identifier')
+                expected = self.Wp.getUrl(M.get('identifier'))
                 if actual != expected:
                     print '  %s: Found %s, not %s' % (M.get('identifier'), actual, expected)
                     if args.fix:

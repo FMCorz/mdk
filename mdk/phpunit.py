@@ -63,19 +63,11 @@ class PHPUnit(object):
 
     def getCoverageDir(self):
         """Get the Coverage directory, and create it if required"""
-        path = os.path.join(self.Wp.getPath(self.M.get('identifier'), 'extra'), 'coverage')
-        if not os.path.exists(path):
-            mkdir(path, 0777)
-        return path
+        return self.Wp.getExtraDir(self.M.get('identifier'), 'coverage')
 
     def getCoverageUrl(self):
         """Return the code coverage URL"""
-        # TODO Constructing the URL should be done elsewhere...
-        wwwroot = '%s://%s/' % (C.get('scheme'), C.get('host'))
-        if C.get('path') != '' and C.get('path') != None:
-            wwwroot = wwwroot + C.get('path') + '/'
-        wwwroot = wwwroot + C.get('mdkDir') + '/' + self.M.get('identifier') + '/coverage'
-        return wwwroot
+        return self.Wp.getUrl(self.M.get('identifier'), extra='coverage')
 
     def init(self, force=False, prefix=None):
         """Initialise the PHPUnit environment"""
