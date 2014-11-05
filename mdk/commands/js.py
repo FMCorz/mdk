@@ -109,7 +109,7 @@ class JsCommand(Command):
     def run(self, args):
         if args.mode == 'shift':
             self.shift(args)
-        if args.mode == 'doc':
+        elif args.mode == 'doc':
             self.document(args)
 
 
@@ -181,16 +181,13 @@ class JsCommand(Command):
         if len(Mlist) < 1:
             raise Exception('No instances to work on. Exiting...')
 
-        cwd = os.path.realpath(os.path.abspath(os.getcwd()))
-        mpath = Mlist[0].get('path')
-        relpath = cwd.replace(mpath, '').strip('/')
-
         for M in Mlist:
-            if len(Mlist) > 1:
-                logging.info('Let\'s document everything you wanted on \'%s\'' % (M.get('identifier')))
-
+            logging.info('Documenting everything you wanted on \'%s\'. This may take a while...', M.get('identifier'))
+            outdir = self.Wp.getExtraDir(M.get('identifier'), 'jsdoc')
+            outurl = self.Wp.getUrl(M.get('identifier'), extra='jsdoc')
             processor = js.Js(M)
-            processor.document(self.Wp.getPath(M.get('identifier'), 'jsdocdir'))
+            processor.document(outdir)
+            logging.info('Documentation available at:\n %s\n %s', outdir, outurl)
 
 
 class JsShiftWatcher(watchdog.events.FileSystemEventHandler):

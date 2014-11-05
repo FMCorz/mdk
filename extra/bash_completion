@@ -145,7 +145,10 @@ function _mdk() {
                 OPTS="--plugin --module"
                 case "$PREV" in
                     js)
-                        OPTS="shift"
+                        OPTS="doc shift"
+                        ;;
+                    doc)
+                        OPTS="$(_list_instances)"
                         ;;
                     *)
                         if [[ "$CUR" != -* ]]; then
