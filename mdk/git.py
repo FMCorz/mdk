@@ -123,7 +123,7 @@ class Git(object):
         if not self.isRepository(path):
             raise Exception('This is not a Git repository')
 
-        if not type(cmd) == 'list':
+        if not type(cmd) == list:
             cmd = shlex.split(str(cmd))
         cmd.insert(0, self.getBin())
 

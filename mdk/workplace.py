@@ -426,7 +426,8 @@ class Workplace(object):
 
             repo = git.Git(cache, C.get('git'))
 
-            logging.info('Fetching cached repository %s...' % os.path.basename(cache))
+            if verbose:
+                logging.info('Fetching cached repository %s...', os.path.basename(cache))
             if not repo.fetch():
                 raise Exception('Could not fetch in repository %s' % (cache))
 

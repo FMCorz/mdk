@@ -23,6 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import os
+import re
 import shutil
 import subprocess
 from .. import git
@@ -81,6 +82,13 @@ class DoctorCommand(Command):
                 'action': 'store_true',
                 'help': 'What you see it totally unrelated to what you get',
                 'silent': True
+            }
+        ),
+        (
+            ['--masterbranch'],
+            {
+                'action': 'store_true',
+                'help': 'Check the status of the master branch'
             }
         ),
         (
@@ -144,6 +152,10 @@ class DoctorCommand(Command):
         # Check the branches
         if args.branch or allChecks:
             self.branch(args)
+
+        # Check the master branch
+        if args.masterbranch or allChecks:
+            self.masterbranch(args)
 
         # Check what you see is what you get
         if args.hi:
@@ -273,6 +285,46 @@ class DoctorCommand(Command):
                 if args.fix:
                     print '    Creating %s' % d
                     mkdir(d, 0777)
+
+    def masterbranch(self, args):
+        """Checks the current master branch and the value set in config."""
+
+        print 'Checking master branch'
+
+        if not self._checkWorkplace():
+            return
+
+        repoPath = self.Wp.getCachedRemote()
+        if not os.path.isdir(repoPath):
+            return
+
+        try:
+            self.Wp.updateCachedClones(verbose=False)
+        except Exception:
+            print '  Could not update clone, please try again.'
+            return
+
+        repo = git.Git(repoPath, self.C.get('git'))
+        result = repo.execute(['show', 'master:version.php'])
+        if result[0] != 0:
+            print '  Could not read the master version.php'
+            return
+
+        reBranch = re.compile(r'^\s*\$branch\s*=\s*(?P<brackets>[\'"])?([0-9]+)(?P=brackets)\s*;')
+        latestBranch = None
+        for line in result[1].split('\n'):
+            if reBranch.search(line):
+                latestBranch = int(reBranch.search(line).group(2))
+
+        masterBranch = int(self.C.get('masterBranch'))
+        if not latestBranch:
+            print '  Oops, could not identify the mater branch'
+        elif masterBranch != latestBranch:
+            print '  The config masterBranch is set to %d, expecting %d' % (masterBranch, latestBranch)
+            if args.fix:
+                print '    Setting masterBranch to %d' % (latestBranch)
+                self.C.set('masterBranch', latestBranch)
+
 
     def hi(self, args):
         """I wonder what is the purpose of this...
