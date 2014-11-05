@@ -39,6 +39,10 @@ You need the `pip <http://www.pip-installer.org/en/latest/installing.html>`_ to 
 
 That's it!
 
+On Debian-based systems, you will probably need to install the following packages:
+
+    sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev
+
 
 Homebrew
 --------
@@ -65,6 +69,10 @@ You will need the tool `pip <http://www.pip-installer.org/en/latest/installing.h
 ::
 
     sudo pip install -r /opt/moodle-sdk/requirements.txt
+
+On Debian-based systems, you will probably need to install the following packages:
+
+    sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev
 
 3. Make executable and accessible
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
