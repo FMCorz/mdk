@@ -28,7 +28,7 @@ import time
 import logging
 from distutils.dir_util import copy_tree
 
-from .tools import chmodRecursive
+from .tools import chmodRecursive, mkdir
 from .db import DB
 from .config import Conf
 from .workplace import Workplace
@@ -43,6 +43,8 @@ class BackupManager(object):
 
     def __init__(self):
         self.path = os.path.expanduser(os.path.join(C.get('dirs.moodle'), 'backup'))
+        if not os.path.exists(self.path):
+            mkdir(self.path, 0777)
 
     def create(self, M):
         """Creates a new backup of M"""
