@@ -40,7 +40,7 @@ class PHPUnit(object):
         self._Wp = Wp
         self._M = M
 
-    def getCommand(self, **kwargs):
+    def getCommand(self, testcase=None, unittest=None, filter=None, coverage=None):
         """Get the PHPUnit command"""
         cmd = []
         if self.usesComposer():
@@ -48,14 +48,34 @@ class PHPUnit(object):
         else:
             cmd.append('phpunit')
 
-        if kwargs.get('testcase'):
-            cmd.append(kwargs.get('testcase'))
-        elif kwargs.get('unittest'):
-            cmd.append(kwargs.get('unittest'))
-        elif kwargs.get('filter'):
-            cmd.append('--filter="%s"' % kwargs.get('filter'))
+        if coverage:
+            cmd.append('--coverage-html')
+            cmd.append(self.getCoverageDir())
+
+        if testcase:
+            cmd.append(testcase)
+        elif unittest:
+            cmd.append(unittest)
+        elif filter:
+            cmd.append('--filter="%s"' % filter)
 
         return cmd
+
+    def getCoverageDir(self):
+        """Get the Coverage directory, and create it if required"""
+        path = os.path.join(self.Wp.getPath(self.M.get('identifier'), 'extra'), 'coverage')
+        if not os.path.exists(path):
+            mkdir(path, 0777)
+        return path
+
+    def getCoverageUrl(self):
+        """Return the code coverage URL"""
+        # TODO Constructing the URL should be done elsewhere...
+        wwwroot = '%s://%s/' % (C.get('scheme'), C.get('host'))
+        if C.get('path') != '' and C.get('path') != None:
+            wwwroot = wwwroot + C.get('path') + '/'
+        wwwroot = wwwroot + C.get('mdkDir') + '/' + self.M.get('identifier') + '/coverage'
+        return wwwroot
 
     def init(self, force=False, prefix=None):
         """Initialise the PHPUnit environment"""

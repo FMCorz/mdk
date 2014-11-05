@@ -65,6 +65,13 @@ class PhpunitCommand(Command):
             }
         ),
         (
+            ['-c', '--coverage'],
+            {
+                'action': 'store_true',
+                'help': 'creates the HTML code coverage report'
+            }
+        ),
+        (
             ['--filter'],
             {
                 'default': None,
@@ -134,13 +141,16 @@ class PhpunitCommand(Command):
             PU.init(force=args.force, prefix=prefix)
 
             kwargs = {
+                'coverage': args.coverage,
+                'filter': args.filter,
                 'testcase': args.testcase,
-                'unittest': args.unittest,
-                'filter': args.filter
+                'unittest': args.unittest
             }
 
             if args.run:
                 PU.run(**kwargs)
+                if args.coverage:
+                    logging.info('Code coverage is available at: \n %s', (PU.getCoverageUrl()))
             else:
                 logging.info('Start PHPUnit:\n %s' % (' '.join(PU.getCommand(**kwargs))))
 
