@@ -39,7 +39,7 @@ You need the `pip <http://www.pip-installer.org/en/latest/installing.html>`_ to 
 
 That's it!
 
-On Debian-based systems, you will probably need to install the following packages:
+On Debian-based systems, you will probably need to install the following packages::
 
     sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev
 
@@ -53,16 +53,16 @@ Using `Homebrew <http://brew.sh/>`_, please refer to this `formula <https://gith
 Git
 ---
 
-1. Clone the repository
-~~~~~~~~~~~~~~~~~~~~~~~
+Clone the repository
+~~~~~~~~~~~~~~~~~~~~
 
 ::
 
     cd /opt
     sudo git clone git://github.com/FMCorz/mdk.git moodle-sdk
 
-2. Install the dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Install the dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 You will need the tool `pip <http://www.pip-installer.org/en/latest/installing.html>`_ to install the packages required by Python.
 
@@ -70,20 +70,20 @@ You will need the tool `pip <http://www.pip-installer.org/en/latest/installing.h
 
     sudo pip install -r /opt/moodle-sdk/requirements.txt
 
-On Debian-based systems, you will probably need to install the following packages:
+On Debian-based systems, you will probably need to install the following packages::
 
     sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev
 
-3. Make executable and accessible
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Make executable and accessible
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
     sudo chmod +x /opt/moodle-sdk/mdk.py
     sudo ln -s /opt/moodle-sdk/mdk.py /usr/local/bin/mdk
 
-4. Set up the basics
-~~~~~~~~~~~~~~~~~~~~
+Set up the basics
+~~~~~~~~~~~~~~~~~
 
 Assuming that you are using Apache, which is set up to serve the files from /var/www, leave the default values as they are in ``mdk init``, except for your remote and the database passwords.
 
@@ -108,6 +108,18 @@ To activate goto commands (``gt`` and ``gtd``), add the following to ~/.bashrc::
         . /opt/moodle-sdk/extra/goto_instance
         . /opt/moodle-sdk/extra/goto_instance.bash_completion
     fi
+
+
+Upgrading
+=========
+
+If you installed MDK using PIP, run the following command::
+
+    sudo pip install --upgrade moodle-sdk
+
+It is possible that a new version of MDK requires new files, directories, etc... and while we try to make it easy to upgrade, it can happen that some features get broken in your environment. So after each upgrade, consider running the following to get more information::
+
+    mdk doctor --all
 
 
 Command list
