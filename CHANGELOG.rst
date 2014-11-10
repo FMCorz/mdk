@@ -1,6 +1,25 @@
 Changelog
 =========
 
+v1.4
+----
+
+- ``js`` supports generation of YUI Docs - Andrew Nicols
+- New setting ``forceCfg`` to add $CFG values to config.php upon install - David Mudrak
+- ``js shift`` watcher does not die when compilation fails
+- ``js shift`` output improved
+- ``behat`` uses new mechanism for 2.6 instances
+- ``behat`` can be used with Oracle
+- ``behat`` logs Selenium output to a file
+- ``behat`` supports output of progress, failures, screenshots, etc...
+- ``behat`` does not override ``behat_wwwroot`` unless told to
+- ``behat`` can force the initialisation
+- ``phpunit`` can be used with Oracle
+- ``phpunit`` does not automatically run without ``--run``
+- ``phpunit`` supports generation of code coverage
+- ``doctor`` supports ``--symlink`` checks
+- ``doctor`` supports ``--masterbranch`` checks
+
 v1.3
 ----
 
