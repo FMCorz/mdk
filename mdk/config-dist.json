@@ -110,6 +110,10 @@
                 "branch" : "Pull 2.7 Branch",
                 "diffurl" : "Pull 2.7 Diff URL"
             },
+            "28" : {
+                "branch" : "Pull 2.8 Branch",
+                "diffurl" : "Pull 2.8 Diff URL"
+            },
             "master" : {
                 "branch" : "Pull Master Branch",
                 "diffurl" : "Pull Master Diff URL"
