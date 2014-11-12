@@ -172,7 +172,7 @@ function _mdk() {
                     OPTS="$(compgen -A file $CUR)"
                     compopt -o nospace
                 else
-                    OPTS="--force --run --testcase --unittest --filter --coverage"
+                    OPTS="--force --run --testcase --unittest --filter --coverage --testsuite"
                     OPTS="$OPTS $(_list_instances)"
                 fi
                 ;;
