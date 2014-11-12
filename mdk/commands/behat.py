@@ -236,8 +236,8 @@ class BehatCommand(Command):
                 cmd.append('--tags ~@javascript')
 
             if args.faildump:
-                cmd.append('--format="progress,progress,html,failed"')
-                cmd.append('--out=",{0}/progress.txt,{0}/status.html,{0}/failed.txt"'.format(outputDir))
+                cmd.append('--format="progress,progress,pretty,html,failed"')
+                cmd.append('--out=",{0}/progress.txt,{0}/pretty.txt,{0}/status.html,{0}/failed.txt"'.format(outputDir))
 
             cmd.append('--config=%s/behat/behat.yml' % (M.get('behat_dataroot')))
 
