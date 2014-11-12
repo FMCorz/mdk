@@ -40,7 +40,7 @@ class PHPUnit(object):
         self._Wp = Wp
         self._M = M
 
-    def getCommand(self, testcase=None, unittest=None, filter=None, coverage=None):
+    def getCommand(self, testcase=None, unittest=None, filter=None, coverage=None, testsuite=None):
         """Get the PHPUnit command"""
         cmd = []
         if self.usesComposer():
@@ -58,6 +58,9 @@ class PHPUnit(object):
             cmd.append(unittest)
         elif filter:
             cmd.append('--filter="%s"' % filter)
+        elif testsuite:
+            cmd.append('--testsuite')
+            cmd.append(testsuite)
 
         return cmd
 

@@ -57,6 +57,14 @@ class PhpunitCommand(Command):
             }
         ),
         (
+            ['-s', '--testsuite'],
+            {
+                'default': None,
+                'help': 'testsuite to run',
+                'metavar': 'testsuite'
+            }
+        ),
+        (
             ['-u', '--unittest'],
             {
                 'default': None,
@@ -144,6 +152,7 @@ class PhpunitCommand(Command):
                 'coverage': args.coverage,
                 'filter': args.filter,
                 'testcase': args.testcase,
+                'testsuite': args.testsuite,
                 'unittest': args.unittest
             }
 
