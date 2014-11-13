@@ -68,7 +68,7 @@ class Fetch(object):
         if not self.M.git().merge('FETCH_HEAD'):
             raise FetchException('Merge failed, resolve the conflicts and commit')
 
-    def pull(self, into=None):
+    def pull(self, into=None, track=None):
         """Fetch and merge the fetched branch into a branch passed as param"""
         self._stash()
 
@@ -81,7 +81,7 @@ class Fetch(object):
 
                 if not git.hasBranch(into):
                     if self.canCreateBranch:
-                        if not git.createBranch(into):
+                        if not git.createBranch(into, track=track):
                             raise FetchException('Could not create the branch %s' % (into))
                     else:
                         raise FetchException('Branch %s does not exist and create branch is forbidden' % (into))

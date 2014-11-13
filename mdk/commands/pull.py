@@ -158,7 +158,7 @@ class PullCommand(Command):
                 newBranch = M.generateBranchName(issue, suffix=suffix, version=branch)
                 if not M.git().hasBranch(newBranch):
                     break
-            fetcher.pull(into=newBranch)
+            fetcher.pull(into=newBranch, track=M.get('stablebranch'))
 
     def pickPatches(self, mdl):
         """Prompts the user to pick a patch"""
