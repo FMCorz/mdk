@@ -204,14 +204,18 @@ class JsShiftWatcher(watchdog.events.FileSystemEventHandler):
         self._args = args
 
     def on_modified(self, event):
-        self.process(event)
-
-    def process(self, event):
         if event.is_directory:
             return
         elif not os.path.splitext(event.src_path)[1] in self._ext:
             return
+        self.process(event)
 
+    def on_moved(self, event):
+        if not os.path.splitext(event.dest_path)[1] in self._ext:
+            return
+        self.process(event)
+
+    def process(self, event):
         logging.info('[%s] (%s) Changes detected!' % (self._M.get('identifier'), datetime.datetime.now().strftime('%H:%M:%S')))
 
         try:
