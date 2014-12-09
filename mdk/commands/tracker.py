@@ -46,6 +46,24 @@ class TrackerCommand(Command):
                 'help': 'MDL issue number. Guessed from the current branch if not specified.',
                 'nargs': '?'
             }
+        ),
+        (
+            ['--add-labels'],
+            {
+                'action': 'store',
+                'help': 'Add the specified labels to the issue',
+                'nargs': '+',
+                'dest':  'addlabels'
+            }
+        ),
+        (
+            ['--remove-labels'],
+            {
+                'action': 'store',
+                'help': 'Remove the specified labels from the issue',
+                'nargs': '+',
+                'dest':  'removelabels'
+            }
         )
     ]
     _description = 'Retrieve information from the tracker'
@@ -70,7 +88,53 @@ class TrackerCommand(Command):
 
         self.Jira = Jira()
         self.mdl = 'MDL-' + re.sub(r'(MDL|mdl)(-|_)?', '', issue)
+
+        changesMade = False
+        labelChanges = {
+            'added': [],
+            'removed': [],
+            'nochange': []
+        }
+
+        if args.addlabels:
+            result = self.Jira.addLabels(self.mdl, args.addlabels)
+            labelChanges['added'].extend(result['added'])
+            labelChanges['nochange'].extend(result['nochange'])
+
+            if len(result['added']):
+                changesMade = True
+
+        if args.removelabels:
+            result = self.Jira.removeLabels(self.mdl, args.removelabels)
+            labelChanges['removed'].extend(result['removed'])
+            labelChanges['nochange'].extend(result['nochange'])
+
+            if len(result['removed']):
+                changesMade = True
+
         self.info(args)
+
+        if changesMade or len(labelChanges['nochange']):
+            if changesMade:
+                print u'Changes were made to this issue:'
+
+            if len(labelChanges['added']):
+                labels = u'{0}: {1}'.format('Labels added', ', '.join(labelChanges['added']))
+                for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
+                    print l
+
+            if len(labelChanges['removed']):
+                labels = u'{0}: {1}'.format('Labels removed', ', '.join(labelChanges['removed']))
+                for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
+                    print l
+
+            if len(labelChanges['nochange']):
+                print u'Some changes were not made to this issue:'
+                labels = u'{0}: {1}'.format('Labels unchanged', ', '.join(labelChanges['nochange']))
+                for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
+                    print l
+
+            print u'-' * 72
 
     def info(self, args):
         """Display classic information about an issue"""
@@ -88,6 +152,12 @@ class TrackerCommand(Command):
         print u'  {0} - {1} - {2}'.format(issue['fields']['issuetype']['name'], issue['fields']['priority']['name'], u'https://tracker.moodle.org/browse/' + issue['key'])
         status = u'{0} {1} {2}'.format(issue['fields']['status']['name'], resolution, resolutiondate).strip()
         print u'  {0}'.format(status)
+
+        if issue['fields']['labels']:
+            labels = u'{0}: {1}'.format('Labels', ', '.join(issue['fields']['labels']))
+            for l in textwrap.wrap(labels, 68, initial_indent='  ', subsequent_indent='    '):
+                print l
+
         vw = u'[ V: %d - W: %d ]' % (issue['fields']['votes']['votes'], issue['fields']['watches']['watchCount'])
         print '{0:->70}--'.format(vw)
         print u'{0:<20}: {1} ({2}) on {3}'.format('Reporter', issue['fields']['reporter']['displayName'], issue['fields']['reporter']['name'], created)
