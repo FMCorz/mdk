@@ -308,7 +308,7 @@ class Moodle(object):
         currentFailDumpPath = self.get('behat_faildump_path')
         if faildumppath and currentFailDumpPath != faildumppath:
             self.updateConfig('behat_faildump_path', faildumppath)
-        else:
+        elif (not faildumppath and currentFailDumpPath):
             self.removeConfig('behat_faildump_path')
 
         if not currentPrefix or force:
