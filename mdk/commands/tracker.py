@@ -64,6 +64,22 @@ class TrackerCommand(Command):
                 'nargs': '+',
                 'dest':  'removelabels'
             }
+        ),
+        (
+            ['--start-review'],
+            {
+                'action': 'store_true',
+                'help': 'Change the status to Peer-review in progress and assign self as reviewer',
+                'dest': 'reviewStart'
+            }
+        ),
+        (
+            ['--fail-review'],
+            {
+                'action': 'store_true',
+                'help': 'Change the status to Peer-review in progress and assign self as reviewer',
+                'dest': 'reviewFail'
+            }
         )
     ]
     _description = 'Retrieve information from the tracker'
@@ -96,6 +112,9 @@ class TrackerCommand(Command):
             'nochange': []
         }
 
+        newComments = []
+        transitionChanges = {}
+
         if args.addlabels:
             result = self.Jira.addLabels(self.mdl, args.addlabels)
             labelChanges['added'].extend(result['added'])
@@ -112,11 +131,27 @@ class TrackerCommand(Command):
             if len(result['removed']):
                 changesMade = True
 
-        self.info(args)
+        if args.reviewStart:
+            transitionChanges = self.Jira.reviewStart(self.mdl)
+
+        elif args.reviewFail:
+            transitionChanges = self.Jira.reviewFail(self.mdl)
+
+        if transitionChanges:
+            changesMade = True
+            if 'comment' in transitionChanges['data']['update']:
+                for comment in transitionChanges['data']['update']['comment']:
+                    newComments.append(comment['add'])
+
+
+        issueInfo = self.info(args)
 
         if changesMade or len(labelChanges['nochange']):
             if changesMade:
                 print u'Changes were made to this issue:'
+
+            if len(transitionChanges):
+                print '* State changed from "%s" to "%s"' % (transitionChanges['original'].get('fields')['status']['name'], issueInfo.get('fields')['status']['name'])
 
             if len(labelChanges['added']):
                 labels = u'{0}: {1}'.format('Labels added', ', '.join(labelChanges['added']))
@@ -133,6 +168,13 @@ class TrackerCommand(Command):
                 labels = u'{0}: {1}'.format('Labels unchanged', ', '.join(labelChanges['nochange']))
                 for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
                     print l
+
+            if len(newComments):
+                print u'* Some comments were added:'
+                for comment in newComments:
+                    print u'-' * 72
+                    for l in textwrap.wrap(comment['add']['body'], 72):
+                        print l
 
             print u'-' * 72
 
@@ -178,3 +220,5 @@ class TrackerCommand(Command):
                 print '  ' + l
 
         print u'-' * 72
+
+        return issue
