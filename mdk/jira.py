@@ -356,6 +356,19 @@ class Jira(object):
 
         return True
 
+    def addComment(self, key):
+        comment = self.getNewComment()
+
+        data = {'body': comment}
+        resp = self.request('issue/%s/comment' % (str(key)), method='POST', data=json.dumps(data))
+
+        if resp.get('status') != 201:
+            logging.debug(resp)
+            raise JiraException('Could not add new comment to issue %s - %s' % (key, resp.get('status')))
+
+        return resp.get('data')
+
+
     def getLabels(self, key):
         """Get a dict of labels
         """
@@ -450,7 +463,7 @@ class Jira(object):
         }
         return changes
 
-    def getComment(self):
+    def getNewComment(self):
         success = None
         while True:
             tmpfile = launchEditor(suffix='.md')
@@ -506,7 +519,7 @@ class Jira(object):
         update = {'comment': []}
 
         # Attempt to add a comment.
-        comment = self.getComment()
+        comment = self.getNewComment()
         if comment:
             update['comment'].append(
                 {

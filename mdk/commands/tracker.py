@@ -80,6 +80,14 @@ class TrackerCommand(Command):
                 'help': 'Change the status to Peer-review in progress and assign self as reviewer',
                 'dest': 'reviewFail'
             }
+        ),
+        (
+            ['--comment'],
+            {
+                'action': 'store_true',
+                'help': 'Add a comment to the issue',
+                'dest': 'comment'
+            }
         )
     ]
     _description = 'Retrieve information from the tracker'
@@ -143,6 +151,11 @@ class TrackerCommand(Command):
                 for comment in transitionChanges['data']['update']['comment']:
                     newComments.append(comment['add'])
 
+        if args.comment:
+            newComment =self.Jira.addComment(self.mdl)
+            if newComment:
+                changesMade = True
+                newComments.append(newComment)
 
         issueInfo = self.info(args)
 
@@ -172,9 +185,16 @@ class TrackerCommand(Command):
             if len(newComments):
                 print u'* Some comments were added:'
                 for comment in newComments:
-                    print u'-' * 72
-                    for l in textwrap.wrap(comment['add']['body'], 72):
-                        print l
+                    if 'id' in comment:
+                        commenturl = "%s%s/browse/%s?focusedCommentId=%s" % (self.Jira.url, self.Jira.uri, self.mdl, comment['id'])
+                        commentlink = u'- %s ' % commenturl
+                        print '{0:->70}--'.format(commentlink)
+                    else:
+                        print u'-' * 72
+
+                    # Note: Do not wrap the comment as it's not really meant to be wrapped again. The editor may have
+                    # already wrapped it, or the markdown may just look a bit crap.
+                    print comment['body']
 
             print u'-' * 72
 

@@ -216,7 +216,7 @@ function _mdk() {
                 fi
                 ;;
             tracker)
-                OPTS="--testing --add-labels --remove-labels --start-review --fail-review"
+                OPTS="--testing --add-labels --remove-labels --comment --start-review --fail-review"
                 ;;
             update)
                 OPTS="--integration --stable --all --upgrade --update-cache"
