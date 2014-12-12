@@ -82,6 +82,22 @@ class TrackerCommand(Command):
             }
         ),
         (
+            ['--start-development'],
+            {
+                'action': 'store_true',
+                'help': 'Change the status to Development in progress and assign self as assignee',
+                'dest': 'developmentStart'
+            }
+        ),
+        (
+            ['--stop-development'],
+            {
+                'action': 'store_true',
+                'help': 'Stop development of the issue if you are the reviewer',
+                'dest': 'developmentStop'
+            }
+        ),
+        (
             ['--comment'],
             {
                 'action': 'store_true',
@@ -139,7 +155,13 @@ class TrackerCommand(Command):
             if len(result['removed']):
                 changesMade = True
 
-        if args.reviewStart:
+        if args.developmentStart:
+            transitionChanges = self.Jira.developmentStart(self.mdl)
+
+        elif args.developmentStop:
+            transitionChanges = self.Jira.developmentStop(self.mdl)
+
+        elif args.reviewStart:
             transitionChanges = self.Jira.reviewStart(self.mdl)
 
         elif args.reviewFail:

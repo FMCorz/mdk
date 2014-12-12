@@ -483,6 +483,37 @@ class Jira(object):
 
 
 
+    def developmentStart(self, key):
+        requestedTransition = self.getTransition(key, 'Start development')
+
+        namedMappings = {}
+        for fieldkey, fieldvalue in requestedTransition.get('fields', {}).items():
+            namedMappings[fieldvalue.get('name')] = fieldkey
+
+        issueInfo = self.getIssue(key)
+
+        if issueInfo['named']['Assignee'] and issueInfo['named']['Assignee']['name'] != self.username:
+            # Check whether we're already the reviewer (that would be nice)
+            raise JiraException('Issue already has an assignee: %s' % (str(issueInfo['named']['Assignee']['name'])))
+
+        fields = {
+            namedMappings['Assignee']: {
+                'name': self.username
+            }
+        }
+        return self.makeTransition(key, issueInfo, requestedTransition, fields)
+
+    def developmentStop(self, key):
+        requestedTransition = self.getTransition(key, 'Stop development')
+
+        issueInfo = self.getIssue(key)
+
+        if not issueInfo['named']['Assignee'] or issueInfo['named']['Assignee']['name'] != self.username:
+            # Check whether we're already the reviewer (that would be nice)
+            raise JiraException('You are not the assignee on this issue: %s' % (str(issueInfo['named']['Assignee']['name'])))
+
+        return self.makeTransition(key, issueInfo, requestedTransition)
+
     def reviewStart(self, key):
         requestedTransition = self.getTransition(key, 'Start peer review')
 
