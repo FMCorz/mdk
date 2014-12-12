@@ -98,6 +98,14 @@ class TrackerCommand(Command):
             }
         ),
         (
+            ['--list-transitions'],
+            {
+                'action': 'store_true',
+                'help': 'List the available status transitions',
+                'dest': 'transitions'
+            }
+        ),
+        (
             ['--comment'],
             {
                 'action': 'store_true',
@@ -262,5 +270,13 @@ class TrackerCommand(Command):
                 print '  ' + l
 
         print u'-' * 72
+
+        if args.transitions:
+            transitions = self.Jira.getTransitions(self.mdl)
+            print u'The following status transitions are available to this issue:'
+            for transition in transitions:
+                print u'* %s' % transition
+
+            print u'-' * 72
 
         return issue
