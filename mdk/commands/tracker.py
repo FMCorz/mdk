@@ -92,9 +92,17 @@ class TrackerCommand(Command):
         self.mdl = 'MDL-' + re.sub(r'(MDL|mdl)(-|_)?', '', issue)
 
         if args.addlabels:
+            if 'triaged' in args.addlabels:
+                self.argumentError('The label \'triaged\' cannot be added using MDK')
+            elif 'triaging_in_progress' in args.addlabels:
+                self.argumentError('The label \'triaging_in_progress\' cannot be added using MDK')
             self.Jira.addLabels(self.mdl, args.addlabels)
 
         if args.removelabels:
+            if 'triaged' in args.removelabels:
+                self.argumentError('The label \'triaged\' cannot be removed using MDK')
+            elif 'triaging_in_progress' in args.addlabels:
+                self.argumentError('The label \'triaging_in_progress\' cannot be removed using MDK')
             self.Jira.removeLabels(self.mdl, args.removelabels)
 
         self.info(args)
