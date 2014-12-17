@@ -353,6 +353,59 @@ class Jira(object):
 
         return True
 
+    def getLabels(self, key):
+        """Get a dict of labels
+        """
+        issueInfo = self.getIssue(key, fields='labels')
+        return issueInfo.get('fields').get('labels', [])
+
+    def addLabels(self, key, newLabels):
+        labels = self.getLabels(key)
+
+        results = {
+            'added': [],
+            'nochange': []
+        }
+
+        for label in newLabels:
+            label = unicode(label)
+            if label not in labels:
+                labels.append(label)
+                results['added'].append(label)
+            else:
+                results['nochange'].append(label)
+
+        update = {'fields': {'labels': labels}}
+        resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(update))
+
+        if resp['status'] != 204:
+            raise JiraException('Issue was not updated: %s' % (str(resp['status'])))
+
+        return results
+
+    def removeLabels(self, key, oldLabels):
+        labels = self.getLabels(key)
+
+        results = {
+            'removed': [],
+            'nochange': []
+        }
+
+        for label in oldLabels:
+            label = unicode(label)
+            if label in labels:
+                labels.remove(label)
+                results['removed'].append(label)
+            else:
+                results['nochange'].append(label)
+
+        update = {'fields': {'labels': labels}}
+        resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(update))
+
+        if resp['status'] != 204:
+            raise JiraException('Issue was not updated: %s' % (str(resp['status'])))
+
+        return results
 
 class JiraException(Exception):
     pass
