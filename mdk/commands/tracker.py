@@ -51,22 +51,24 @@ class TrackerCommand(Command):
             ['--add-labels'],
             {
                 'action': 'store',
-                'help': 'Add the specified labels to the issue',
+                'dest':  'addlabels',
+                'help': 'add the specified labels to the issue',
+                'metavar':  'labels',
                 'nargs': '+',
-                'dest':  'addlabels'
             }
         ),
         (
             ['--remove-labels'],
             {
                 'action': 'store',
-                'help': 'Remove the specified labels from the issue',
+                'dest':  'removelabels',
+                'help': 'remove the specified labels from the issue',
+                'metavar':  'labels',
                 'nargs': '+',
-                'dest':  'removelabels'
             }
         )
     ]
-    _description = 'Retrieve information from the tracker'
+    _description = 'Interact with Moodle tracker'
 
     Jira = None
     mdl = None
@@ -89,52 +91,13 @@ class TrackerCommand(Command):
         self.Jira = Jira()
         self.mdl = 'MDL-' + re.sub(r'(MDL|mdl)(-|_)?', '', issue)
 
-        changesMade = False
-        labelChanges = {
-            'added': [],
-            'removed': [],
-            'nochange': []
-        }
-
         if args.addlabels:
-            result = self.Jira.addLabels(self.mdl, args.addlabels)
-            labelChanges['added'].extend(result['added'])
-            labelChanges['nochange'].extend(result['nochange'])
-
-            if len(result['added']):
-                changesMade = True
+            self.Jira.addLabels(self.mdl, args.addlabels)
 
         if args.removelabels:
-            result = self.Jira.removeLabels(self.mdl, args.removelabels)
-            labelChanges['removed'].extend(result['removed'])
-            labelChanges['nochange'].extend(result['nochange'])
-
-            if len(result['removed']):
-                changesMade = True
+            self.Jira.removeLabels(self.mdl, args.removelabels)
 
         self.info(args)
-
-        if changesMade or len(labelChanges['nochange']):
-            if changesMade:
-                print u'Changes were made to this issue:'
-
-            if len(labelChanges['added']):
-                labels = u'{0}: {1}'.format('Labels added', ', '.join(labelChanges['added']))
-                for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
-                    print l
-
-            if len(labelChanges['removed']):
-                labels = u'{0}: {1}'.format('Labels removed', ', '.join(labelChanges['removed']))
-                for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
-                    print l
-
-            if len(labelChanges['nochange']):
-                print u'Some changes were not made to this issue:'
-                labels = u'{0}: {1}'.format('Labels unchanged', ', '.join(labelChanges['nochange']))
-                for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
-                    print l
-
-            print u'-' * 72
 
     def info(self, args):
         """Display classic information about an issue"""
@@ -153,9 +116,13 @@ class TrackerCommand(Command):
         status = u'{0} {1} {2}'.format(issue['fields']['status']['name'], resolution, resolutiondate).strip()
         print u'  {0}'.format(status)
 
+        print u'-' * 72
+        components = u'{0}: {1}'.format('Components', ', '.join([c['name'] for c in issue['fields']['components']]))
+        for l in textwrap.wrap(components, 68, initial_indent='  ', subsequent_indent='              '):
+            print l
         if issue['fields']['labels']:
             labels = u'{0}: {1}'.format('Labels', ', '.join(issue['fields']['labels']))
-            for l in textwrap.wrap(labels, 68, initial_indent='  ', subsequent_indent='    '):
+            for l in textwrap.wrap(labels, 68, initial_indent='  ', subsequent_indent='          '):
                 print l
 
         vw = u'[ V: %d - W: %d ]' % (issue['fields']['votes']['votes'], issue['fields']['watches']['watchCount'])

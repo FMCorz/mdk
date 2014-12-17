@@ -67,6 +67,20 @@ class Jira(object):
         self.version = {}
         self._load()
 
+
+    def addLabels(self, key, labels):
+        """Add labels to an issue"""
+
+        assert isinstance(labels, list), "Expected a list of labels"
+
+        data = []
+        for label in labels:
+            data.append({'add': label})
+
+        self.updateIssue(key, {'update': {'labels': data}})
+
+        return True
+
     def deleteAttachment(self, attachmentId):
         """Deletes an attachment"""
         resp = self.request('attachment/%s' % str(attachmentId), method='DELETE')
@@ -290,6 +304,17 @@ class Jira(object):
         value = re.sub(r'[+-]\d+$', '', value)
         return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
 
+    def removeLabels(self, key, labels):
+        """Remove labels from an issue"""
+
+        assert isinstance(labels, list), "Expected a list of labels"
+
+        data = []
+        for label in labels:
+            data.append({'remove': label})
+
+        self.updateIssue(key, {'update': {'labels': data}})
+
     def search(self, query):
         return self.request('search', params={'jql': query, 'fields': 'id'})
 
@@ -330,6 +355,15 @@ class Jira(object):
 
         return True
 
+    def updateIssue(self, key, data):
+        """Update an issue, the data must be well formatted"""
+        resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(data))
+
+        if resp['status'] != 204:
+            raise JiraException('Could not update the issue')
+
+        return True
+
     def upload(self, key, filepath):
         """Uploads a new attachment to the issue"""
 
@@ -353,59 +387,6 @@ class Jira(object):
 
         return True
 
-    def getLabels(self, key):
-        """Get a dict of labels
-        """
-        issueInfo = self.getIssue(key, fields='labels')
-        return issueInfo.get('fields').get('labels', [])
-
-    def addLabels(self, key, newLabels):
-        labels = self.getLabels(key)
-
-        results = {
-            'added': [],
-            'nochange': []
-        }
-
-        for label in newLabels:
-            label = unicode(label)
-            if label not in labels:
-                labels.append(label)
-                results['added'].append(label)
-            else:
-                results['nochange'].append(label)
-
-        update = {'fields': {'labels': labels}}
-        resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(update))
-
-        if resp['status'] != 204:
-            raise JiraException('Issue was not updated: %s' % (str(resp['status'])))
-
-        return results
-
-    def removeLabels(self, key, oldLabels):
-        labels = self.getLabels(key)
-
-        results = {
-            'removed': [],
-            'nochange': []
-        }
-
-        for label in oldLabels:
-            label = unicode(label)
-            if label in labels:
-                labels.remove(label)
-                results['removed'].append(label)
-            else:
-                results['nochange'].append(label)
-
-        update = {'fields': {'labels': labels}}
-        resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(update))
-
-        if resp['status'] != 204:
-            raise JiraException('Issue was not updated: %s' % (str(resp['status'])))
-
-        return results
 
 class JiraException(Exception):
     pass
