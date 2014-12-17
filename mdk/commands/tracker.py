@@ -46,6 +46,72 @@ class TrackerCommand(Command):
                 'help': 'MDL issue number. Guessed from the current branch if not specified.',
                 'nargs': '?'
             }
+        ),
+        (
+            ['--add-labels'],
+            {
+                'action': 'store',
+                'help': 'Add the specified labels to the issue',
+                'nargs': '+',
+                'dest':  'addlabels'
+            }
+        ),
+        (
+            ['--remove-labels'],
+            {
+                'action': 'store',
+                'help': 'Remove the specified labels from the issue',
+                'nargs': '+',
+                'dest':  'removelabels'
+            }
+        ),
+        (
+            ['--start-review'],
+            {
+                'action': 'store_true',
+                'help': 'Change the status to Peer-review in progress and assign self as reviewer',
+                'dest': 'reviewStart'
+            }
+        ),
+        (
+            ['--fail-review'],
+            {
+                'action': 'store_true',
+                'help': 'Change the status to Peer-review in progress and assign self as reviewer',
+                'dest': 'reviewFail'
+            }
+        ),
+        (
+            ['--start-development'],
+            {
+                'action': 'store_true',
+                'help': 'Change the status to Development in progress and assign self as assignee',
+                'dest': 'developmentStart'
+            }
+        ),
+        (
+            ['--stop-development'],
+            {
+                'action': 'store_true',
+                'help': 'Stop development of the issue if you are the reviewer',
+                'dest': 'developmentStop'
+            }
+        ),
+        (
+            ['--list-transitions'],
+            {
+                'action': 'store_true',
+                'help': 'List the available status transitions',
+                'dest': 'transitions'
+            }
+        ),
+        (
+            ['--comment'],
+            {
+                'action': 'store_true',
+                'help': 'Add a comment to the issue',
+                'dest': 'comment'
+            }
         )
     ]
     _description = 'Retrieve information from the tracker'
@@ -70,7 +136,97 @@ class TrackerCommand(Command):
 
         self.Jira = Jira()
         self.mdl = 'MDL-' + re.sub(r'(MDL|mdl)(-|_)?', '', issue)
-        self.info(args)
+
+        changesMade = False
+        labelChanges = {
+            'added': [],
+            'removed': [],
+            'nochange': []
+        }
+
+        newComments = []
+        transitionChanges = {}
+
+        if args.addlabels:
+            result = self.Jira.addLabels(self.mdl, args.addlabels)
+            labelChanges['added'].extend(result['added'])
+            labelChanges['nochange'].extend(result['nochange'])
+
+            if len(result['added']):
+                changesMade = True
+
+        if args.removelabels:
+            result = self.Jira.removeLabels(self.mdl, args.removelabels)
+            labelChanges['removed'].extend(result['removed'])
+            labelChanges['nochange'].extend(result['nochange'])
+
+            if len(result['removed']):
+                changesMade = True
+
+        if args.developmentStart:
+            transitionChanges = self.Jira.developmentStart(self.mdl)
+
+        elif args.developmentStop:
+            transitionChanges = self.Jira.developmentStop(self.mdl)
+
+        elif args.reviewStart:
+            transitionChanges = self.Jira.reviewStart(self.mdl)
+
+        elif args.reviewFail:
+            transitionChanges = self.Jira.reviewFail(self.mdl)
+
+        if transitionChanges:
+            changesMade = True
+            if 'comment' in transitionChanges['data']['update']:
+                for comment in transitionChanges['data']['update']['comment']:
+                    newComments.append(comment['add'])
+
+        if args.comment:
+            newComment =self.Jira.addComment(self.mdl)
+            if newComment:
+                changesMade = True
+                newComments.append(newComment)
+
+        issueInfo = self.info(args)
+
+        if changesMade or len(labelChanges['nochange']):
+            if changesMade:
+                print u'Changes were made to this issue:'
+
+            if len(transitionChanges):
+                print '* State changed from "%s" to "%s"' % (transitionChanges['original'].get('fields')['status']['name'], issueInfo.get('fields')['status']['name'])
+
+            if len(labelChanges['added']):
+                labels = u'{0}: {1}'.format('Labels added', ', '.join(labelChanges['added']))
+                for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
+                    print l
+
+            if len(labelChanges['removed']):
+                labels = u'{0}: {1}'.format('Labels removed', ', '.join(labelChanges['removed']))
+                for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
+                    print l
+
+            if len(labelChanges['nochange']):
+                print u'Some changes were not made to this issue:'
+                labels = u'{0}: {1}'.format('Labels unchanged', ', '.join(labelChanges['nochange']))
+                for l in textwrap.wrap(labels, 68, initial_indent='* ', subsequent_indent='    '):
+                    print l
+
+            if len(newComments):
+                print u'* Some comments were added:'
+                for comment in newComments:
+                    if 'id' in comment:
+                        commenturl = "%s%s/browse/%s?focusedCommentId=%s" % (self.Jira.url, self.Jira.uri, self.mdl, comment['id'])
+                        commentlink = u'- %s ' % commenturl
+                        print '{0:->70}--'.format(commentlink)
+                    else:
+                        print u'-' * 72
+
+                    # Note: Do not wrap the comment as it's not really meant to be wrapped again. The editor may have
+                    # already wrapped it, or the markdown may just look a bit crap.
+                    print comment['body']
+
+            print u'-' * 72
 
     def info(self, args):
         """Display classic information about an issue"""
@@ -88,6 +244,12 @@ class TrackerCommand(Command):
         print u'  {0} - {1} - {2}'.format(issue['fields']['issuetype']['name'], issue['fields']['priority']['name'], u'https://tracker.moodle.org/browse/' + issue['key'])
         status = u'{0} {1} {2}'.format(issue['fields']['status']['name'], resolution, resolutiondate).strip()
         print u'  {0}'.format(status)
+
+        if issue['fields']['labels']:
+            labels = u'{0}: {1}'.format('Labels', ', '.join(issue['fields']['labels']))
+            for l in textwrap.wrap(labels, 68, initial_indent='  ', subsequent_indent='    '):
+                print l
+
         vw = u'[ V: %d - W: %d ]' % (issue['fields']['votes']['votes'], issue['fields']['watches']['watchCount'])
         print '{0:->70}--'.format(vw)
         print u'{0:<20}: {1} ({2}) on {3}'.format('Reporter', issue['fields']['reporter']['displayName'], issue['fields']['reporter']['name'], created)
@@ -108,3 +270,13 @@ class TrackerCommand(Command):
                 print '  ' + l
 
         print u'-' * 72
+
+        if args.transitions:
+            transitions = self.Jira.getTransitions(self.mdl)
+            print u'The following status transitions are available to this issue:'
+            for transition in transitions:
+                print u'* %s' % transition
+
+            print u'-' * 72
+
+        return issue

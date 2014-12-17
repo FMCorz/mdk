@@ -32,6 +32,7 @@ import logging
 import os
 import requests
 import mimetypes
+from tools import launchEditor, yesOrNo
 try:
     import keyring
 except:
@@ -136,12 +137,14 @@ class Jira(object):
 
         issue = resp['data']
         issue['named'] = {}
+        issue['namedmapping'] = {}
 
         # Populate the named fields in a separate key. Allows us to easily find them without knowing the field ID.
         namelist = issue.get('names', {})
         for fieldkey, fieldvalue in issue.get('fields', {}).items():
             if namelist.get(fieldkey, None) != None:
                 issue['named'][namelist.get(fieldkey)] = fieldvalue
+                issue['namedmapping'][namelist.get(fieldkey)] = fieldkey
 
         return issue
 
@@ -353,6 +356,211 @@ class Jira(object):
 
         return True
 
+    def addComment(self, key):
+        comment = self.getNewComment()
+
+        data = {'body': comment}
+        resp = self.request('issue/%s/comment' % (str(key)), method='POST', data=json.dumps(data))
+
+        if resp.get('status') != 201:
+            logging.debug(resp)
+            raise JiraException('Could not add new comment to issue %s - %s' % (key, resp.get('status')))
+
+        return resp.get('data')
+
+
+    def getLabels(self, key):
+        """Get a dict of labels
+        """
+        issueInfo = self.getIssue(key, fields='labels')
+        return issueInfo.get('fields').get('labels', [])
+
+    def addLabels(self, key, newLabels):
+        labels = self.getLabels(key)
+
+        results = {
+            'added': [],
+            'nochange': []
+        }
+
+        for label in newLabels:
+            label = unicode(label)
+            if label not in labels:
+                labels.append(label)
+                results['added'].append(label)
+            else:
+                results['nochange'].append(label)
+
+        update = {'fields': {'labels': labels}}
+        resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(update))
+
+        if resp['status'] != 204:
+            raise JiraException('Issue was not updated: %s' % (str(resp['status'])))
+
+        return results
+
+    def removeLabels(self, key, oldLabels):
+        labels = self.getLabels(key)
+
+        results = {
+            'removed': [],
+            'nochange': []
+        }
+
+        for label in oldLabels:
+            label = unicode(label)
+            if label in labels:
+                labels.remove(label)
+                results['removed'].append(label)
+            else:
+                results['nochange'].append(label)
+
+        update = {'fields': {'labels': labels}}
+        resp = self.request('issue/%s' % (str(key)), method='PUT', data=json.dumps(update))
+
+        if resp['status'] != 204:
+            raise JiraException('Issue was not updated: %s' % (str(resp['status'])))
+
+        return results
+
+    def getTransitions(self, key):
+        resp = self.request('issue/%s/transitions?expand=transitions.fields' % (str(key)), method='GET')
+        if resp['status'] != 200:
+            raise JiraException('Issue transitions unavailable: %s' % (str(resp['status'])))
+
+        transitions = {}
+        for transition in resp['data'].get('transitions'):
+            transitions[transition.get('name')] = transition
+
+        return transitions
+
+    def getTransition(self, key, targetTransition):
+        transitions = self.getTransitions(key)
+
+        if targetTransition not in transitions:
+            raise JiraException('Unable to change status to "%s"' % (targetTransition))
+
+        return transitions[targetTransition]
+
+    def makeTransition(self, key, issue, transition, fields={}, update={}):
+        data = {
+            'transition': {
+                'id': transition.get('id')
+            },
+            'fields': fields,
+            'update': update
+        }
+
+        resp = self.request('issue/%s/transitions' % (str(key)), method='POST', data=json.dumps(data))
+
+        if resp['status'] != 204:
+            raise JiraException('Issue was not updated: %s' % (str(resp['status'])))
+
+        changes = {
+            'data': data,
+            'original': issue,
+            'transition': transition
+        }
+        return changes
+
+    def getNewComment(self):
+        success = None
+        while True:
+            tmpfile = launchEditor(suffix='.md')
+            comment = None
+            with open(tmpfile, 'r') as f:
+                comment = f.read()
+                f.close()
+
+            if comment == '':
+                logging.error('I could not detect any file content. Did you save properly?')
+                if yesOrNo('Would you like to continue editing? If not the changes will be discarded.'):
+                    continue
+                else:
+                    return
+            else:
+                return comment
+
+
+
+    def developmentStart(self, key):
+        requestedTransition = self.getTransition(key, 'Start development')
+
+        namedMappings = {}
+        for fieldkey, fieldvalue in requestedTransition.get('fields', {}).items():
+            namedMappings[fieldvalue.get('name')] = fieldkey
+
+        issueInfo = self.getIssue(key)
+
+        if issueInfo['named']['Assignee'] and issueInfo['named']['Assignee']['name'] != self.username:
+            # Check whether we're already the reviewer (that would be nice)
+            raise JiraException('Issue already has an assignee: %s' % (str(issueInfo['named']['Assignee']['name'])))
+
+        fields = {
+            namedMappings['Assignee']: {
+                'name': self.username
+            }
+        }
+        return self.makeTransition(key, issueInfo, requestedTransition, fields)
+
+    def developmentStop(self, key):
+        requestedTransition = self.getTransition(key, 'Stop development')
+
+        issueInfo = self.getIssue(key)
+
+        if not issueInfo['named']['Assignee'] or issueInfo['named']['Assignee']['name'] != self.username:
+            # Check whether we're already the reviewer (that would be nice)
+            raise JiraException('You are not the assignee on this issue: %s' % (str(issueInfo['named']['Assignee']['name'])))
+
+        return self.makeTransition(key, issueInfo, requestedTransition)
+
+    def reviewStart(self, key):
+        requestedTransition = self.getTransition(key, 'Start peer review')
+
+        namedMappings = {}
+        for fieldkey, fieldvalue in requestedTransition.get('fields', {}).items():
+            namedMappings[fieldvalue.get('name')] = fieldkey
+
+        issueInfo = self.getIssue(key)
+
+        if issueInfo['named']['Peer reviewer'] and issueInfo['named']['Peer reviewer']['name'] != self.username:
+            # Check whether we're already the reviewer (that would be nice)
+            raise JiraException('Issue already has a peer reviewer: %s' % (str(issueInfo['named']['Peer reviewer']['name'])))
+
+        fields = {
+            namedMappings['Peer reviewer']: {
+                'name': self.username
+            }
+        }
+        return self.makeTransition(key, issueInfo, requestedTransition, fields)
+
+    def reviewFail(self, key):
+        requestedTransition = self.getTransition(key, 'Fail peer review')
+
+        namedMappings = {}
+        for fieldkey, fieldvalue in requestedTransition.get('fields', {}).items():
+            namedMappings[fieldvalue.get('name')] = fieldkey
+
+        issueInfo = self.getIssue(key)
+
+        if not issueInfo['named']['Peer reviewer'] or issueInfo['named']['Peer reviewer']['name'] != self.username:
+            # Check whether we're already the reviewer (that would be nice)
+            raise JiraException('You are not the peer reviewer: %s' % (str(issueInfo['named']['Peer reviewer']['name'])))
+
+        update = {'comment': []}
+
+        # Attempt to add a comment.
+        comment = self.getNewComment()
+        if comment:
+            update['comment'].append(
+                {
+                    'add': {
+                        'body': comment
+                    }
+                }
+            )
+
+        return self.makeTransition(key, issueInfo, requestedTransition, {}, update)
 
 class JiraException(Exception):
     pass
