@@ -80,6 +80,12 @@
         "pgsql": "PostgreSQL"
     },
 
+    // CI Server related settings
+    "ci": {
+        "url": "http://integration.moodle.org",
+        "token": null
+    },
+
     // The information for integrating MDK with Jira
     "tracker": {
         "url": "https://tracker.moodle.org/",
@@ -127,7 +133,8 @@
     // This is used to populate the fields on the tracker issue.
     "diffUrlTemplate": "https://github.com/YourGitHub/moodle/compare/%headcommit%...%branch%",
 
-    // The public acccess URL of your repository. It is used to populate the fields on the tracker issue.
+    // The public acccess URL of your repository. It is used to populate the fields on the tracker issue,
+    // and as the common read-only URL of the remote 'myRemote'.
     "repositoryUrl": "git://github.com/YourGitHub/moodle.git",
 
     // Plugins related settings.

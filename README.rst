@@ -344,6 +344,18 @@ Look for a plugin on moodle.org and downloads it into your instance.
     mdk plugin download repository_evernote
 
 
+precheck
+--------
+
+Pre-checks a patch on the CI server.
+
+**Example**
+
+::
+
+    mdk precheck
+
+
 purge
 -----
 
