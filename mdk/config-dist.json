@@ -20,7 +20,9 @@
         // A directory used by MDK to store different kind of things such as scripts and backups.
         "moodle": "~/.moodle-sdk",
         // Used for cached repositories and stuff which could be shared system-wide.
-        "mdk": "~/.moodle-sdk"
+        "mdk": "~/.moodle-sdk",
+        // Used for temporary files (e.g. editor).
+        "tmpdir": "~/.moodle-sdk/tmp"
     },
 
     // List of remotes to work with
