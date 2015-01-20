@@ -33,6 +33,11 @@ C = Conf()
 class CI(object):
     """Wrapper for Jenkins"""
 
+    SUCCESS = 'S'
+    FAILURE = 'F'
+    ERROR = 'E'
+    WARNING = 'W'
+
     _jenkins = None
     url = None
     token = None
@@ -61,7 +66,7 @@ class CI(object):
         self._jenkins = jenkins.Jenkins(self.url)
 
     def precheckRemoteBranch(self, remote, branch, integrateto, issue=None):
-        """Runs the precheck job and returns the build object"""
+        """Runs the precheck job and returns the outcome"""
         params = {
             'remote': remote,
             'branch': branch,
@@ -75,13 +80,70 @@ class CI(object):
         try:
             invoke = job.invoke(build_params=params, securitytoken=self.token, invoke_pre_check_delay=0)
             invoke.block_until_not_queued(60, 2)
-        except JenkinsAPIException:
-            raise CIException('Failed to invoke the build, check your permissions.')
         except TimeOut:
             raise CIException('The build has been in queue for more than 60s. Aborting, please refer to: %s' % job.baseurl)
+        except JenkinsAPIException:
+            raise CIException('Failed to invoke the build, check your permissions.')
 
         build = invoke.get_build()
-        return build
+
+        logging.info('Waiting for the build to complete, please wait...')
+        build.block_until_complete(3)
+
+        # Checking the build
+        outcome = CI.SUCCESS
+        infos = {'url': build.baseurl}
+
+        if build.is_good():
+            logging.debug('Build complete, checking precheck results...')
+
+            output = build.get_console()
+            result = self.parseSmurfResult(output)
+            if not result:
+                outcome = CI.FAILURE
+            else:
+                outcome = result['smurf']['result']
+                infos = dict(infos.items() + result.items())
+
+        else:
+            outcome = CI.FAILURE
+
+        return (outcome, infos)
+
+    def parseSmurfResult(self, output):
+        """Parse the smurt result"""
+        result = {}
+
+        for line in output.splitlines():
+            if not line.startswith('SMURFRESULT'):
+                continue
+
+            line = line.replace('SMURFRESULT: ', '')
+            (smurf, rest) = line.split(':')
+            elements = [smurf]
+            elements.extend(rest.split(';'))
+            for element in elements:
+                data = element.split(',')
+
+                errors = int(data[2])
+                warnings = int(data[3])
+
+                if errors > 0:
+                    outcome = CI.ERROR
+                elif warnings > 0:
+                    outcome = CI.WARNING
+                else:
+                    outcome = CI.SUCCESS
+
+                result[data[0]] = {
+                    'errors': errors,
+                    'warnings': warnings,
+                    'result': outcome
+                }
+
+            break
+
+        return result
 
 
 class CIException(Exception):

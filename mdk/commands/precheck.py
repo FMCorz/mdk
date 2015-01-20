@@ -93,16 +93,44 @@ class PrecheckCommand(Command):
         try:
             # TODO Remove that ugly hack to get the read-only remote.
             logging.info('Invoking the build on the CI server...')
-            build = ci.precheckRemoteBranch(self.C.get('repositoryUrl'), branch, against, 'MDL-%s' % issue)
+            (outcome, infos) = ci.precheckRemoteBranch(self.C.get('repositoryUrl'), branch, against, 'MDL-%s' % issue)
         except CIException as e:
             raise e
 
-        logging.info('Waiting for the build to complete, please wait...')
-        build.block_until_complete(3)
 
-        if build.is_good():
+        if outcome == CI.FAILURE:
+            logging.warning('Build failed, please refer to:\n  %s', infos.url)
+            sys.exit(self.FAILED)
+
+        elif outcome == CI.SUCCESS:
             logging.info('Precheck passed, good work!')
             sys.exit(0)
+
+
+        # If we get here, that was a fail.
+        if outcome == CI.ERROR:
+            logging.info('Precheck FAILED with ERRORS.')
         else:
-            logging.warning('Precheck failed, refer to:\n  %s', build.baseurl)
-            sys.exit(self.FAILED)
+            logging.info('Precheck FAILED with WARNINGS.')
+        logging.info('')
+
+        mapping = {
+            'phplint': 'PHP Lint',
+            'php': 'PHP coding style',
+            'js': 'Javascript',
+            'css': 'CSS',
+            'phpdoc': 'PHP Doc',
+            'commit': 'Commit message',
+            'savepoint': 'Update/Upgrade',
+            'thirdparty': 'Third party'
+        }
+
+        for key in mapping:
+            details = infos.get(key)
+
+            symbol = ' ' if details['result'] == CI.SUCCESS else ('!' if details['result'] == CI.WARNING else 'X')
+            print '  [{}] {}     ({} errors, {} warnings)'.format(symbol, mapping.get(key, key), details.get('errors'), details.get('warnings'))
+
+        logging.info('')
+        logging.info('More details at: %s', infos.get('url'))
+        sys.exit(self.FAILED)
