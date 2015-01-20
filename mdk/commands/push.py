@@ -149,9 +149,13 @@ class PushCommand(Command):
         # If the mode is not set to patch yet, and we can identify the MDL number.
         if not args.patch and parsedbranch:
             mdlIssue = 'MDL-%s' % (parsedbranch['issue'])
-            args.patch = J.isSecurityIssue(mdlIssue)
-            if args.patch:
-                logging.info('%s appears to be a security issue, switching to patch mode...' % (mdlIssue))
+            try:
+                args.patch = J.isSecurityIssue(mdlIssue)
+                if args.patch:
+                    logging.info('%s appears to be a security issue, switching to patch mode...', mdlIssue)
+            except jira.JiraIssueNotFoundException:
+                # The issue was not found, do not perform
+                logging.warn('Could not check if %s is a security issue', mdlIssue)
 
         if args.patch:
             if not M.pushPatch(branch):
