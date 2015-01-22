@@ -26,6 +26,12 @@ function mdk_get_enrol_instance($courseid) {
 
 function mdk_get_role($username) {
     static $rolecache = array();
+
+    if (!preg_match('/^[stm]\d+$/', $username)) {
+        // Only enrol users we created with mdk.
+        return false;
+    }
+
     $letter = substr($username, 0, 1);
     switch ($letter) {
         case 's':
@@ -47,22 +53,34 @@ function mdk_get_role($username) {
     return $rolecache[$archetype];
 }
 
-$sql = "SELECT id, username
-          FROM {user}
-         WHERE (username LIKE 's%'
-            OR username LIKE 't%'
-            OR username LIKE 'm%')
-           AND deleted = 0";
-$users = $DB->get_recordset_sql($sql, array());
+// Use regexp to match only valid usernames (if supported).
+if ($DB->sql_regex_supported()) {
+    $sql = "SELECT id, username
+              FROM {user}
+             WHERE username ".$DB->sql_regex()." ?";
+    $params = array('^[stm][0-9]+$');
+} else {
+    $match = $DB->sql_like('username', '?');
+    $sql = "SELECT id, username
+              FROM {user}
+             WHERE ( ".
+             $DB->sql_like('username', ':student')." OR ".
+             $DB->sql_like('username', ':teacher')." OR ".
+             $DB->sql_like('username', ':manager')." )
+             AND deleted = 0";
+    $params = array('student' => 's%', 'teacher' => 't%', 'manager' => 'm%');
+}
+
+$users = $DB->get_recordset_sql($sql, $params);
 $courses = $DB->get_records_select('course', 'id > ?', array(1), '', 'id, startdate');
 $plugin = new enrol_manual_plugin();
 
 foreach ($users as $user) {
-    mtrace('Enrolling ' . $user->username);
     $role = mdk_get_role($user->username);
     if (!$role) {
         continue;
     }
+    mtrace('Enrolling ' . $user->username);
     foreach ($courses as $course) {
         $instance = mdk_get_enrol_instance($course->id);
         // Enrol the day before the course startdate, because if we create a course today its default
