@@ -20,6 +20,9 @@ function mdk_get_enrol_instance($courseid) {
     static $coursecache = array();
     if (!isset($coursecache[$courseid])) {
         $coursecache[$courseid] = $DB->get_record('enrol', array('courseid' => $courseid, 'enrol' => 'manual'));
+        if (!$coursecache[$courseid]) {
+            mtrace("Could not find manual enrolment method for course {$courseid}.");
+        }
     }
     return $coursecache[$courseid];
 }
@@ -66,6 +69,9 @@ foreach ($users as $user) {
     }
     foreach ($courses as $course) {
         $instance = mdk_get_enrol_instance($course->id);
+        if (!$instance) {
+            continue;
+        }
         // Enrol the day before the course startdate, because if we create a course today its default
         // startdate is tomorrow, and we would never realise why the enrolments do not work.
         $plugin->enrol_user($instance, $user->id, $role->id, $course->startdate - 86400, 0);
