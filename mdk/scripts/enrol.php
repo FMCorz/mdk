@@ -52,7 +52,8 @@ $sql = "SELECT id, username
          WHERE (username LIKE 's%'
             OR username LIKE 't%'
             OR username LIKE 'm%')
-           AND deleted = 0";
+           AND deleted = 0
+           AND username NOT LIKE 'tool_generator_%'";
 $users = $DB->get_recordset_sql($sql, array());
 $courses = $DB->get_records_select('course', 'id > ?', array(1), '', 'id, startdate');
 $plugin = new enrol_manual_plugin();
