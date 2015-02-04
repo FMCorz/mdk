@@ -101,7 +101,7 @@ class TrackerCommand(Command):
         if args.removelabels:
             if 'triaged' in args.removelabels:
                 self.argumentError('The label \'triaged\' cannot be removed using MDK')
-            elif 'triaging_in_progress' in args.addlabels:
+            elif 'triaging_in_progress' in args.removelabels:
                 self.argumentError('The label \'triaging_in_progress\' cannot be removed using MDK')
             self.Jira.removeLabels(self.mdl, args.removelabels)
 
