@@ -28,6 +28,9 @@ mdk_set_config('debugdisplay', 1);
 // Any kind of password is allowed.
 mdk_set_config('passwordpolicy', 0);
 
+// Allow web cron.
+mdk_set_config('cronclionly', 0);
+
 // Debug the performance.
 mdk_set_config('perfdebug', 15);
 

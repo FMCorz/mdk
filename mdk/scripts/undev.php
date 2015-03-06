@@ -57,6 +57,10 @@ $settings = $settingspage->settings;
 $default = $settings->passwordpolicy->get_defaultsetting();
 mdk_set_config('passwordpolicy', $default);
 
+// Allow web cron.
+$default = $settings->cronclionly->get_defaultsetting();
+mdk_set_config('cronclionly', $default);
+
 
 // Theme settings.
 $settingspage = $adminroot->locate('themesettings', true);
