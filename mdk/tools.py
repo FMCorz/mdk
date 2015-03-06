@@ -117,6 +117,24 @@ def launchEditor(filepath=None, suffix='.tmp'):
     return tmpfile.name
 
 
+def getText(suffix='.md'):
+    success = None
+    while True:
+        tmpfile = launchEditor(suffix=suffix)
+        text = None
+        with open(tmpfile, 'r') as f:
+            text = f.read()
+            f.close()
+
+        if text == '':
+            logging.error('I could not detect any file content. Did you save properly?')
+            if yesOrNo('Would you like to continue editing? If not the changes will be discarded.'):
+                continue
+            else:
+                return
+        else:
+            return text
+
 def md5file(filepath):
     """Return the md5 sum of a file
     This is terribly memory inefficient!"""

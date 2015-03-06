@@ -27,7 +27,7 @@ import textwrap
 import re
 from ..command import Command
 from ..jira import Jira
-from ..tools import parseBranch
+from ..tools import parseBranch, getText
 
 
 class TrackerCommand(Command):
@@ -65,6 +65,13 @@ class TrackerCommand(Command):
                 'help': 'remove the specified labels from the issue',
                 'metavar':  'labels',
                 'nargs': '+',
+            }
+        ),
+        (
+            ['--comment'],
+            {
+                'action': 'store_true',
+                'help': 'add a comment to the issue',
             }
         )
     ]
@@ -104,6 +111,10 @@ class TrackerCommand(Command):
             elif 'triaging_in_progress' in args.removelabels:
                 self.argumentError('The label \'triaging_in_progress\' cannot be removed using MDK')
             self.Jira.removeLabels(self.mdl, args.removelabels)
+
+        if args.comment:
+            comment = getText()
+            self.Jira.addComment(self.mdl, comment)
 
         self.info(args)
 
