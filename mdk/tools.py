@@ -117,25 +117,27 @@ def launchEditor(filepath=None, suffix='.tmp'):
     return tmpfile.name
 
 
-def getText(suffix='.md', currenttext=None):
-    success = None
+def getText(suffix='.md', initialText=None):
+    """Gets text from the user using an Editor
+
+    This is a shortcut to using launchEditor as it returns text rather
+    than the file in which the text entered is stored.
+
+    When the returned value is empty, the user is asked is they want to resume.
+    """
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmpfile:
-        if currenttext:
-            tmpfile.write(currenttext)
+        if initialText:
+            tmpfile.write(initialText)
             tmpfile.flush()
         while True:
-            tmpfile = launchEditor(suffix=suffix, filepath=tmpfile.name)
+            editorFile = launchEditor(suffix=suffix, filepath=tmpfile.name)
             text = None
-            with open(tmpfile, 'r') as f:
+            with open(editorFile, 'r') as f:
                 text = f.read()
-                f.close()
 
-            if text == '':
-                logging.error('I could not detect any file content. Did you save properly?')
-                if yesOrNo('Would you like to continue editing? If not the changes will be discarded.'):
-                    continue
-                else:
-                    return
+            if len(text) <= 0:
+                if not yesOrNo('No content detected. Would you like to resume editing?'):
+                    return ''
             else:
                 return text
 
