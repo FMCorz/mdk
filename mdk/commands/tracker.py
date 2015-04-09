@@ -27,7 +27,7 @@ import textwrap
 import re
 from ..command import Command
 from ..jira import Jira
-from ..tools import parseBranch
+from ..tools import parseBranch, getText
 
 
 class TrackerCommand(Command):
@@ -66,6 +66,13 @@ class TrackerCommand(Command):
                 'metavar':  'labels',
                 'nargs': '+',
             }
+        ),
+        (
+            ['--comment'],
+            {
+                'action': 'store_true',
+                'help': 'add a comment to the issue',
+            }
         )
     ]
     _description = 'Interact with Moodle tracker'
@@ -101,9 +108,13 @@ class TrackerCommand(Command):
         if args.removelabels:
             if 'triaged' in args.removelabels:
                 self.argumentError('The label \'triaged\' cannot be removed using MDK')
-            elif 'triaging_in_progress' in args.addlabels:
+            elif 'triaging_in_progress' in args.removelabels:
                 self.argumentError('The label \'triaging_in_progress\' cannot be removed using MDK')
             self.Jira.removeLabels(self.mdl, args.removelabels)
+
+        if args.comment:
+            comment = getText()
+            self.Jira.addComment(self.mdl, comment)
 
         self.info(args)
 

@@ -167,6 +167,9 @@ class LessWatcher(watchdog.events.FileSystemEventHandler):
     def on_modified(self, event):
         self.process(event)
 
+    def on_moved(self, event):
+        self.process(event)
+
     def process(self, event):
         if event.is_directory:
             return

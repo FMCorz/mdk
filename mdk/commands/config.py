@@ -23,6 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
+import re
 from ..command import Command
 from ..tools import launchEditor, yesOrNo
 from ..config import ConfigObject, ConfigFileCouldNotBeLoaded
@@ -47,7 +48,15 @@ class ConfigCommand(Command):
                         {
                             'help': 'flat list of the settings'
                         },
-                        []
+                        [
+                            (
+                                ['-g', '--grep'],
+                                {
+                                    'metavar': 'string',
+                                    'help': 'filter results using regular expressions'
+                                }
+                            ),
+                        ]
                     ),
                     'list': (
                         {
@@ -107,13 +116,15 @@ class ConfigCommand(Command):
                 print u' ' * ident + '[%s]' % name
                 self.dictDisplay(setting, ident + 2)
 
-    def flatDisplay(self, data, parent=''):
+    def flatDisplay(self, data, parent='', regex=None):
         for name in sorted(data.keys()):
             setting = data[name]
             if type(setting) != dict:
+                if regex and not regex.search(parent + name):
+                    continue
                 print u'%s: %s' % (parent + name, setting)
             else:
-                self.flatDisplay(setting, parent + name + u'.')
+                self.flatDisplay(setting, parent=parent + name + u'.', regex=regex)
 
     def run(self, args):
         if args.action == 'list':
@@ -146,7 +157,10 @@ class ConfigCommand(Command):
                         current.write(new.read())
 
         elif args.action == 'flatlist':
-            self.flatDisplay(self.C.get())
+            regex = None
+            if args.grep:
+                regex = re.compile(args.grep, re.I)
+            self.flatDisplay(self.C.get(), regex=regex)
 
         elif args.action == 'show':
             setting = self.C.get(args.setting)

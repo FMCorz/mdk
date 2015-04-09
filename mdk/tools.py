@@ -117,6 +117,30 @@ def launchEditor(filepath=None, suffix='.tmp'):
     return tmpfile.name
 
 
+def getText(suffix='.md', initialText=None):
+    """Gets text from the user using an Editor
+
+    This is a shortcut to using launchEditor as it returns text rather
+    than the file in which the text entered is stored.
+
+    When the returned value is empty, the user is asked is they want to resume.
+    """
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmpfile:
+        if initialText:
+            tmpfile.write(initialText)
+            tmpfile.flush()
+        while True:
+            editorFile = launchEditor(suffix=suffix, filepath=tmpfile.name)
+            text = None
+            with open(editorFile, 'r') as f:
+                text = f.read()
+
+            if len(text) <= 0:
+                if not yesOrNo('No content detected. Would you like to resume editing?'):
+                    return ''
+            else:
+                return text
+
 def md5file(filepath):
     """Return the md5 sum of a file
     This is terribly memory inefficient!"""

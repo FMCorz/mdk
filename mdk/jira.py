@@ -68,6 +68,19 @@ class Jira(object):
         self._load()
 
 
+    def addComment(self, key, comment):
+        """Add a comment to an issue"""
+
+        assert isinstance(comment, str), "Expected a string"
+
+        data = [
+            {'add': {'body': comment}}
+        ]
+
+        self.updateIssue(key, {'update': {'comment': data}})
+
+        return True
+
     def addLabels(self, key, labels):
         """Add labels to an issue"""
 

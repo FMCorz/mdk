@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v1.5
+----
+
+- New ``precheck`` command
+- ``phpunit`` can run a whole test suite - Andrew Nicols
+- ``tracker`` can add comments to an issue - Andrew Nicols
+- ``tracker`` can add/remove labels to an issue - Andrew Nicols
+- ``config flatlist`` has an optional ``--grep`` argument
+
 v1.4
 ----
 
