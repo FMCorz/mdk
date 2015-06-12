@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.5.1
+------
+
+- Update default config for Moodle 2.9 release
+
 v1.5
 ----
 
