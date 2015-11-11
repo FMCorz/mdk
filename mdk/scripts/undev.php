@@ -101,6 +101,8 @@ $resources = array('book', 'folder', 'imscp', 'page', 'resource', 'url');
 foreach ($resources as $r) {
     $settingpage = $adminroot->locate('modsetting' . $r, true);
     $settings = $settingpage->settings;
-    $default = $settings->requiremodintro->get_defaultsetting();
-    mdk_set_config('requiremodintro', $default, $r);
+    if (isset($settings->requiremodintro)) {
+        $default = $settings->requiremodintro->get_defaultsetting();
+        mdk_set_config('requiremodintro', $default, $r);
+    }
 }
