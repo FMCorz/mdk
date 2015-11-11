@@ -148,11 +148,16 @@ class PhpunitCommand(Command):
 
             PU.init(force=args.force, prefix=prefix)
 
+            # Automatically add the suffix _testsuite.
+            testsuite = args.testsuite
+            if testsuite and not testsuite.endswith('_testsuite'):
+                testsuite += '_testsuite'
+
             kwargs = {
                 'coverage': args.coverage,
                 'filter': args.filter,
                 'testcase': args.testcase,
-                'testsuite': args.testsuite,
+                'testsuite': testsuite,
                 'unittest': args.unittest
             }
 
