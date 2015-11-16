@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.5.3
+------
+
+- Really include ``phpunit`` does not require '_testuite' as suffix of the test suites
+
 v1.5.2
 ------
 
