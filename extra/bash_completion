@@ -186,7 +186,7 @@ function _mdk() {
                 fi
                 ;;
             pull)
-                if [[ "${PREV}" == "-m" ]] || "${PREV}" == "--mode"; then
+                if [[ "$PREV" == "-m" || "$PREV" == "--mode" ]]; then
                     OPTS="checkout fetch integration pull testing"
                 else
                     OPTS="--fetch-only --integration --no-merge --testing --mode --prompt"
