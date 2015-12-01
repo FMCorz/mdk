@@ -11,22 +11,22 @@ require_once($CFG->libdir . '/gdlib.php');
 // True to download a gravatar.
 define('MDK_AVATAR', true);
 
-$data = "s1,test,Eric,Cartman,s1@localhost
-s2,test,Stan,Marsh,s2@localhost
-s3,test,Kyle,Broflovski,s3@localhost
-s4,test,Kenny,McCormick,s4@localhost
-s5,test,Butters,Stotch,s5@localhost
-s6,test,Clyde,Donovan,s6@localhost
-s7,test,Jimmy,Valmer,s7@localhost
-s8,test,Timmy,Burch,s8@localhost
-s9,test,Wendy,Testaburger,s9@localhost
-s10,test,Bebe,Stevens,s10@localhost
-t1,test,Herbert,Garrison,t1@localhost
-t2,test,Sheila,Brovslovski,t2@localhost
-t3,test,Liane,Cartman,t3@localhost
-m1,test,Officer,Barbady,m1@localhost
-m2,test,Principal,Victoria,m2@localhost
-m3,test,Randy,Marsh,m3@localhost";
+$data = "s1,test,Eric,Cartman,s1@example.com
+s2,test,Stan,Marsh,s2@example.com
+s3,test,Kyle,Broflovski,s3@example.com
+s4,test,Kenny,McCormick,s4@example.com
+s5,test,Butters,Stotch,s5@example.com
+s6,test,Clyde,Donovan,s6@example.com
+s7,test,Jimmy,Valmer,s7@example.com
+s8,test,Timmy,Burch,s8@example.com
+s9,test,Wendy,Testaburger,s9@example.com
+s10,test,Bebe,Stevens,s10@example.com
+t1,test,Herbert,Garrison,t1@example.com
+t2,test,Sheila,Brovslovski,t2@example.com
+t3,test,Liane,Cartman,t3@example.com
+m1,test,Officer,Barbady,m1@example.com
+m2,test,Principal,Victoria,m2@example.com
+m3,test,Randy,Marsh,m3@example.com";
 $users = explode("\n", $data);
 
 // Create all the users.
