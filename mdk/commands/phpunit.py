@@ -73,6 +73,14 @@ class PhpunitCommand(Command):
             }
         ),
         (
+            ['-k', '--skip-init'],
+            {
+                'action': 'store_true',
+                'dest': 'skipinit',
+                'help': 'allows tests to start quicker when the instance is already initialised'
+            }
+        ),
+        (
             ['-c', '--coverage'],
             {
                 'action': 'store_true',
@@ -117,6 +125,33 @@ class PhpunitCommand(Command):
         # Create the Unit test object.
         PU = PHPUnit(self.Wp, M)
 
+        # Skip init.
+        if not args.skipinit:
+            self.init(M, PU, args)
+
+        # Automatically add the suffix _testsuite.
+        testsuite = args.testsuite
+        if testsuite and not testsuite.endswith('_testsuite'):
+            testsuite += '_testsuite'
+
+        kwargs = {
+            'coverage': args.coverage,
+            'filter': args.filter,
+            'testcase': args.testcase,
+            'testsuite': testsuite,
+            'unittest': args.unittest
+        }
+
+        if args.run:
+            PU.run(**kwargs)
+            if args.coverage:
+                logging.info('Code coverage is available at: \n %s', (PU.getCoverageUrl()))
+        else:
+            logging.info('Start PHPUnit:\n %s', (' '.join(PU.getCommand(**kwargs))))
+
+    def init(self, M, PU, args):
+        """Initialises PHP Unit"""
+
         # Install Composer
         if PU.usesComposer():
             if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
@@ -135,38 +170,14 @@ class PhpunitCommand(Command):
                 os.remove(cliPath)
                 M.cli('composer.phar', args='install --dev', stdout=None, stderr=None)
 
-        # Run cli
-        try:
+        # If Oracle, ask the user for a Behat prefix, if not set.
+        prefix = M.get('phpunit_prefix')
+        if M.get('dbtype') == 'oci' and (args.force or not prefix or len(prefix) > 2):
+            while not prefix or len(prefix) > 2:
+                prefix = question('What prefix would you like to use? (Oracle, max 2 chars)')
+        else:
+            prefix = None
 
-            # If Oracle, ask the user for a Behat prefix, if not set.
-            prefix = M.get('phpunit_prefix')
-            if M.get('dbtype') == 'oci' and (args.force or not prefix or len(prefix) > 2):
-                while not prefix or len(prefix) > 2:
-                    prefix = question('What prefix would you like to use? (Oracle, max 2 chars)')
-            else:
-                prefix = None
+        PU.init(force=args.force, prefix=prefix)
 
-            PU.init(force=args.force, prefix=prefix)
 
-            # Automatically add the suffix _testsuite.
-            testsuite = args.testsuite
-            if testsuite and not testsuite.endswith('_testsuite'):
-                testsuite += '_testsuite'
-
-            kwargs = {
-                'coverage': args.coverage,
-                'filter': args.filter,
-                'testcase': args.testcase,
-                'testsuite': testsuite,
-                'unittest': args.unittest
-            }
-
-            if args.run:
-                PU.run(**kwargs)
-                if args.coverage:
-                    logging.info('Code coverage is available at: \n %s', (PU.getCoverageUrl()))
-            else:
-                logging.info('Start PHPUnit:\n %s' % (' '.join(PU.getCommand(**kwargs))))
-
-        except Exception as e:
-            raise e
