@@ -81,6 +81,14 @@ class PhpunitCommand(Command):
             }
         ),
         (
+            ['-q', '--stop-on-failure'],
+            {
+                'action': 'store_true',
+                'dest': 'stoponfailure',
+                'help': 'stop execution upon first failure or error'
+            }
+        ),
+        (
             ['-c', '--coverage'],
             {
                 'action': 'store_true',
@@ -139,7 +147,8 @@ class PhpunitCommand(Command):
             'filter': args.filter,
             'testcase': args.testcase,
             'testsuite': testsuite,
-            'unittest': args.unittest
+            'unittest': args.unittest,
+            'stopon': [] if not args.stoponfailure else ['failure']
         }
 
         if args.run:

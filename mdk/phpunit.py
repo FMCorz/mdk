@@ -40,7 +40,7 @@ class PHPUnit(object):
         self._Wp = Wp
         self._M = M
 
-    def getCommand(self, testcase=None, unittest=None, filter=None, coverage=None, testsuite=None):
+    def getCommand(self, testcase=None, unittest=None, filter=None, coverage=None, testsuite=None, stopon=None):
         """Get the PHPUnit command"""
         cmd = []
         if self.usesComposer():
@@ -51,6 +51,10 @@ class PHPUnit(object):
         if coverage:
             cmd.append('--coverage-html')
             cmd.append(self.getCoverageDir())
+
+        if stopon:
+            for on in stopon:
+                cmd.append('--stop-on-%s' % on)
 
         if testcase:
             cmd.append(testcase)
