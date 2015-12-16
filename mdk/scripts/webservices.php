@@ -43,7 +43,11 @@ if (!$roleid = $DB->get_field('role', 'id', array('shortname' => 'testtete'))) {
 $context = context_system::instance();
 set_role_contextlevels($roleid, array($context->contextlevel));
 role_assign($roleid, $user->id, $context->id);
-$capabilities = fetch_context_capabilities($context);
+if (method_exists($context, 'get_capabilities')) {
+    $capabilities = $context->get_capabilities();
+} else{
+    $capabilities = fetch_context_capabilities($context);
+}
 foreach ($capabilities as $capability) {
     assign_capability($capability->name, CAP_ALLOW, $roleid, $context->id, true);
 }
