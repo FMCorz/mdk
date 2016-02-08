@@ -116,13 +116,15 @@ class PrecheckCommand(Command):
 
         mapping = {
             'phplint': 'PHP Lint',
-            'php': 'PHP coding style',
+            'phpcs': 'PHP coding style',
             'js': 'Javascript',
             'css': 'CSS',
             'phpdoc': 'PHP Doc',
             'commit': 'Commit message',
             'savepoint': 'Update/Upgrade',
-            'thirdparty': 'Third party'
+            'thirdparty': 'Third party',
+            'grunt': 'Grunt',
+            'shifter': 'Shifter'
         }
 
         for key in mapping:
