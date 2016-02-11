@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v1.5.4
+------
+
+- New argument ``--skip-init`` added to ``phpunit``
+- New argument ``--stop-on-failure`` added to ``phpunit``
+- Script ``users`` uses @example.com for email addresses
+- Bug fixes
+
 v1.5.3
 ------
 
