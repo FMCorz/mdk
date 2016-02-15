@@ -124,7 +124,8 @@ class PrecheckCommand(Command):
             'savepoint': 'Update/Upgrade',
             'thirdparty': 'Third party',
             'grunt': 'Grunt',
-            'shifter': 'Shifter'
+            'shifter': 'Shifter',
+            'travis': 'Travis CI'
         }
 
         for key in mapping:
