@@ -192,7 +192,7 @@ class BehatCommand(Command):
             seleniumStorageUrl = 'https://selenium-release.storage.googleapis.com/'
             url = urllib.urlopen(seleniumStorageUrl)
             content = url.read()
-            matches = re.findall(r'[a-z0-9/._-]+selenium-server-standalone-[0-9.]+\.jar', content, re.I)
+            matches = sorted(re.findall(r'[a-z0-9/._-]+selenium-server-standalone-[0-9.]+\.jar', content, re.I))
             if len(matches) > 0:
                 seleniumUrl = seleniumStorageUrl + matches[-1]
                 logging.info('Downloading Selenium from %s' % seleniumUrl)
