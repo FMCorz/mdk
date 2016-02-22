@@ -189,17 +189,19 @@ class BehatCommand(Command):
             seleniumPath = args.selenium
         elif args.seleniumforcedl or (not nojavascript and not os.path.isfile(seleniumPath)):
             logging.info('Attempting to find a download for Selenium')
-            url = urllib.urlopen('http://docs.seleniumhq.org/download/')
+            seleniumStorageUrl = 'https://selenium-release.storage.googleapis.com/'
+            url = urllib.urlopen(seleniumStorageUrl)
             content = url.read()
-            selenium = re.search(r'http:[a-z0-9/._-]+selenium-server-standalone-[0-9.]+\.jar', content, re.I)
-            if selenium:
-                logging.info('Downloading Selenium from %s' % (selenium.group(0)))
+            matches = re.findall(r'[a-z0-9/._-]+selenium-server-standalone-[0-9.]+\.jar', content, re.I)
+            if len(matches) > 0:
+                seleniumUrl = seleniumStorageUrl + matches[-1]
+                logging.info('Downloading Selenium from %s' % seleniumUrl)
                 if (logging.getLogger().level <= logging.INFO):
-                    urllib.urlretrieve(selenium.group(0), seleniumPath, downloadProcessHook)
+                    urllib.urlretrieve(seleniumUrl, seleniumPath, downloadProcessHook)
                     # Force a new line after the hook display
                     logging.info('')
                 else:
-                    urllib.urlretrieve(selenium.group(0), seleniumPath)
+                    urllib.urlretrieve(seleniumUrl, seleniumPath)
             else:
                 logging.warning('Could not locate Selenium server to download')
 
