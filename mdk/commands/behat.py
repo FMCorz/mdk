@@ -31,6 +31,7 @@ from tempfile import gettempdir
 from time import sleep
 from ..command import Command
 from ..tools import process, ProcessInThread, downloadProcessHook, question
+from lxml import html
 
 
 class BehatCommand(Command):
@@ -191,15 +192,16 @@ class BehatCommand(Command):
             logging.info('Attempting to find a download for Selenium')
             url = urllib.urlopen('http://docs.seleniumhq.org/download/')
             content = url.read()
-            selenium = re.search(r'http:[a-z0-9/._-]+selenium-server-standalone-[0-9.]+\.jar', content, re.I)
+            tree = html.fromstring(content)
+            selenium = tree.xpath('//div[@id="mainContent"]/p/a[starts-with(@href, "http://goo.gl/")]')[0].get('href')
             if selenium:
-                logging.info('Downloading Selenium from %s' % (selenium.group(0)))
+                logging.info('Downloading Selenium from %s' % (selenium))
                 if (logging.getLogger().level <= logging.INFO):
-                    urllib.urlretrieve(selenium.group(0), seleniumPath, downloadProcessHook)
+                    urllib.urlretrieve(selenium, seleniumPath, downloadProcessHook)
                     # Force a new line after the hook display
                     logging.info('')
                 else:
-                    urllib.urlretrieve(selenium.group(0), seleniumPath)
+                    urllib.urlretrieve(selenium, seleniumPath)
             else:
                 logging.warning('Could not locate Selenium server to download')
 
