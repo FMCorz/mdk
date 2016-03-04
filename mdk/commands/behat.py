@@ -238,8 +238,13 @@ class BehatCommand(Command):
                 cmd.append('--tags ~@javascript')
 
             if args.faildump:
-                cmd.append('--format="progress,progress,pretty,html,failed"')
-                cmd.append('--out=",{0}/progress.txt,{0}/pretty.txt,{0}/status.html,{0}/failed.txt"'.format(outputDir))
+                if M.branch_compare(31, '<'):
+                    cmd.append('--format="progress,progress,pretty,html,failed"')
+                    cmd.append('--out=",{0}/progress.txt,{0}/pretty.txt,{0}/status.html,{0}/failed.txt"'.format(outputDir))
+                else:
+                    cmd.append('--format="moodle_progress" --out="std"')
+                    cmd.append('--format="progress" --out="{0}/progress.txt"'.format(outputDir))
+                    cmd.append('--format="pretty" --out="{0}/pretty.txt"'.format(outputDir))
 
             cmd.append('--config=%s/behat/behat.yml' % (M.get('behat_dataroot')))
 
