@@ -36,7 +36,7 @@ class Css(object):
     _M = None
 
     _debug = False
-    _compiler = 'recess'
+    _compiler = 'grunt'
 
     def __init__(self, M):
         self._M = M
@@ -70,6 +70,9 @@ class Css(object):
 
         hadErrors = False
 
+        if self._compiler == 'grunt':
+            sheets = ['moodle']
+
         for name in sheets:
             sheet = name + '.less'
             destSheet = name + '.css'
@@ -80,7 +83,9 @@ class Css(object):
                 continue
 
             try:
-                if self._compiler == 'recess':
+                if self._compiler == 'grunt':
+                    compiler = Grunt(source, os.path.join(source, sheet), os.path.join(dest, destSheet))
+                elif self._compiler == 'recess':
                     compiler = Recess(source, os.path.join(source, sheet), os.path.join(dest, destSheet))
                 elif self._compiler == 'lessc':
                     compiler = Lessc(self.getThemeDir(), os.path.join(source, sheet), os.path.join(dest, destSheet))
@@ -132,6 +137,21 @@ class Compiler(object):
 
     def setDebug(self, debug):
         self._debug = debug
+
+
+class Grunt(Compiler):
+    """Grunt compiler"""
+
+    def execute(self):
+        executable = C.get('grunt')
+        if not executable:
+            raise Exception('Could not find executable path')
+
+        cmd = [executable, 'css']
+
+        (code, out, err) = process(cmd, self._cwd)
+        if code != 0 or len(out) == 0:
+            raise CssCompileFailed('Error during compile')
 
 
 class Recess(Compiler):

@@ -124,6 +124,10 @@ class CssCommand(Command):
                 processor.setDebug(args.debug)
                 if args.debug:
                     processor.setCompiler('lessc')
+                elif M.branch_compare(29, '<'):
+                    # Grunt was only introduced for 2.9.
+                    processor.setCompiler('recess')
+
                 processor.compile(theme=args.theme, sheets=args.sheets)
 
         # Setting up watchdog. This code should be improved when we will have more than a compile option.
