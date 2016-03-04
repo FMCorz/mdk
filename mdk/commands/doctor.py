@@ -238,7 +238,7 @@ class DoctorCommand(Command):
 
         # Check binaries.
         hasErrors = False
-        for k in ['git', 'php', 'java', 'recess', 'lessc', 'shifter', 'yuidoc']:
+        for k in ['git', 'php', 'java', 'recess', 'grunt', 'lessc', 'shifter', 'yuidoc']:
             path = self.C.get(k)
             if not path or not os.path.isfile(path):
                 print '  The path to \'%s\' is invalid: %s' % (k, path)

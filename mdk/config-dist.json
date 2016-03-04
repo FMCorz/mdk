@@ -211,6 +211,8 @@
     "php": "/usr/bin/php",
     // Path to Java
     "java": "/usr/bin/java",
+    // Path to Grunt
+    "grunt": "/usr/local/bin/grunt",
     // Path to recess
     "recess": "/usr/local/bin/recess",
     // Path to lessc
