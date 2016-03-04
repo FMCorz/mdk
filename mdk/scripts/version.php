@@ -5,41 +5,34 @@ require(dirname(__FILE__).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
 require("$CFG->dirroot/version.php");
 
-// Purge caches to ensure that all version information is up-to-date.
-purge_all_caches();
-
 cli_separator();
-cli_heading('Update all version numbers');
+cli_heading('Resetting all version numbers');
 
-$possiblecandidates = array();
+$manager = core_plugin_manager::instance();
+
+$plugininfo = $manager->get_plugins();
+foreach ($plugininfo as $type => $plugins) {
+    foreach ($plugins as $name => $plugin) {
+        if ($plugin->get_status() !== core_plugin_manager::PLUGIN_STATUS_DOWNGRADE) {
+            continue;
+        }
+
+        $frankenstyle = sprintf("%s_%s", $type, $name);
+
+        mtrace("Updating {$frankenstyle} from {$plugin->versiondb} to {$plugin->versiondisk}");
+        $DB->set_field('config_plugins', 'value', $plugin->versiondisk, array('name' => 'version', 'plugin' => $frankenstyle));
+    }
+}
 
 // Check that the main version hasn't changed.
-$versiondifference = false;
-if ((float)$CFG->version !== $version) {
-    $versiondifference = true;
-}
-
-$pluginmanager = core_plugin_manager::instance();
-$plugininfo = $pluginmanager->get_plugins();
-foreach ($plugininfo as $plugins) {
-    foreach ($plugins as $key => $plugin) {
-        $statuscode = $plugin->get_status();
-        if ($statuscode == "downgrade") {
-            $possiblecandidates[] = $plugin;
-        }
-    }
-}
-
-// Fix everything.
-if ($versiondifference) {
+if ((float) $CFG->version !== $version) {
     set_config('version', $version);
-    mtrace('Main version updated');
+    mtrace("Updated main version from {$CFG->version} to {$version}");
 }
-if (!empty($possiblecandidates)) {
 
-    foreach ($possiblecandidates as $plugin) {
-        $name = $plugin->type . '_' . $plugin->name;
-        set_config('version', $plugin->versiondisk, $name);
-        mtrace($plugin->displayname . ' updated.');
-    }
-}
+// Purge all caches.
+$cache = cache::make('core', 'plugin_manager');
+$cache->purge();
+
+$cache = cache::make('core', 'config');
+$cache->purge();
