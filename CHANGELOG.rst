@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v1.5.5
+------
+
+- Added support for grunt CSS - Andrew Nicols
+- Added support for Behat 3.x - Rajesh Taneja
+- Fixed automatic download of Selenium - Jetha Chan
+- Travis bug fixes - Dan Poltawski
+- Bug fixes
+
 v1.5.4
 ------
 
