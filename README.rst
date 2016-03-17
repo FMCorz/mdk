@@ -32,16 +32,16 @@ Installation
 Python package
 --------------
 
-You need the `pip <http://www.pip-installer.org/en/latest/installing.html>`_ to do this::
+On Debian-based systems, install the following packages::
+
+    sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev
+
+Use `pip <http://www.pip-installer.org/en/latest/installing.html>`_::
 
     sudo pip install moodle-sdk
     mdk init
 
 That's it!
-
-On Debian-based systems, you will probably need to install the following packages::
-
-    sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev
 
 
 Homebrew
@@ -50,63 +50,35 @@ Homebrew
 Using `Homebrew <http://brew.sh/>`_, please refer to this `formula <https://github.com/danpoltawski/homebrew-mdk>`_.
 
 
-Git
----
+For development
+---------------
 
-Clone the repository
-~~~~~~~~~~~~~~~~~~~~
+Clone the repository::
 
-::
+    git clone git://github.com/FMCorz/mdk.git moodle-sdk
 
-    cd /opt
-    sudo git clone git://github.com/FMCorz/mdk.git moodle-sdk
-
-Install the dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-You will need the tool `pip <http://www.pip-installer.org/en/latest/installing.html>`_ to install the packages required by Python.
-
-::
-
-    sudo pip install -r /opt/moodle-sdk/requirements.txt
-
-On Debian-based systems, you will probably need to install the following packages::
+On Debian-based systems, you will need to install the following packages::
 
     sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev
 
-Make executable and accessible
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Then from the directory where you cloned the repository::
 
-::
-
-    sudo chmod +x /opt/moodle-sdk/mdk.py
-    sudo ln -s /opt/moodle-sdk/mdk.py /usr/local/bin/mdk
-
-Set up the basics
-~~~~~~~~~~~~~~~~~
-
-Assuming that you are using Apache, which is set up to serve the files from /var/www, leave the default values as they are in ``mdk init``, except for your remote and the database passwords.
-
-::
-
-    mkdir ~/www
-    sudo ln -s ~/www /var/www/m
+    sudo python setup.py develop
     mdk init
 
-You're all set.
 
-Optional
-~~~~~~~~
+Bash completion
+~~~~~~~~~~~~~~~
 
 To activate bash completion::
 
-    sudo ln -s /opt/moodle-sdk/extra/bash_completion /etc/bash_completion.d/moodle-sdk
+    sudo ln -s /path/to/moodle-sdk/extra/bash_completion /etc/bash_completion.d/moodle-sdk
 
 To activate goto commands (``gt`` and ``gtd``), add the following to ~/.bashrc::
 
-    if [ -f /opt/moodle-sdk/extra/goto_instance ]; then
-        . /opt/moodle-sdk/extra/goto_instance
-        . /opt/moodle-sdk/extra/goto_instance.bash_completion
+    if [ -f /path/to/moodle-sdk/extra/goto_instance ]; then
+        . /path/to/moodle-sdk/extra/goto_instance
+        . /path/to/moodle-sdk/extra/goto_instance.bash_completion
     fi
 
 
