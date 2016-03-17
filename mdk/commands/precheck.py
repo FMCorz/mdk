@@ -99,7 +99,7 @@ class PrecheckCommand(Command):
 
 
         if outcome == CI.FAILURE:
-            logging.warning('Build failed, please refer to:\n  %s', infos.url)
+            logging.warning('Build failed, please refer to:\n  %s', infos.get('url', '[Unknown URL]'))
             sys.exit(self.FAILED)
 
         elif outcome == CI.SUCCESS:
@@ -129,10 +129,15 @@ class PrecheckCommand(Command):
         }
 
         for key in mapping:
-            details = infos.get(key)
+            try:
+                details = infos.get(key)
+            except KeyError:
+                logging.debug("Unknown key '%s', ignoring...", key)
+                continue
 
-            symbol = ' ' if details['result'] == CI.SUCCESS else ('!' if details['result'] == CI.WARNING else 'X')
-            print '  [{}] {}     ({} errors, {} warnings)'.format(symbol, mapping.get(key, key), details.get('errors'), details.get('warnings'))
+            result = details.get('result', None)
+            symbol = ' ' if result == CI.SUCCESS else ('!' if result == CI.WARNING else 'X')
+            print '  [{}] {:<20}({} errors, {} warnings)'.format(symbol, mapping.get(key, key), details.get('errors', '?'), details.get('warnings', '?'))
 
         logging.info('')
         logging.info('More details at: %s', infos.get('url'))
