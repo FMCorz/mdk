@@ -50,6 +50,7 @@ class PluginManager(object):
         'cache': '/cache',
         'calendar': '/calendar',
         'cohort': '/cohort',
+        'competency': '/competency',
         'course': '/course',
         'editor': '/lib/editor',
         'enrol': '/enrol',
@@ -71,15 +72,18 @@ class PluginManager(object):
         'repository': '/repository',
         'rss': '/rss',
         'role': '/{admin}/roles',
+        'search': '/search',
         'tag': '/tag',
         'user': '/user',
         'webservice': '/webservice'
     }
 
     _pluginTypesPath = {
+        'antivirus': '/lib/antivirus',
+        'availability': '/availability/condition',
+        'qtype': '/question/type',
         'mod': '/mod',
         'auth': '/auth',
-        'availability': '/availability/condition',
         'calendartype': '/calendar/type',
         'enrol': '/enrol',
         'message': '/message/output',
@@ -98,13 +102,14 @@ class PluginManager(object):
         'webservice': '/webservice',
         'repository': '/repository',
         'portfolio': '/portfolio',
+        'search': '/search/engine',
         'qbehaviour': '/question/behaviour',
         'qformat': '/question/format',
-        'qtype': '/question/type',
         'plagiarism': '/plagiarism',
         'tool': '/{admin}/tool',
         'cachestore': '/cache/stores',
         'cachelock': '/cache/locks',
+
         'theme': '/theme',
         'local': '/local'
     }
