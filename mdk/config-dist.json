@@ -92,26 +92,6 @@
         "username": false,
         "fieldnames" : {
             "repositoryurl" : "Pull  from Repository",
-            "22" : {
-                "branch" : "Pull 2.2 Branch",
-                "diffurl" : "Pull 2.2 Diff URL"
-            },
-            "23" : {
-                "branch" : "Pull 2.3 Branch",
-                "diffurl" : "Pull 2.3 Diff URL"
-            },
-            "24" : {
-                "branch" : "Pull 2.4 Branch",
-                "diffurl" : "Pull 2.4 Diff URL"
-            },
-            "25" : {
-                "branch" : "Pull 2.5 Branch",
-                "diffurl" : "Pull 2.5 Diff URL"
-            },
-            "26" : {
-                "branch" : "Pull 2.6 Branch",
-                "diffurl" : "Pull 2.6 Diff URL"
-            },
             "27" : {
                 "branch" : "Pull 2.7 Branch",
                 "diffurl" : "Pull 2.7 Diff URL"
