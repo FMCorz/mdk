@@ -39,3 +39,5 @@ foreach ($plugintypes as $plugintype => $dir) {
     }
 }
 
+external_update_services();
+
