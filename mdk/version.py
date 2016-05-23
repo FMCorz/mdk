@@ -22,4 +22,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-__version__ = "1.5.5"
+__version__ = "1.5.6"

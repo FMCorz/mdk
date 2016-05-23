@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.5.6
+------
+
+- Update default config for Moodle 3.2 development
+- Minor bug fixes and improvements
+
 v1.5.5
 ------
 
