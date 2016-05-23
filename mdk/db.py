@@ -99,7 +99,7 @@ class DB(object):
             pass
 
         if self.engine in ('mysqli', 'mariadb'):
-            sql = 'CREATE DATABASE `%s` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci' % db
+            sql = 'CREATE DATABASE `%s` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci' % db
         elif self.engine == 'pgsql':
             sql = 'CREATE DATABASE "%s" WITH ENCODING \'UNICODE\'' % db
 
