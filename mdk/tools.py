@@ -33,6 +33,7 @@ import getpass
 import logging
 import hashlib
 import tempfile
+import errno
 from .config import Conf
 
 C = Conf()
@@ -177,10 +178,13 @@ def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
     logging.debug(' '.join(cmd))
     try:
         proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr, encoding='utf-8')
+        logging.debug("subprocess started")
         (out, err) = proc.communicate()
+        logging.debug("communicate done")
     except KeyboardInterrupt as e:
         proc.kill()
         raise e
+    logging.debug("process returning")
     return (proc.returncode, out.decode('utf-8') if type(out) == bytes else out, err)
 
 
@@ -244,16 +248,18 @@ class ProcessInThread(threading.Thread):
         self.stderr = stderr
 
     def kill(self):
-        os.kill(self._pid, signal.SIGKILL)
+        try:
+            os.kill(self._pid, signal.SIGKILL)
+        except OSError as e:
+            if e.errno == errno.ESRCH:
+                logging.debug("ProcessInThread subprocess died before we could kill it")
 
     def run(self):
         logging.debug(' '.join(self.cmd))
         proc = subprocess.Popen(self.cmd, cwd=self.cwd, stdout=self.stdout, stderr=self.stderr)
         self._pid = proc.pid
-        while True:
-            if proc.poll():
-                break
-
-            # Reading the output seems to prevent the process to hang.
-            if self.stdout == subprocess.PIPE:
-                proc.stdout.read(1)
+        logging.debug("ProcessInThread subprocess started, pid %s", self._pid)
+        (out, err) = proc.communicate()
+        if err:
+            logging.debug(err)
+        logging.debug("ProcessInThread subprocess terminated with returncode %s", proc.returncode)
