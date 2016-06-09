@@ -201,6 +201,8 @@
     "shifter": "/usr/bin/shifter",
     // Path to yuidoc
     "yuidoc": "/usr/local/bin/yuidoc",
+    // Path to ghostscript
+    "gs": "",
     // Path to your favourite editor. Set to null to guess it from the System environment.
     "editor": null,
 

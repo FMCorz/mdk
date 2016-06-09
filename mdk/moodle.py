@@ -338,6 +338,9 @@ class Moodle(object):
             elif currentWwwroot != wwwroot:
                 logging.warning('Behat wwwroot not changed, already set to \'%s\', expected \'%s\'.' % (currentWwwroot, wwwroot))
 
+        # Set the pathtogs as this is required by some tests.
+        self.updateConfig('pathtogs', C.getExecutable('gs'))
+
         # Force a cache purge
         self.purge()
 
