@@ -82,7 +82,7 @@
 
     // CI Server related settings
     "ci": {
-        "url": "http://integration.moodle.org",
+        "url": "https://integration.moodle.org",
         "token": null
     },
 
