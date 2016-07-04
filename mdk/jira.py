@@ -111,7 +111,7 @@ class Jira(object):
         data = r.text
         if len(data) > 0:
             f = open(dest, 'w')
-            f.write(data)
+            f.write(data.encode('utf8'))
             f.close()
 
         return os.path.isfile(dest)
