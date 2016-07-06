@@ -62,6 +62,7 @@ if (!$service = $DB->get_record('external_services', array('shortname' => 'mdk_a
     $service->enabled = 1;
     $service->restrictedusers = 1;
     $service->downloadfiles = 1;
+    $service->uploadfiles = 1;
     $service->id = $webservicemanager->add_external_service($service);
 }
 $functions = $webservicemanager->get_not_associated_external_functions($service->id);
