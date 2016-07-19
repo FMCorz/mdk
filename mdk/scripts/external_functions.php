@@ -39,5 +39,7 @@ foreach ($plugintypes as $plugintype => $dir) {
     }
 }
 
-external_update_services();
+if (function_exists('external_update_services')) {
+    external_update_services();
+}
 
