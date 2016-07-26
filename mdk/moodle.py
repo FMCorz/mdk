@@ -254,7 +254,7 @@ class Moodle(object):
         try:
             # Trying to smart guess the last commit needed
             if smartSearch:
-                commits = self.git().log(since=branch, count=C.get('smartHeadCommitLimit'), format='%s_____%h').split('\n')[:-1]
+                commits = self.git().log(since=branch, count=C.get('smartHeadCommitLimit'), format='%s_____%H').split('\n')[:-1]
 
                 # Looping over the last commits to find the commit messages that match the MDL-12345.
                 candidate = None
@@ -273,7 +273,7 @@ class Moodle(object):
             if not headcommit:
                 upstreamremote = C.get('upstreamRemote')
                 stablebranch = self.get('stablebranch')
-                headcommit = self.git().hashes(ref='%s/%s' % (upstreamremote, stablebranch), limit=1, format='%h')[0]
+                headcommit = self.git().hashes(ref='%s/%s' % (upstreamremote, stablebranch), limit=1, format='%H')[0]
 
         except GitException:
             logging.warning('Could not resolve the head commit')
@@ -749,7 +749,7 @@ class Moodle(object):
         logging.info('Searching for the head commit...')
         if ref:
             try:
-                headcommit = self.git().hashes(ref=ref, limit=1, format='%h')[0]
+                headcommit = self.git().hashes(ref=ref, limit=1, format='%H')[0]
             except GitException:
                 logging.warning('Could not resolve a head commit using the reference: %s' % (ref))
                 headcommit = None
@@ -763,6 +763,7 @@ class Moodle(object):
             logging.error('Head commit not resolved, aborting update of tracker fields')
             return False
 
+        headcommit = headcommit[:10]
         logging.debug('Head commit resolved to %s' % (headcommit))
 
         J = Jira()
