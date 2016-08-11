@@ -1,7 +1,12 @@
 Changelog
 =========
 
-v1.5.y
+v1.5.8
+------
+
+- Minor bug fixes and improvements
+
+v1.5.7
 ------
 
 - Minor bug fixes and improvements
