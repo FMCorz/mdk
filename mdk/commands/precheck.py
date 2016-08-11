@@ -129,15 +129,10 @@ class PrecheckCommand(Command):
         }
 
         for key in mapping:
-            try:
-                details = infos.get(key)
-            except KeyError:
-                logging.debug("Unknown key '%s', ignoring...", key)
-                continue
-
-            result = details.get('result', None)
+            details = infos.get(key, {})
+            result = details.get('result', CI.SUCCESS)  # At times we don't receive the result, in which case we assume success.
             symbol = ' ' if result == CI.SUCCESS else ('!' if result == CI.WARNING else 'X')
-            print '  [{}] {:<20}({} errors, {} warnings)'.format(symbol, mapping.get(key, key), details.get('errors', '?'), details.get('warnings', '?'))
+            print '  [{}] {:<20}({} errors, {} warnings)'.format(symbol, mapping.get(key, key), details.get('errors', '0'), details.get('warnings', '0'))
 
         logging.info('')
         logging.info('More details at: %s', infos.get('url'))
