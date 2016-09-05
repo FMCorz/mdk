@@ -19,6 +19,14 @@ $DEPARTMENTS = ['Marketing', 'Development', 'Business', 'HR', 'Communication', '
 // User generator.
 $generator = new mdk_randomapi_users_generator();
 
+// Fix admin user.
+$admin = $DB->get_record('user', array('username' => 'admin'));
+if ($admin && empty($admin->email)) {
+    mtrace('Fill admin user\'s email');
+    $admin->email = 'admin@example.com';
+    $DB->update_record('user', $admin);
+}
+
 // Create all the users.
 foreach ($generator->get_users() as $user) {
     if (empty($user) || empty($user->username)) {
@@ -72,15 +80,6 @@ foreach ($generator->get_users() as $user) {
     }
 
     $DB->update_record('user', $u);
-}
-
-// Fix admin user.
-$admin = $DB->get_record('user', array('username' => 'admin'));
-if ($admin && empty($admin->email)) {
-    $user = get_random_user();
-    mtrace('Fill admin user\'s email');
-    $admin->email = 'admin@example.com';
-    $DB->update_record('user', $admin);
 }
 
 /**
