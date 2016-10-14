@@ -125,7 +125,8 @@ class PrecheckCommand(Command):
             'thirdparty': 'Third party',
             'grunt': 'Grunt',
             'shifter': 'Shifter',
-            'travis': 'Travis CI'
+            'travis': 'Travis CI',
+            'mustache': 'Mustache templates'
         }
 
         for key in mapping:
