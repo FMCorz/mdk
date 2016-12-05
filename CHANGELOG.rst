@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v1.6.0
+------
+
+- Script ``users`` uses randomuser.me - Damyon Wiese
+- Script ``users`` prefills admin details - Damyon Wiese
+- Minor bug fixes and improvements
+
 v1.5.8
 ------
 
