@@ -511,7 +511,8 @@ The following scripts are available with MDK:
 * ``dev``: Changes a portion of Moodle settings to enable development mode
 * ``enrol``: Enrols users in any existing course
 * ``external_functions``: Refreshes the definitions of services and external functions
-* ``undev``: Reverts the changes made by ``dev``
+* ``mindev``: Minimalist set of development settings (performance friendly)
+* ``undev``: Reverts the changes made by ``dev`` and ``mindev``
 * ``users``: Creates a set of users
 * ``version``: Fixes downgrade version conflicts
 * ``webservices``: Does all the set up of webservices for you
