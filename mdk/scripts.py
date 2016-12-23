@@ -131,6 +131,21 @@ class Scripts(object):
         return cli
 
     @classmethod
+    def get_script_destination(cls, cli, path):
+        """Get the final path where the script will be copied"""
+
+        ext = os.path.splitext(cli)[1]
+
+        i = 0
+        while True:
+            candidate = os.path.join(path, 'mdkscriptrun{}.{}'.format(i if i > 0 else '', ext))
+            if not os.path.isfile(candidate):
+                break
+            i += 1
+
+        return candidate
+
+    @classmethod
     def run(cls, script, path, arguments=None, cmdkwargs={}):
         """Executes a script at in a certain directory"""
 
@@ -141,8 +156,9 @@ class Scripts(object):
         arguments = ' ' + arguments
 
         cli = cls.find(script)
+        dest = cls.get_script_destination(cli, path)
+
         if cli.endswith('.php'):
-            dest = os.path.join(path, 'mdkscriptrun.php')
             logging.debug('Copying %s to %s' % (cli, dest))
             shutil.copyfile(cli, dest)
 
@@ -151,7 +167,6 @@ class Scripts(object):
             result = process(cmd, cwd=path, **cmdkwargs)
             os.remove(dest)
         elif cli.endswith('.sh'):
-            dest = os.path.join(path, 'mdkscriptrun.sh')
             logging.debug('Copying %s to %s' % (cli, dest))
             shutil.copyfile(cli, dest)
             os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
