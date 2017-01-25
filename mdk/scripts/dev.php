@@ -7,6 +7,33 @@
 
 define('CLI_SCRIPT', true);
 require(dirname(__FILE__).'/config.php');
+require_once($CFG->libdir . '/clilib.php');
+
+list($options, $unrecognised) = cli_get_params(
+    array(
+        'themedesignermode' => false,
+        'help' => false
+    ),
+    array(
+        't' => 'themedesignermode',
+        'h' => 'help'
+    )
+);
+
+if ($options['help']) {
+    $help = "
+Sets the instance ready for developers.
+
+Options:
+-t, --themedesignermode Enable theme designer mode.
+-h, --help              Print out this help.
+
+Example - To enable theme designer mode:
+mdk run dev -g=-t
+";
+    echo $help;
+    die;
+}
 
 function mdk_set_config($name, $value, $plugin = null) {
     set_config($name, $value, $plugin);
@@ -40,8 +67,15 @@ mdk_set_config('debugpageinfo', 1);
 // Allow themes to be changed from the URL.
 mdk_set_config('allowthemechangeonurl', 1);
 
-// Enable theme designer mode.
-mdk_set_config('themedesignermode', 1);
+// Enable theme designer mode, if desired.
+if ($options['themedesignermode']) {
+    mdk_set_config('themedesignermode', 1);
+} else {
+    // Check whether theme designer mode is currently enabled. If so, disable it.
+    if (get_config(null, 'themedesignermode')) {
+        mdk_set_config('themedesignermode', 0);
+    }
+}
 
 // Do not cache JavaScript.
 mdk_set_config('cachejs', 0);
