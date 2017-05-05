@@ -99,7 +99,13 @@ class DB(object):
             pass
 
         if self.engine in ('mysqli', 'mariadb'):
-            sql = 'CREATE DATABASE `%s` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci' % db
+
+            if 'charset' in self.options and self.options['charset'] == 'utf8mb4':
+                placeholders = (db, 'utf8mb4', 'utf8mb4_unicode_ci')
+            else:
+                placeholders = (db, 'utf8', 'utf8_unicode_ci')
+
+            sql = 'CREATE DATABASE `%s` CHARACTER SET %s COLLATE %s' % placeholders
         elif self.engine == 'pgsql':
             sql = 'CREATE DATABASE "%s" WITH ENCODING \'UNICODE\'' % db
 
