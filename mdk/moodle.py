@@ -391,8 +391,12 @@ class Moodle(object):
             fullname = self.identifier.replace('-', ' ').replace('_', ' ').title()
             fullname = fullname + ' ' + C.get('wording.%s' % engine)
 
+        dboptions =  C.get('db.%s' % engine)
+        if engine in ('mysqli', 'mariadb') and self.branch_compare(31):
+            dboptions['charset'] = 'utf8mb4'
+
         logging.info('Creating database...')
-        db = DB(engine, C.get('db.%s' % engine))
+        db = DB(engine, dboptions)
         if db.dbexists(dbname):
             if dropDb:
                 db.dropdb(dbname)
