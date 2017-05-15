@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.6.2
+------
+
+- Update config for Moodle 3.3 - Jun Patatela
+- MySQL UTF-8 byte characters fix - Dan Poltawski
+
 v1.6.1
 ------
 
