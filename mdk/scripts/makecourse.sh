@@ -3,8 +3,9 @@
 # Creates a course.
 
 PHP=`mdk config show php`
-SHORTNAME="MDK101-$RANDOM"
-FULLNAME="Moodle Development $RANDOM"
+I="$RANDOM"
+SHORTNAME="MDK101-$I"
+FULLNAME="Moodle Development $I"
 SIZE="S"
 CLI="admin/tool/generator/cli/maketestcourse.php"
 
