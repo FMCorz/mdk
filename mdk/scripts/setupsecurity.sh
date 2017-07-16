@@ -12,6 +12,7 @@ set -e
 GIT=`mdk config show git`
 REPOURL=`mdk config show remotes.security`
 ORIGINREMOTE=`mdk config show upstreamRemote`
+DIRROOT=`mdk info -v path`
 
 # Remove origin remote.
 echo "Deleting current origin remote..."
@@ -27,11 +28,11 @@ ${GIT} remote set-url --push $ORIGINREMOTE no-pushes-allowed
 # Git hook to prevent all pushes in case people is adding other remotes anyway.
 content="#!/bin/sh
 
-echo \"Sorry, pushes are not allowed. This clone is not supposed to be used
-to push stuff as you may accidentally push security patches to public repos\"
+>&2 echo \"Sorry, pushes are not allowed. This clone is not supposed to be used
+to push stuff as you may accidentally push security patches to public repos.\"
 exit 1"
 
-hookfile=".git/hooks/pre-push"
+hookfile="$DIRROOT/.git/hooks/pre-push"
 
 if [ -f "$hookfile" ]; then
     existingcontent=$(cat $hookfile)
@@ -50,6 +51,7 @@ else
     cat > $hookfile << EOL
 $content
 EOL
+    chmod +x $hookfile
 fi
 
 exit 0
