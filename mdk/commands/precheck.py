@@ -135,6 +135,6 @@ class PrecheckCommand(Command):
             symbol = ' ' if result == CI.SUCCESS else ('!' if result == CI.WARNING else 'X')
             print '  [{}] {:<20}({} errors, {} warnings)'.format(symbol, mapping.get(key, key), details.get('errors', '0'), details.get('warnings', '0'))
 
-        logging.info('')
-        logging.info('More details at: %s', infos.get('url'))
+        print ''
+        print 'More details at: %s' % infos.get('url')
         sys.exit(self.FAILED)
