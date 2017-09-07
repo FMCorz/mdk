@@ -514,6 +514,7 @@ The following scripts are available with MDK:
 * ``makecourse``: Creates a test course
 * ``mindev``: Minimalist set of development settings (performance friendly)
 * ``setup``: Setup for development by running a succession of other scripts
+* ``tokens``: Lists the webservice tokens
 * ``undev``: Reverts the changes made by ``dev`` and ``mindev``
 * ``users``: Creates a set of users
 * ``version``: Fixes downgrade version conflicts
