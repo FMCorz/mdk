@@ -45,6 +45,7 @@ def main():
     # Set logging levels.
     logging.basicConfig(format='%(message)s', level=debuglevel)
     logging.getLogger('requests').setLevel(logging.WARNING)  # Reset logging level of 'requests' module.
+    logging.getLogger('keyring.backend').setLevel(logging.WARNING)
 
     availaliases = [str(x) for x in C.get('aliases').keys()]
     choices = sorted(commandsList + availaliases)
