@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v1.6.4
+------
+
+- Update config for Moodle 3.4 - Jun Pataleta
+- Add .idea to .gitignore - Jun Pataleta
+
+
 v1.6.3
 ------
 
