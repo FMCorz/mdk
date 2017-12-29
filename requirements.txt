@@ -4,3 +4,4 @@ MySQL-python>=1.2.3
 psycopg2>=2.4.5
 requests>=2.3.0
 watchdog>=0.8.0
+pyodbc>=4.0.21

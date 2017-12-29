@@ -50,7 +50,7 @@ class CreateCommand(Command):
                 ['-e', '--engine'],
                 {
                     'action': 'store',
-                    'choices': ['mariadb', 'mysqli', 'pgsql'],
+                    'choices': ['mariadb', 'mysqli', 'pgsql', 'sqlsrv'],
                     'default': self.C.get('defaultEngine'),
                     'help': 'database engine to install the instance on, use with --install',
                     'metavar': 'engine'

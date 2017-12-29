@@ -25,7 +25,7 @@ http://github.com/FMCorz/mdk
 import logging
 import MySQLdb as mysql
 import psycopg2 as pgsql
-
+import pyodbc
 
 # TODO: Clean up the mess caused by the different engines and libraries.
 
@@ -64,6 +64,22 @@ class DB(object):
                 user=str(options['user']),
                 password=str(options['passwd'])
             )
+            try:
+                self.cur = self.conn.cursor()
+            except:
+                raise Exception('Connexion failed! Make sure the database \'%s\' exists.' % str(options['user']))
+
+        elif engine == 'sqlsrv':
+            # pyodbc.
+            host = str(options['host'])
+            port = int(options['port'])
+            user = str(options['user'])
+            password = str(options['passwd'])
+            connectionstr = "DRIVER={ODBC Driver 13 for SQL Server};SERVER=%s;PORT=%d;UID=%s;PWD=%s" \
+                            % (host, port, user, password)
+            self.conn = pyodbc.connect(connectionstr)
+            self.conn.autocommit = True
+
             try:
                 self.cur = self.conn.cursor()
             except:
@@ -108,6 +124,11 @@ class DB(object):
             sql = 'CREATE DATABASE `%s` CHARACTER SET %s COLLATE %s' % placeholders
         elif self.engine == 'pgsql':
             sql = 'CREATE DATABASE "%s" WITH ENCODING \'UNICODE\'' % db
+        elif self.engine == 'sqlsrv':
+            sql = 'CREATE DATABASE "%s" COLLATE Latin1_General_CS_AS;' \
+                  'ALTER DATABASE "%s" SET ANSI_NULLS ON;' \
+                  'ALTER DATABASE "%s" SET QUOTED_IDENTIFIER ON;' \
+                  'ALTER DATABASE "%s" SET READ_COMMITTED_SNAPSHOT ON;' % (db, db, db, db)
 
         logging.debug(sql)
         self.cur.execute(sql)
@@ -126,6 +147,9 @@ class DB(object):
         elif self.engine == 'pgsql':
             sql = "SELECT COUNT('*') FROM pg_database WHERE datname='%s'" % db
 
+        elif self.engine == 'sqlsrv':
+            sql = "SELECT COUNT('*') FROM master.dbo.sysdatabases WHERE name = '%s'" % db
+
         logging.debug(sql)
         self.cur.execute(sql)
         count = self.cur.fetchone()[0]
@@ -143,7 +167,7 @@ class DB(object):
 
         if self.engine in ('mysqli', 'mariadb'):
             sql = 'DROP DATABASE `%s`' % db
-        elif self.engine == 'pgsql':
+        elif self.engine in ('pgsql', 'sqlsrv'):
             sql = 'DROP DATABASE "%s"' % db
 
         logging.debug(sql)
