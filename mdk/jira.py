@@ -35,10 +35,8 @@ import mimetypes
 try:
     import keyring
 except:
-    # TODO Find a better way of suggesting this
-    # debug('Could not load module keyring. You might want to install it.')
-    # debug('Try `apt-get install python-keyring`, or visit http://pypi.python.org/pypi/keyring')
-    pass
+    logging.warning('Could not load module keyring. You might want to install it.')
+    logging.warning('Try `apt-get install python-keyring`, or visit https://pypi.python.org/pypi/keyring#installation-instructions')
 
 C = Conf()
 
