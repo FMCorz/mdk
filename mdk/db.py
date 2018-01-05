@@ -80,11 +80,6 @@ class DB(object):
             self.conn = pyodbc.connect(connectionstr)
             self.conn.autocommit = True
 
-            try:
-                self.cur = self.conn.cursor()
-            except:
-                raise Exception('Connexion failed! Make sure the database \'%s\' exists.' % str(options['user']))
-
         else:
             raise Exception('DB engine %s not supported' % engine)
 
