@@ -53,6 +53,12 @@
             "port": "5432",
             "user": "root",
             "passwd": "root"
+        },
+        "sqlsrv": {
+            "host": "localhost",
+            "port": "1433",
+            "user": "SA",
+            "passwd": "root"
         }
     },
 
@@ -78,7 +84,8 @@
         "stable": "Stable",
         "mariadb": "MariaDB",
         "mysqli": "MySQL",
-        "pgsql": "PostgreSQL"
+        "pgsql": "PostgreSQL",
+        "sqlsrv": "SQL Server"
     },
 
     // CI Server related settings

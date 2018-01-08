@@ -34,7 +34,7 @@ Python package
 
 On Debian-based systems, install the following packages::
 
-    sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev
+    sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev unixodbc-dev
 
 Use `pip <http://www.pip-installer.org/en/latest/installing.html>`_::
 
@@ -59,7 +59,7 @@ Clone the repository::
 
 On Debian-based systems, you will need to install the following packages::
 
-    sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev
+    sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev unixodbc-dev
 
 Then from the directory where you cloned the repository::
 
