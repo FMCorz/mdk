@@ -1,6 +1,9 @@
 Changelog
 =========
 
+v1.7.1
+- Fix missing assignment of the sqlsrv cursor - Jun Pataleta
+
 v1.7.0
 ------
 
