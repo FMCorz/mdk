@@ -79,6 +79,7 @@ class DB(object):
                             % (host, port, user, password)
             self.conn = pyodbc.connect(connectionstr)
             self.conn.autocommit = True
+            self.cur = self.conn.cursor()
 
         else:
             raise Exception('DB engine %s not supported' % engine)
