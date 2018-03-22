@@ -416,7 +416,7 @@ class PluginRepository(object):
         # Checking local repository
         lr = self.localRepository.get(plugin, False)
         if lr:
-            info = lr.get(branch, None)
+            info = lr.get(str(branch), None)
             if not info:
                 versions = [v for v in range(branch, 18, -1)]
                 for v in versions:
