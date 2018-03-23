@@ -25,6 +25,7 @@ http://github.com/FMCorz/mdk
 import logging
 from jenkinsapi import jenkins
 from jenkinsapi.custom_exceptions import JenkinsAPIException, TimeOut
+from jenkinsapi.utils.crumb_requester import CrumbRequester
 from .config import Conf
 
 C = Conf()
@@ -63,7 +64,7 @@ class CI(object):
         logger.setLevel(logging.WARNING)
 
         # Loads the jenkins object.
-        self._jenkins = jenkins.Jenkins(self.url)
+        self._jenkins = jenkins.Jenkins(self.url, requester=CrumbRequester(baseurl=self.url))
 
     def precheckRemoteBranch(self, remote, branch, integrateto, issue=None):
         """Runs the precheck job and returns the outcome"""
