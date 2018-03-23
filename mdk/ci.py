@@ -79,10 +79,9 @@ class CI(object):
         job = self.jenkins.get_job('Precheck remote branch')
 
         try:
-            invoke = job.invoke(build_params=params, securitytoken=self.token, invoke_pre_check_delay=0)
-            invoke.block_until_not_queued(60, 2)
+            invoke = job.invoke(build_params=params, securitytoken=self.token, delay=5, block=True)
         except TimeOut:
-            raise CIException('The build has been in queue for more than 60s. Aborting, please refer to: %s' % job.baseurl)
+            raise CIException('The build has been in queue for too long. Aborting, please refer to: %s' % job.baseurl)
         except JenkinsAPIException:
             raise CIException('Failed to invoke the build, check your permissions.')
 
