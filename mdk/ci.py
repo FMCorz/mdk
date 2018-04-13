@@ -25,6 +25,7 @@ http://github.com/FMCorz/mdk
 import logging
 from jenkinsapi import jenkins
 from jenkinsapi.custom_exceptions import JenkinsAPIException, TimeOut
+from jenkinsapi.utils.crumb_requester import CrumbRequester
 from .config import Conf
 
 C = Conf()
@@ -63,7 +64,7 @@ class CI(object):
         logger.setLevel(logging.WARNING)
 
         # Loads the jenkins object.
-        self._jenkins = jenkins.Jenkins(self.url)
+        self._jenkins = jenkins.Jenkins(self.url, requester=CrumbRequester(baseurl=self.url))
 
     def precheckRemoteBranch(self, remote, branch, integrateto, issue=None):
         """Runs the precheck job and returns the outcome"""
@@ -78,10 +79,9 @@ class CI(object):
         job = self.jenkins.get_job('Precheck remote branch')
 
         try:
-            invoke = job.invoke(build_params=params, securitytoken=self.token, invoke_pre_check_delay=0)
-            invoke.block_until_not_queued(60, 2)
+            invoke = job.invoke(build_params=params, securitytoken=self.token, delay=5, block=True)
         except TimeOut:
-            raise CIException('The build has been in queue for more than 60s. Aborting, please refer to: %s' % job.baseurl)
+            raise CIException('The build has been in queue for too long. Aborting, please refer to: %s' % job.baseurl)
         except JenkinsAPIException:
             raise CIException('Failed to invoke the build, check your permissions.')
 
