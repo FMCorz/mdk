@@ -24,6 +24,7 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
+from distutils.util import strtobool
 from .config import Conf
 from .tools import mkdir, process
 
@@ -115,6 +116,17 @@ class PHPUnit(object):
                 raise Exception('Something wrong with PHPUnit configuration')
             else:
                 raise exception
+
+        if strtobool(C.get('phpunit.buildcomponentconfigs')):
+            try:
+                result = self.M.cli('/admin/tool/phpunit/cli/util.php', args='--buildcomponentconfigs', stdout=None, stderr=None)
+            except Exception as exception:
+                pass
+
+            if exception != None or result[0] > 0:
+                raise Exception('Unable to build distributed phpunit.xml files for each component')
+            else:
+                logging.info('Distributed phpunit.xml files built.')
 
         logging.info('PHPUnit ready!')
 
