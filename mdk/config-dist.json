@@ -193,6 +193,12 @@
         "launchSleep": 5
     },
 
+    // PHPUnit related settings
+    "phpunit": {
+        // Automatically build distributed phpunit.xml files for each component.
+        "buildcomponentconfigs": true
+    },
+
     // The name of the data directory (in dirs.storage/instanceName/)
     "dataDir": "moodledata",
     // The name of the www directory (in dirs.storage/instanceName/)
