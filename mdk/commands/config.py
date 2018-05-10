@@ -84,6 +84,33 @@ class ConfigCommand(Command):
                         },
                         [
                             (
+                                ['-b', '--bool'],
+                                {
+                                    'action': 'store_const',
+                                    'dest': 'type',
+                                    'const': 'bool',
+                                    'help': 'treat the value passed as a boolean'
+                                }
+                            ),
+                            (
+                                ['-i', '--int'],
+                                {
+                                    'action': 'store_const',
+                                    'dest': 'type',
+                                    'const': 'integer',
+                                    'help': 'treat the value passed as an integer'
+                                }
+                            ),
+                            (
+                                ['-s', '--string'],
+                                {
+                                    'action': 'store_const',
+                                    'dest': 'type',
+                                    'const': 'string',
+                                    'help': 'treat the value passed as a string'
+                                }
+                            ),
+                            (
                                 ['setting'],
                                 {
                                     'metavar': 'setting',
@@ -171,14 +198,42 @@ class ConfigCommand(Command):
                     print setting
 
         elif args.action == 'set':
+            type_ = args.type
             setting = args.setting
             val = args.value
-            if val.startswith('b:'):
+
+            # Classic conversion.
+            if type_ == 'bool':
+                val = True if val.lower() in ['1', 'true'] else False
+            elif type_ == 'integer':
+                val = int(val)
+            elif type_ == 'string':
+                pass
+
+            # Legacy parsing when type isn't stritly defined.
+            elif type_ == None and val.startswith('b:'):
                 val = True if val[2:].lower() in ['1', 'true'] else False
-            elif val.startswith('i:'):
-                try:
-                    val = int(val[2:])
-                except ValueError:
-                    # Not a valid int, let's consider it a string.
-                    pass
+            elif type_ == None and val.startswith('i:'):
+                val = int(val[2:])
+
+            # Catch the rest and try to be smart about the typing.
+            else:
+                if val in ('1', '0', 'false', 'true'):
+                    val = True if val.lower() in ['1', 'true'] else False
+                    logging.info('The value was converted to the boolean \'%s\', use the flags --string or '
+                        '--int to override this behaviour.', val)
+
+                elif val in ('null', 'none'):
+                    val = None
+                    logging.info('The value was converted to \'%s\', use the flag --string '
+                        'to override this behaviour.', val)
+
+                elif val.isdigit():
+                    try:
+                        val = int(val)
+                        logging.info('The value was converted to an integer, use the flags --string or '
+                            '--bool to override this behaviour.')
+                    except ValueError:
+                        pass
+
             self.C.set(setting, val)

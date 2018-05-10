@@ -35,6 +35,10 @@ class ConfigObject(object):
     def __init__(self):
         self.data = {}
 
+    def __iter__(self):
+        """Return an iterator of the config keys"""
+        return iter(self.getFlat().keys())
+
     def add(self, name, value):
         """Add a new config but throws an exception if already defined"""
         if self.get(name) != None:
@@ -268,13 +272,14 @@ class Conf(Config):
             for f in files:
                 o = self.objects[f]
                 ov = o.get(k)
+                present = k in o
 
                 # The value hasn't been found and is different
-                if not found and ov != None and ov != v:
+                if not found and present and ov is not v:
                     different = True
                     break
                 # The value is set
-                elif ov != None and ov == v:
+                elif present and ov is v:
                     found = True
 
             # The value differs, or none of the file define it

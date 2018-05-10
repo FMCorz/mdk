@@ -24,7 +24,6 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
-from distutils.util import strtobool
 from .config import Conf
 from .tools import mkdir, process
 
@@ -117,7 +116,7 @@ class PHPUnit(object):
             else:
                 raise exception
 
-        if strtobool(C.get('phpunit.buildcomponentconfigs')):
+        if C.get('phpunit.buildcomponentconfigs'):
             try:
                 result = self.M.cli('/admin/tool/phpunit/cli/util.php', args='--buildcomponentconfigs', stdout=None, stderr=None)
             except Exception as exception:
