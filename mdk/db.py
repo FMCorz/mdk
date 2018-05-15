@@ -75,8 +75,18 @@ class DB(object):
             port = int(options['port'])
             user = str(options['user'])
             password = str(options['passwd'])
-            connectionstr = "DRIVER={ODBC Driver 13 for SQL Server};SERVER=%s;PORT=%d;UID=%s;PWD=%s" \
-                            % (host, port, user, password)
+
+            # Look for installed ODBC Driver for SQL Server.
+            drivers = pyodbc.drivers()
+            sqlsrvdriver = next((driver for driver in drivers if "for SQL Server" in driver), None)
+            if sqlsrvdriver is None:
+                installurl = 'https://sqlchoice.azurewebsites.net/en-us/sql-server/developer-get-started/python'
+                raise Exception("You need to install an ODBC Driver for SQL Server. Check out %s for more info." % installurl)
+
+            logging.debug('Using %s' % sqlsrvdriver)
+
+            connectionstr = "DRIVER=%s;SERVER=%s;PORT=%d;UID=%s;PWD=%s" \
+                            % (sqlsrvdriver, host, port, user, password)
             self.conn = pyodbc.connect(connectionstr)
             self.conn.autocommit = True
             self.cur = self.conn.cursor()
