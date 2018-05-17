@@ -1,7 +1,20 @@
 Changelog
 =========
 
+v1.7.2
+------
+
+- Update config for Moodle 3.5 - Jun Pataleta
+- Detect which SQL Server Driver is installed - Jun Pataleta
+- Improve type handling of values set using the config command
+- Support for setting URL of specific branches in config
+- Tidy up the version script - Andrew Nicols
+- Automatically build distributed phpunit.xml files for each component - David Mudrák
+- Make mdk precheck work again - David Mudrák
+
 v1.7.1
+------
+
 - Fix missing assignment of the sqlsrv cursor - Jun Pataleta
 
 v1.7.0
