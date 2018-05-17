@@ -128,6 +128,10 @@
                 "branch" : "Pull 3.4 Branch",
                 "diffurl" : "Pull 3.4 Diff URL"
             },
+            "35" : {
+                "branch" : "Pull 3.5 Branch",
+                "diffurl" : "Pull 3.5 Diff URL"
+            },
             "master" : {
                 "branch" : "Pull Master Branch",
                 "diffurl" : "Pull Master Diff URL"
@@ -253,7 +257,7 @@
     "useCacheAsUpstreamRemote": true,
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 35,
+    "masterBranch": 36,
 
     // Aliases for MDK commands.
     // An alias starting with a ! will be executed through the command line. Those also
