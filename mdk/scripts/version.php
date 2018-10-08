@@ -10,6 +10,11 @@ cli_heading('Resetting all version numbers');
 
 $manager = core_plugin_manager::instance();
 
+// Purge caches to make sure we have the fresh information about versions.
+$manager::reset_caches();
+$configcache = cache::make('core', 'config');
+$configcache->purge();
+
 $plugininfo = $manager->get_plugins();
 foreach ($plugininfo as $type => $plugins) {
     foreach ($plugins as $name => $plugin) {
@@ -30,9 +35,6 @@ if ((float) $CFG->version !== $version) {
     mtrace("Updated main version from {$CFG->version} to {$version}");
 }
 
-// Purge all caches.
-$cache = cache::make('core', 'plugin_manager');
-$cache->purge();
-
-$cache = cache::make('core', 'config');
-$cache->purge();
+// Purge relevant caches again.
+$manager::reset_caches();
+$configcache->purge();
