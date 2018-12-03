@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.7.3
+------
+- Update config for Moodle 3.6 - Andrew Nicols
+- Invalidate config caches before reading plugin versions - David Mudrák
+
+
 v1.7.2
 ------
 
