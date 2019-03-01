@@ -159,7 +159,10 @@ function _mdk() {
                 ;;
             plugin)
                 if [[ "${COMP_CWORD}" == 2 ]]; then
-                    OPTS="download install"
+                    OPTS="download install uninstall"
+                elif [[ "${COMP_CWORD}" == 3 && ("$PREV" == "uninstall") ]]; then
+                    OPTS="--remove-files --upgrade --no-checkout"
+                    OPTS="$OPTS $(_list_instances)"
                 else
                     OPTS="--force --strict --no-cache"
                     OPTS="$OPTS $(_list_instances)"

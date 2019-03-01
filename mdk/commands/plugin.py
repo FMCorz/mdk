@@ -129,6 +129,55 @@ class PluginCommand(Command):
                                     }
                                 )
                             ]
+                        ),
+                        'uninstall': (
+                            {
+                                'help': 'uninstall a plugin'
+                            },
+                            [
+                                (
+                                    ['pluginname'],
+                                    {
+                                        'type': str,
+                                        'metavar': 'pluginname',
+                                        'default': None,
+                                        'help': 'frankenstyle name of the plugin'
+                                    }
+                                ),
+                                (
+                                    ['name'],
+                                    {
+                                        'default': None,
+                                        'help': 'name of the instance to work on',
+                                        'metavar': 'name',
+                                        'nargs': '?'
+                                    }
+                                ),
+                                (
+                                    ['-r', '--remove-files'],
+                                    {
+                                        'action': 'store_true',
+                                        'dest': 'removefiles',
+                                        'help': 'Removes the files and directory for this plugin'
+                                    }
+                                ),
+                                (
+                                    ['-u', '--upgrade'],
+                                    {
+                                        'action': 'store_true',
+                                        'dest': 'upgrade',
+                                        'help': 'upgrade the instance after successfully uninstalling the plugin'
+                                    }
+                                ),
+                                (
+                                    ['-n', '--no-checkout'],
+                                    {
+                                        'action': 'store_true',
+                                        'dest': 'nocheckout',
+                                        'help': 'do not checkout the stable branch before upgrading'
+                                    }
+                                )
+                            ]
                         )
                     }
             }
@@ -156,6 +205,15 @@ class PluginCommand(Command):
                 logging.info('Upgrading Moodle to install the new plugin')
                 M.upgrade()
 
+        elif args.action == 'uninstall':
+
+            M = self.Wp.resolve(args.name)
+            if not M:
+                raise Exception('This is not a Moodle instance')
+
+            if self.uninstall(M, args):
+                logging.info('Plugin has been uninstalled')
+
     def download(self, M, args):
 
         po = PluginObject(args.pluginname)
@@ -177,4 +235,33 @@ class PluginCommand(Command):
             return False
 
         PluginManager.extract(fi, po, M, override=args.force)
+        return True
+
+    def uninstall(self, M, args):
+
+        po = PluginObject(args.pluginname)
+        if not PluginManager.hasPlugin(po, M):
+            logging.error('The plugin does not exist on this system')
+            return False
+
+        try:
+            M.uninstallPlugins(args.pluginname)
+        except Exception:
+            logging.error('Problem with uninstallation. Please check for dependencies on the plugin and try again.')
+            return False
+
+        if args.removefiles:
+            logging.info('Starting to remove the plugin directory and files.');
+            PluginManager.deleteDirectoryTree(po, M)
+            if args.upgrade:
+                try:
+                    M.upgrade(args.nocheckout)
+                except UpgradeNotAllowed as e:
+                    logging.info('Skipping upgrade of %s (not allowed)' % (M.get('identifier')))
+                    logging.debug(e)
+                except Exception as e:
+                    logging.warning('Error during the upgrade of %s' % M.get('identifier'))
+                    logging.debug(e)
+                logging.info('Done')
+
         return True

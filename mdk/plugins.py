@@ -313,6 +313,13 @@ class PluginManager(object):
             return False
         return True
 
+    @classmethod
+    def deleteDirectoryTree(cls, plugin, M):
+        directory = cls.getTypeDirectory(plugin.t, M)
+        fullpath = directory + '/' + plugin.name
+        if os.path.isdir(fullpath):
+            shutil.rmtree(fullpath)
+
 
 class PluginObject(object):
 
