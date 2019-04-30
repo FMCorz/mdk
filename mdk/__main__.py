@@ -29,6 +29,7 @@ def main():
     import os
     import re
     import logging
+    import base64
     from .command import CommandRunner
     from .commands import getCommand, commandsList
     from .config import Conf
@@ -47,14 +48,14 @@ def main():
     logging.getLogger('requests').setLevel(logging.WARNING)  # Reset logging level of 'requests' module.
     logging.getLogger('keyring.backend').setLevel(logging.WARNING)
 
-    availaliases = [str(x) for x in C.get('aliases').keys()]
+    availaliases = [str(x) for x in list(C.get('aliases').keys())]
     choices = sorted(commandsList + availaliases)
 
     parser = argparse.ArgumentParser(description='Moodle Development Kit', add_help=False)
     parser.add_argument('-h', '--help', action='store_true', help='show this help message and exit')
     parser.add_argument('-l', '--list', action='store_true', help='list the available commands')
     parser.add_argument('-v', '--version', action='store_true', help='display the current version')
-    parser.add_argument(*['--%s'%f.decode('base64') for f in ('aWNhbnRyZWFj', 'aWNhbnRyZWFk')], dest='asdf', action='store_true', help=argparse.SUPPRESS)
+    parser.add_argument(*['--%s'%base64.b64decode(f) for f in ('aWNhbnRyZWFj', 'aWNhbnRyZWFk')], dest='asdf', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('command', metavar='command', nargs='?', help='command to call', choices=choices)
     parser.add_argument('args', metavar='arguments', nargs=argparse.REMAINDER, help='arguments of the command')
     parsedargs = parser.parse_args()
@@ -65,12 +66,12 @@ def main():
     # There is no command, what do we do?
     if not cmd:
         if parsedargs.version:
-            print 'MDK version %s' % __version__
+            print('MDK version %s' % __version__)
         elif parsedargs.asdf:
-            print 'U29ycnkgRGF2ZSwgTURLIGNhbm5vdCBoZWxwIHlvdSB3aXRoIHRoYXQuLi4='.decode('base64')
+            print(base64.b64decode('U29ycnkgRGF2ZSwgTURLIGNhbm5vdCBoZWxwIHlvdSB3aXRoIHRoYXQuLi4='))
         elif parsedargs.list:
             for c in sorted(commandsList):
-                print '{0:<15} {1}'.format(c, getCommand(c)._description)
+                print('{0:<15} {1}'.format(c, getCommand(c)._description))
         else:
             parser.print_help()
         sys.exit(0)

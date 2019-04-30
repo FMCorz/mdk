@@ -37,7 +37,7 @@ class ConfigObject(object):
 
     def __iter__(self):
         """Return an iterator of the config keys"""
-        return iter(self.getFlat().keys())
+        return iter(list(self.getFlat().keys()))
 
     def add(self, name, value):
         """Add a new config but throws an exception if already defined"""
@@ -51,7 +51,7 @@ class ConfigObject(object):
         """
         data = copy.deepcopy(self.data)
         if name != None:
-            name = unicode(name).split('.')
+            name = str(name).split('.')
             for n in name:
                 try:
                     data = data[n]
@@ -65,10 +65,10 @@ class ConfigObject(object):
         flatten = {}
         if data == None:
             data = self.get()
-        for k, v in data.items():
+        for k, v in list(data.items()):
             newKey = '%s.%s' % (parent, k) if parent != '' else k
             if type(v) == dict:
-                for k2, v2 in self.getFlat(v, newKey).items():
+                for k2, v2 in list(self.getFlat(v, newKey).items()):
                     flatten[k2] = v2
             else:
                 flatten[newKey] = v
@@ -99,7 +99,7 @@ class ConfigObject(object):
 
     def mergeData(self, origData, newData):
         """Recursively merge 2 dict of data"""
-        for k, v in newData.items():
+        for k, v in list(newData.items()):
             if k in origData and type(v) == dict:
                 origData[k] = self.mergeData(origData[k], v)
             else:
@@ -109,7 +109,7 @@ class ConfigObject(object):
 
     def remove(self, name):
         """Remove a setting"""
-        name = unicode(name).split('.')
+        name = str(name).split('.')
         count = len(name)
         data = self.data
         for i in range(count):
@@ -129,8 +129,8 @@ class ConfigObject(object):
     def set(self, name, value):
         """Set a new setting"""
         if type(value) == str:
-            value = unicode(value)
-        name = unicode(name).split('.')
+            value = str(value)
+        name = str(name).split('.')
         count = len(name)
         data = self.data
         for i in range(count):
@@ -207,7 +207,7 @@ class Config(object):
             json.dump(confObj.get(), f, indent=4)
             f.close()
         except Exception as e:
-            print e
+            print(e)
             raise ConfigFileCouldNotBeSaved('Could not save to config file %s' % to)
 
     def set(self, name, value):

@@ -96,7 +96,7 @@ class UpgradeCommand(Command):
 
         # Updating cache if required
         if args.update:
-            print 'Updating cached repositories'
+            print('Updating cached repositories')
             self.Wp.updateCachedClones(verbose=False)
 
         errors = []

@@ -135,13 +135,13 @@ class AliasCommand(Command):
     def run(self, args):
         if args.action == 'list':
             aliases = self.C.get('aliases')
-            for alias, command in aliases.items():
-                print '{0:<20}: {1}'.format(alias, command)
+            for alias, command in list(aliases.items()):
+                print('{0:<20}: {1}'.format(alias, command))
 
         elif args.action == 'show':
             alias = self.C.get('aliases.%s' % args.alias)
             if alias != None:
-                print alias
+                print(alias)
 
         elif args.action == 'add':
             self.C.add('aliases.%s' % args.alias, ' '.join(args.definition))

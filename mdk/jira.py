@@ -25,7 +25,7 @@ http://github.com/FMCorz/mdk
 import json
 from .tools import question
 from .config import Conf
-from urlparse import urlparse
+from urllib.parse import urlparse
 from datetime import datetime
 import re
 import logging
@@ -164,7 +164,7 @@ class Jira(object):
 
         # Populate the named fields in a separate key. Allows us to easily find them without knowing the field ID.
         namelist = issue.get('names', {})
-        for fieldkey, fieldvalue in issue.get('fields', {}).items():
+        for fieldkey, fieldvalue in list(issue.get('fields', {}).items()):
             if namelist.get(fieldkey, None) != None:
                 issue['named'][namelist.get(fieldkey)] = fieldvalue
 
@@ -179,7 +179,7 @@ class Jira(object):
             'branches': {}
         }
 
-        for key, value in C.get('tracker.fieldnames').iteritems():
+        for key, value in C.get('tracker.fieldnames').items():
             if key == 'repositoryurl':
                 infos['repo'] = fields.get(value)
 
@@ -206,7 +206,7 @@ class Jira(object):
         """Returns a dictionary of information about this instance"""
         info = {}
         self._load()
-        for (k, v) in self.version.items():
+        for (k, v) in list(self.version.items()):
             info[k] = v
         return info
 
@@ -250,7 +250,7 @@ class Jira(object):
                     self._loaded = True
                 except JiraException:
                     askUsername = True
-                    print 'Either the username and password don\'t match or you may need to enter a Captcha to continue.'
+                    print('Either the username and password don\'t match or you may need to enter a Captcha to continue.')
             if not self._loaded:
                 if askUsername:
                     self.username = question('What is the username to use to connect to Moodle Tracker?', default=self.username if self.username else None)
@@ -341,12 +341,12 @@ class Jira(object):
         issue = self.getIssue(key)
         update = {'fields': {}}
 
-        for updatename, updatevalue in updates.items():
+        for updatename, updatevalue in list(updates.items()):
             remotevalue = issue.get('named').get(updatename)
             if not remotevalue or remotevalue != updatevalue:
                 # Map the label of the field with the field code.
                 fieldKey = None
-                for k, v in issue.get('names').iteritems():
+                for k, v in issue.get('names').items():
                     if v == updatename:
                         fieldKey = k
                         break

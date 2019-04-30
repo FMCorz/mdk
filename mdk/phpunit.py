@@ -89,7 +89,7 @@ class PHPUnit(object):
         phpunit_dataroot = self.M.get('dataroot') + '_phpu'
         self.M.updateConfig('phpunit_dataroot', phpunit_dataroot)
         if not os.path.isdir(phpunit_dataroot):
-            mkdir(phpunit_dataroot, 0777)
+            mkdir(phpunit_dataroot, 0o777)
 
         # Set PHPUnit prefix
         currentPrefix = self.M.get('phpunit_prefix')

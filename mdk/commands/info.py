@@ -102,9 +102,9 @@ class InfoCommand(Command):
             for i in l:
                 if not args.nameonly:
                     M = self.Wp.get(i)
-                    print '{0:<25}'.format(i), M.get('release')
+                    print('{0:<25}'.format(i), M.get('release'))
                 else:
-                    print i
+                    print(i)
 
         # Loading instance
         else:
@@ -128,10 +128,10 @@ class InfoCommand(Command):
                     M.updateConfig(args.var, val)
                     logging.info('Set $CFG->%s to %s on %s' % (args.var, str(val), M.get('identifier')))
                 else:
-                    print M.get(args.var)
+                    print(M.get(args.var))
 
             # Printing info
             else:
                 infos = M.info()
                 for key in sorted(infos.keys()):
-                    print '{0:<20}: {1}'.format(key, infos[key])
+                    print('{0:<20}: {1}'.format(key, infos[key]))

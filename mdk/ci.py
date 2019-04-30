@@ -103,7 +103,7 @@ class CI(object):
                 outcome = CI.FAILURE
             else:
                 outcome = result['smurf']['result']
-                infos = dict(infos.items() + result.items())
+                infos = dict(list(infos.items()) + list(result.items()))
 
         else:
             outcome = CI.FAILURE

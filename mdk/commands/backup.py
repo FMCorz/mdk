@@ -79,7 +79,7 @@ class BackupCommand(Command):
             for key in sorted(backups.keys()):
                 B = backups[key]
                 backuptime = time.ctime(B.get('backup_time'))
-                print '{0:<25}: {1:<30} {2}'.format(key, B.get('release'), backuptime)
+                print('{0:<25}: {1:<30} {2}'.format(key, B.get('release'), backuptime))
 
         # Displays backup information
         elif args.info:
@@ -92,9 +92,9 @@ class BackupCommand(Command):
             # Restore process
             B = BackupManager.get(name)
             infos = B.infos
-            print 'Displaying information about %s' % name
+            print('Displaying information about %s' % name)
             for key in sorted(infos.keys()):
-                print '{0:<20}: {1}'.format(key, infos[key])
+                print('{0:<20}: {1}'.format(key, infos[key]))
 
         # Restore
         elif args.restore:
@@ -122,7 +122,7 @@ class BackupCommand(Command):
             logging.info('')
             infos = M.info()
             for key in sorted(infos.keys()):
-                print '{0:<20}: {1}'.format(key, infos[key])
+                print('{0:<20}: {1}'.format(key, infos[key]))
             logging.info('')
 
             logging.info('Done.')

@@ -165,7 +165,7 @@ class PullCommand(Command):
 
         J = jira.Jira()
         patches = J.getAttachments(mdl)
-        patches = {k: v for k, v in patches.items() if v.get('filename').endswith('.patch')}
+        patches = {k: v for k, v in list(patches.items()) if v.get('filename').endswith('.patch')}
         toApply = []
 
         if len(patches) < 1:
@@ -176,7 +176,7 @@ class PullCommand(Command):
         for key in sorted(patches.keys()):
             patch = patches[key]
             mapping[i] = patch
-            print '{0:<2}: {1:<60} {2}'.format(i, key[:60], datetime.strftime(patch.get('date'), '%Y-%m-%d %H:%M'))
+            print('{0:<2}: {1:<60} {2}'.format(i, key[:60], datetime.strftime(patch.get('date'), '%Y-%m-%d %H:%M')))
             i += 1
 
         while True:
@@ -187,7 +187,7 @@ class PullCommand(Command):
                     continue
                 elif ids:
                     ids = re.split(r'\s*[, ]\s*', ids)
-                    toApply = [mapping[int(i)] for i in ids if int(i) in mapping.keys()]
+                    toApply = [mapping[int(i)] for i in ids if int(i) in list(mapping.keys())]
             except ValueError:
                 logging.warning('Error while parsing the list of patches, try a little harder.')
                 continue

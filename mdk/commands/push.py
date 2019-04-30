@@ -132,16 +132,16 @@ class PushCommand(Command):
 
             if not mdl or mdl != branchmdl:
                 if not mdl:
-                    print 'The MDL number could not be found in the commit message.'
-                    print 'Commit: %s' % (message)
+                    print('The MDL number could not be found in the commit message.')
+                    print('Commit: %s' % (message))
 
                 elif mdl != branchmdl:
-                    print 'The MDL number in the last commit does not match the branch being pushed to.'
-                    print 'Branch: \'%s\' vs. commit: \'%s\'' % (branchmdl, mdl)
+                    print('The MDL number in the last commit does not match the branch being pushed to.')
+                    print('Branch: \'%s\' vs. commit: \'%s\'' % (branchmdl, mdl))
 
                 answer = tools.question('Are you sure you want to continue?', default='n')
                 if answer.lower()[0] != 'y':
-                    print 'Exiting...'
+                    print('Exiting...')
                     return
 
         J = jira.Jira()

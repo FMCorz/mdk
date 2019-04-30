@@ -78,7 +78,7 @@ class InitCommand(Command):
         # Create the main MDK folder.
         if not os.path.isdir(userdir):
             logging.info('Creating directory %s.' % userdir)
-            mkdir(userdir, 0755)
+            mkdir(userdir, 0o755)
             os.chown(userdir, user.pw_uid, usergroup.gr_gid)
 
         # Checking if the config file exists.
@@ -103,7 +103,7 @@ class InitCommand(Command):
             www = self.resolve_directory(www, username)
             try:
                 if not os.path.isdir(www):
-                    mkdir(www, 0775)
+                    mkdir(www, 0o775)
                     os.chown(www, user.pw_uid, usergroup.gr_gid)
             except:
                 logging.error('Error while creating directory %s' % www)
@@ -122,7 +122,7 @@ class InitCommand(Command):
             try:
                 if not os.path.isdir(storage):
                     if storage != www:
-                        mkdir(storage, 0775)
+                        mkdir(storage, 0o775)
                         os.chown(storage, user.pw_uid, usergroup.gr_gid)
                     else:
                         logging.error('Error! dirs.www and dirs.storage must be different!')
@@ -145,7 +145,7 @@ class InitCommand(Command):
         if not os.path.isdir(mdkdir):
             try:
                 logging.info('Creating MDK directory %s' % mdkdir)
-                mkdir(mdkdir, 0775)
+                mkdir(mdkdir, 0o775)
                 os.chown(mdkdir, user.pw_uid, usergroup.gr_gid)
             except:
                 logging.error('Error while creating %s, please fix manually.' % mdkdir)
@@ -169,13 +169,13 @@ class InitCommand(Command):
         C.set('db.pgsql.user', question('What is your PostgreSQL user?', C.get('db.pgsql.user')))
         C.set('db.pgsql.passwd', question('What is your PostgreSQL password?', 'root', password=True))
 
-        print ''
-        print 'MDK has been initialised with minimal configuration.'
-        print 'For more settings, edit your config file: %s.' % userconfigfile
-        print 'Use %s as documentation.' % os.path.join(scriptdir, 'config-dist.json')
-        print ''
-        print 'Type the following command to create your first instance:'
-        print '  mdk create'
-        print '(This will take some time, but don\'t worry, that\'s because the cache is still empty)'
-        print ''
-        print '/!\ Please logout/login before to avoid permission issues: sudo su `whoami`'
+        print('')
+        print('MDK has been initialised with minimal configuration.')
+        print('For more settings, edit your config file: %s.' % userconfigfile)
+        print('Use %s as documentation.' % os.path.join(scriptdir, 'config-dist.json'))
+        print('')
+        print('Type the following command to create your first instance:')
+        print('  mdk create')
+        print('(This will take some time, but don\'t worry, that\'s because the cache is still empty)')
+        print('')
+        print('/!\ Please logout/login before to avoid permission issues: sudo su `whoami`')

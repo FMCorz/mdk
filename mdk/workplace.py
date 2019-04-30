@@ -138,10 +138,10 @@ class Workplace(object):
 
         self.checkCachedClones(not integration, integration)
         self.updateCachedClones(stable=not integration, integration=integration, verbose=False)
-        mkdir(installDir, 0755)
-        mkdir(wwwDir, 0755)
-        mkdir(dataDir, 0777)
-        mkdir(extraDir, 0777)
+        mkdir(installDir, 0o755)
+        mkdir(wwwDir, 0o755)
+        mkdir(dataDir, 0o777)
+        mkdir(extraDir, 0o777)
 
         repository = self.getCachedRemote(integration)
 
@@ -285,14 +285,14 @@ class Workplace(object):
         if subdir:
             path = os.path.join(path, subdir)
         if not os.path.exists(path):
-            mkdir(path, 0777)
+            mkdir(path, 0o777)
         return path
 
     def getMdkWebDir(self):
         """Return (and create) the special MDK web directory."""
         mdkExtra = os.path.join(self.www, self.mdkDir)
         if not os.path.exists(mdkExtra):
-            mkdir(mdkExtra, 0777)
+            mkdir(mdkExtra, 0o777)
 
         return mdkExtra
 

@@ -135,5 +135,5 @@ class UpdateCommand(Command):
 
     def updateCached(self):
         # Updating cache
-        print 'Updating cached repositories'
+        print('Updating cached repositories')
         self.Wp.updateCachedClones(verbose=False)

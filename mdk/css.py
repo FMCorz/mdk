@@ -53,6 +53,7 @@ class Css(object):
         source = self.getThemeLessPath(theme)
         dest = self.getThemeCssPath(theme)
         if not os.path.isdir(source):
+            print(source)
             raise Exception('Unknown theme %s, or less directory not found' % (theme))
 
         if not sheets:
