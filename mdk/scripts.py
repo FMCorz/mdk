@@ -110,13 +110,13 @@ class Scripts(object):
 
         lst = cls.list()
         cli = None
-        if script in lst.keys():
+        if script in list(lst.keys()):
             cli = os.path.join(lst[script], script)
         else:
             found = 0
             for ext in cls._supported:
                 candidate = script + '.' + ext
-                if candidate in lst.keys():
+                if candidate in list(lst.keys()):
                     scriptFile = candidate
                     found += 1
 

@@ -125,19 +125,19 @@ class CommandRunner(object):
                 subs = kwargs['sub-commands']
                 del kwargs['sub-commands']
                 subparsers = parser.add_subparsers(**kwargs)
-                for name, sub in subs.items():
+                for name, sub in list(subs.items()):
                     subparser = subparsers.add_parser(name, **sub[0])
                     defaults = {args[0]: name}
                     subparser.set_defaults(**defaults)
                     for subargument in sub[1]:
                         sargs = subargument[0]
                         skwargs = subargument[1]
-                        if skwargs.has_key('silent'):
+                        if 'silent' in skwargs:
                             del skwargs['silent']
                             skwargs['help'] = argparse.SUPPRESS
                         subparser.add_argument(*sargs, **skwargs)
             else:
-                if kwargs.has_key('silent'):
+                if 'silent' in kwargs:
                     del kwargs['silent']
                     kwargs['help'] = argparse.SUPPRESS
                 parser.add_argument(*args, **kwargs)
@@ -146,7 +146,7 @@ class CommandRunner(object):
         try:
             self.command.run(args)
         except CommandArgumentError as e:
-            parser.error(e.message)
+            parser.error(str(e))
 
 
 if __name__ == "__main__":

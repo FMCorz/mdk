@@ -23,7 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import os
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import re
 import logging
 import gzip
@@ -171,8 +171,9 @@ class BehatCommand(Command):
             logging.info('Installing Composer')
             cliFile = 'behat_install_composer.php'
             cliPath = os.path.join(M.get('path'), 'behat_install_composer.php')
-            (to, headers) = urllib.urlretrieve('http://getcomposer.org/installer', cliPath)
-            if headers.dict.get('content-encoding') == 'gzip':
+            (to, headers) = urllib.request.urlretrieve('http://getcomposer.org/installer', cliPath)
+            print(dict(headers))
+            if dict(headers).get('content-encoding') == 'gzip':
                 f = gzip.open(cliPath, 'r')
                 content = f.read()
                 f.close()
@@ -190,18 +191,18 @@ class BehatCommand(Command):
         elif args.seleniumforcedl or (not nojavascript and not os.path.isfile(seleniumPath)):
             logging.info('Attempting to find a download for Selenium')
             seleniumStorageUrl = 'https://selenium-release.storage.googleapis.com/'
-            url = urllib.urlopen(seleniumStorageUrl)
+            url = urllib.request.urlopen(seleniumStorageUrl)
             content = url.read()
             matches = sorted(re.findall(r'[a-z0-9/._-]+selenium-server-standalone-[0-9.]+\.jar', content, re.I))
             if len(matches) > 0:
                 seleniumUrl = seleniumStorageUrl + matches[-1]
                 logging.info('Downloading Selenium from %s' % seleniumUrl)
                 if (logging.getLogger().level <= logging.INFO):
-                    urllib.urlretrieve(seleniumUrl, seleniumPath, downloadProcessHook)
+                    urllib.request.urlretrieve(seleniumUrl, seleniumPath, downloadProcessHook)
                     # Force a new line after the hook display
                     logging.info('')
                 else:
-                    urllib.urlretrieve(seleniumUrl, seleniumPath)
+                    urllib.request.urlretrieve(seleniumUrl, seleniumPath)
             else:
                 logging.warning('Could not locate Selenium server to download')
 
@@ -251,7 +252,7 @@ class BehatCommand(Command):
                 # Since Moodle 3.2.2 behat directory is kept under $CFG->behat_dataroot for single and parallel runs.
                 configcandidates.insert(0, '%s/behatrun/behat/behat.yml' % (M.get('behat_dataroot')))
 
-            cmd.append('--config=%s' % (filter(os.path.isfile, configcandidates)[0]))
+            cmd.append('--config=%s' % (list(filter(os.path.isfile, configcandidates))[0]))
 
             # Checking feature argument
             if args.feature:

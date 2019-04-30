@@ -23,7 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import os
-import jira
+from . import jira
 import logging
 
 
@@ -208,7 +208,7 @@ class FetchTracker(Fetch):
             This implements its own local cache because we could potentially
             call it multiple times during the same request. This is bad though.
         """
-        if not self._cache.has_key(mdl):
+        if mdl not in self._cache:
             issueInfo = self.J.getPullInfo(mdl)
             self._cache[mdl] = issueInfo
         return self._cache[mdl]

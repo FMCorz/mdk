@@ -25,7 +25,7 @@ http://github.com/FMCorz/mdk
 import logging
 import os
 import gzip
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from ..command import Command
 from ..tools import process, question
 from ..phpunit import PHPUnit
@@ -167,7 +167,7 @@ class PhpunitCommand(Command):
                 logging.info('Installing Composer')
                 cliFile = 'phpunit_install_composer.php'
                 cliPath = os.path.join(M.get('path'), 'phpunit_install_composer.php')
-                (to, headers) = urllib.urlretrieve('http://getcomposer.org/installer', cliPath)
+                (to, headers) = urllib.request.urlretrieve('http://getcomposer.org/installer', cliPath)
                 if headers.dict.get('content-encoding') == 'gzip':
                     f = gzip.open(cliPath, 'r')
                     content = f.read()

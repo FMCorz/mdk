@@ -93,7 +93,7 @@ class RunCommand(Command):
         if args.list:
             scripts = Scripts.list()
             for script in sorted(scripts.keys()):
-                print u'%s (%s)' % (script, scripts[script])
+                print('%s (%s)' % (script, scripts[script]))
             return
 
         # Trigger error when script is missing

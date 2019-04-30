@@ -39,7 +39,7 @@ C = Conf()
 
 def yesOrNo(q):
     while True:
-        i = raw_input('%s (y/n) ' % (q)).strip().lower()
+        i = input('%s (y/n) ' % (q)).strip().lower()
         if i == 'y':
             return True
         elif i == 'n':
@@ -55,7 +55,7 @@ def question(q, default=None, options=None, password=False):
     if password:
         i = getpass.getpass('%s\n   ' % text)
     else:
-        i = raw_input('%s\n  ' % text)
+        i = input('%s\n  ' % text)
 
     if i.strip() == '':
         return default
@@ -110,7 +110,7 @@ def launchEditor(filepath=None, suffix='.tmp'):
     if not editor:
         raise Exception('Could not locate the editor')
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmpfile:
-        with open(filepath, 'r') as f:
+        with open(filepath, 'rb') as f:
             tmpfile.write(f.read())
             tmpfile.flush()
         subprocess.call([editor, tmpfile.name])
@@ -147,7 +147,7 @@ def md5file(filepath):
     return hashlib.md5(open(filepath).read()).hexdigest()
 
 
-def mkdir(path, perms=0755):
+def mkdir(path, perms=0o755):
     """Creates a directory ignoring the OS umask"""
     oldumask = os.umask(0000)
     os.mkdir(path, perms)

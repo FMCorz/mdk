@@ -122,45 +122,45 @@ class TrackerCommand(Command):
         """Display classic information about an issue"""
         issue = self.Jira.getIssue(self.mdl)
 
-        title = u'%s: %s' % (issue['key'], issue['fields']['summary'])
+        title = '%s: %s' % (issue['key'], issue['fields']['summary'])
         created = datetime.strftime(Jira.parseDate(issue['fields'].get('created')), '%Y-%m-%d %H:%M')
-        resolution = u'' if issue['fields']['resolution'] == None else u'(%s)' % (issue['fields']['resolution']['name'])
-        resolutiondate = u''
+        resolution = '' if issue['fields']['resolution'] == None else '(%s)' % (issue['fields']['resolution']['name'])
+        resolutiondate = ''
         if issue['fields'].get('resolutiondate') != None:
             resolutiondate = datetime.strftime(Jira.parseDate(issue['fields'].get('resolutiondate')), '%Y-%m-%d %H:%M')
-        print u'-' * 72
+        print('-' * 72)
         for l in textwrap.wrap(title, 68, initial_indent='  ', subsequent_indent='    '):
-            print l
-        print u'  {0} - {1} - {2}'.format(issue['fields']['issuetype']['name'], issue['fields']['priority']['name'], u'https://tracker.moodle.org/browse/' + issue['key'])
-        status = u'{0} {1} {2}'.format(issue['fields']['status']['name'], resolution, resolutiondate).strip()
-        print u'  {0}'.format(status)
+            print(l)
+        print('  {0} - {1} - {2}'.format(issue['fields']['issuetype']['name'], issue['fields']['priority']['name'], 'https://tracker.moodle.org/browse/' + issue['key']))
+        status = '{0} {1} {2}'.format(issue['fields']['status']['name'], resolution, resolutiondate).strip()
+        print('  {0}'.format(status))
 
-        print u'-' * 72
-        components = u'{0}: {1}'.format('Components', ', '.join([c['name'] for c in issue['fields']['components']]))
+        print('-' * 72)
+        components = '{0}: {1}'.format('Components', ', '.join([c['name'] for c in issue['fields']['components']]))
         for l in textwrap.wrap(components, 68, initial_indent='  ', subsequent_indent='              '):
-            print l
+            print(l)
         if issue['fields']['labels']:
-            labels = u'{0}: {1}'.format('Labels', ', '.join(issue['fields']['labels']))
+            labels = '{0}: {1}'.format('Labels', ', '.join(issue['fields']['labels']))
             for l in textwrap.wrap(labels, 68, initial_indent='  ', subsequent_indent='          '):
-                print l
+                print(l)
 
-        vw = u'[ V: %d - W: %d ]' % (issue['fields']['votes']['votes'], issue['fields']['watches']['watchCount'])
-        print '{0:->70}--'.format(vw)
-        print u'{0:<20}: {1} ({2}) on {3}'.format('Reporter', issue['fields']['reporter']['displayName'], issue['fields']['reporter']['name'], created)
+        vw = '[ V: %d - W: %d ]' % (issue['fields']['votes']['votes'], issue['fields']['watches']['watchCount'])
+        print('{0:->70}--'.format(vw))
+        print('{0:<20}: {1} ({2}) on {3}'.format('Reporter', issue['fields']['reporter']['displayName'], issue['fields']['reporter']['name'], created))
 
         if issue['fields'].get('assignee') != None:
-            print u'{0:<20}: {1} ({2})'.format('Assignee', issue['fields']['assignee']['displayName'], issue['fields']['assignee']['name'])
+            print('{0:<20}: {1} ({2})'.format('Assignee', issue['fields']['assignee']['displayName'], issue['fields']['assignee']['name']))
         if issue['named'].get('Peer reviewer'):
-            print u'{0:<20}: {1} ({2})'.format('Peer reviewer', issue['named']['Peer reviewer']['displayName'], issue['named']['Peer reviewer']['name'])
+            print('{0:<20}: {1} ({2})'.format('Peer reviewer', issue['named']['Peer reviewer']['displayName'], issue['named']['Peer reviewer']['name']))
         if issue['named'].get('Integrator'):
-            print u'{0:<20}: {1} ({2})'.format('Integrator', issue['named']['Integrator']['displayName'], issue['named']['Integrator']['name'])
+            print('{0:<20}: {1} ({2})'.format('Integrator', issue['named']['Integrator']['displayName'], issue['named']['Integrator']['name']))
         if issue['named'].get('Tester'):
-            print u'{0:<20}: {1} ({2})'.format('Tester', issue['named']['Tester']['displayName'], issue['named']['Tester']['name'])
+            print('{0:<20}: {1} ({2})'.format('Tester', issue['named']['Tester']['displayName'], issue['named']['Tester']['name']))
 
         if args.testing and issue['named'].get('Testing Instructions'):
-            print u'-' * 72
-            print u'Testing instructions:'
+            print('-' * 72)
+            print('Testing instructions:')
             for l in issue['named'].get('Testing Instructions').split('\r\n'):
-                print '  ' + l
+                print('  ' + l)
 
-        print u'-' * 72
+        print('-' * 72)
