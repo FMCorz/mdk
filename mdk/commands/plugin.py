@@ -246,22 +246,27 @@ class PluginCommand(Command):
 
         try:
             M.uninstallPlugins(args.pluginname)
-        except Exception:
-            logging.error('Problem with uninstallation. Please check for dependencies on the plugin and try again.')
+        except Exception as e:
+            logging.error('An error occurred while attempting to uninstall the plugin')
+            logging.error(e)
             return False
 
         if args.removefiles:
-            logging.info('Starting to remove the plugin directory and files.');
+            logging.info('Removing the plugin directory and files');
             PluginManager.deleteDirectoryTree(po, M)
-            if args.upgrade:
-                try:
-                    M.upgrade(args.nocheckout)
-                except UpgradeNotAllowed as e:
-                    logging.info('Skipping upgrade of %s (not allowed)' % (M.get('identifier')))
-                    logging.debug(e)
-                except Exception as e:
-                    logging.warning('Error during the upgrade of %s' % M.get('identifier'))
-                    logging.debug(e)
-                logging.info('Done')
+
+        if args.upgrade:
+            logging.info('Upgrading Moodle...')
+            if not args.removefiles:
+                logging.info('The plugin will re-install itself as its files were not removed')
+
+            try:
+                M.upgrade(args.nocheckout)
+            except UpgradeNotAllowed as e:
+                logging.info('Skipping upgrade of %s (not allowed)' % (M.get('identifier')))
+                logging.debug(e)
+            except Exception as e:
+                logging.warning('Error during the upgrade of %s' % M.get('identifier'))
+                logging.debug(e)
 
         return True

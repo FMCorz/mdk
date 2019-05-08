@@ -809,6 +809,10 @@ class Moodle(object):
             self.checkout_stable(False)
 
     def uninstallPlugins(self, name):
+        """Calls the CLI to uninstall a plugin"""
+
+        if not self.branch_compare(37):
+            raise Exception('Uninstalling plugins is only available from Moodle 3.7.')
 
         cli = '/admin/cli/uninstall_plugins.php'
         args = '--plugins=' + name + ' --run'
@@ -820,6 +824,9 @@ class Moodle(object):
             cannotuninstall = resultstring[0].rfind('Can not be uninstalled')
             if cannotuninstall != -1:
                 raise Exception('The plugin could not be uninstalled')
-        except IndexError:
-            # We should always have some text returned and so should not end up here.
+        except IndexError as e:
+            # We should always have some text returned and so should not end up here. And we
+            # raise the exception as we're unsure whether the plugin was uninstalled properly
+            # so it's better to halt the process.
             logging.error('The plugin uninstall cli code has changed and I need to be updated.')
+            raise e
