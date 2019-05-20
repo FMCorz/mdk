@@ -32,7 +32,6 @@ def main():
     from .command import CommandRunner
     from .commands import getCommand, commandsList
     from .config import Conf
-    from .tools import process
     from .version import __version__
 
     C = Conf()
@@ -78,20 +77,49 @@ def main():
     # Looking up for an alias
     alias = C.get('aliases.%s' % cmd)
     if alias != None:
-        if alias.startswith('!'):
-            cmd = alias[1:]
-            i = 0
-            # Replace $1, $2, ... with passed arguments
-            for arg in args:
-                i += 1
-                cmd = cmd.replace('$%d' % i, arg)
-            # Remove unknown $[0-9]
-            cmd = re.sub(r'\$[0-9]', '', cmd)
-            result = process(cmd, stdout=None, stderr=None)
-            sys.exit(result[0])
-        else:
-            cmd = alias.split(' ')[0]
-            args = alias.split(' ')[1:] + args
+        runAlias(alias, args)
+    else:
+        runCommand(cmd, args)
+
+def runAlias(alias, args):
+    import sys
+    import logging
+    import re
+    from .tools import process
+
+    if type(alias) is list:
+        result = 0
+        for subAlias in alias:
+            result = runAlias(subAlias, args)
+            if result and result != 0:
+                sys.exit(result)
+        sys.exit(result)
+
+    if alias.startswith('!'):
+        cmd = alias[1:]
+        i = 0
+        # Replace $1, $2, ... with passed arguments
+        for arg in args:
+            i += 1
+            cmd = cmd.replace('$%d' % i, arg)
+        # Remove unknown $[0-9]
+        cmd = re.sub(r'\$[0-9]', '', cmd)
+        return process(cmd, stdout=None, stderr=None)
+    else:
+        cmd = alias.split(' ')[0]
+        args = alias.split(' ')[1:] + args
+
+    return runCommand(cmd, args)
+
+def runCommand(cmd, args):
+    import sys
+    import os
+    from .command import CommandRunner
+    from .commands import getCommand, commandsList
+    from .config import Conf
+    import logging
+
+    C = Conf()
 
     cls = getCommand(cmd)
     Cmd = cls(C)
