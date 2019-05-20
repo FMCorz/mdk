@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v1.7.4
+------
+- Update config for Moodle 3.7 - Jun Pataleta
+- Add plugin uninstall functionality - Adrian Greeve
+
 v1.7.3
 ------
 - Update config for Moodle 3.6 - Andrew Nicols
