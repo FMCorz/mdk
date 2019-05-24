@@ -104,6 +104,15 @@ class PhpunitCommand(Command):
             }
         ),
         (
+            ['--repeat'],
+            {
+                'default': None,
+                'help': 'run tests repeatedly for the given number of times',
+                'metavar': 'times',
+                'type': int
+            }
+        ),
+        (
             ['name'],
             {
                 'default': None,
@@ -142,13 +151,21 @@ class PhpunitCommand(Command):
         if testsuite and not testsuite.endswith('_testsuite'):
             testsuite += '_testsuite'
 
+        # Check repeat arg.
+        repeat = args.repeat
+        if repeat:
+            # Make sure repeat is greater than 1.
+            if repeat <= 1:
+                repeat = None
+
         kwargs = {
             'coverage': args.coverage,
             'filter': args.filter,
             'testcase': args.testcase,
             'testsuite': testsuite,
             'unittest': args.unittest,
-            'stopon': [] if not args.stoponfailure else ['failure']
+            'stopon': [] if not args.stoponfailure else ['failure'],
+            'repeat': repeat
         }
 
         if args.run:
