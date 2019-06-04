@@ -17,6 +17,9 @@ cron_setup_user();
 // Enable the Web Services.
 set_config('enablewebservices', 1);
 
+// Enable mobile web services.
+set_config('enablemobilewebservice', 1);
+
 // Enable Web Services documentation.
 set_config('enablewsdocumentation', 1);
 
