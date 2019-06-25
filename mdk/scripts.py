@@ -138,7 +138,7 @@ class Scripts(object):
 
         i = 0
         while True:
-            candidate = os.path.join(path, 'mdkscriptrun{}.{}'.format(i if i > 0 else '', ext))
+            candidate = os.path.join(path, 'mdkscriptrun{}{}'.format(i if i > 0 else '', ext))
             if not os.path.isfile(candidate):
                 break
             i += 1
