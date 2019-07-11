@@ -36,6 +36,8 @@
     "db": {
         // Name prefix for all databases created by mdk. Affects the database name only, not the tables.
         "namePrefix": "",
+        // Tables name prefix to be set in the config.php during the instance creation.
+        "tablePrefix": "mdl_",
         "mariadb": {
             "host": "localhost",
             "port": "3306",
