@@ -84,3 +84,5 @@ mdk_set_config('langstringcache', 1);
 // Use YUI combo loading.
 mdk_set_config('yuicomboloading', 1);
 
+// Don't cache templates.
+mdk_set_config('cachetemplates', 0);

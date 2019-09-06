@@ -106,3 +106,6 @@ foreach ($resources as $r) {
         mdk_set_config('requiremodintro', $default, $r);
     }
 }
+
+// Cache templates.
+mdk_set_config('cachetemplates', 1);
