@@ -60,6 +60,9 @@ mdk_set_config('requiremodintro', 0, 'page');
 mdk_set_config('requiremodintro', 0, 'resource');
 mdk_set_config('requiremodintro', 0, 'url');
 
+// Don't cache templates.
+mdk_set_config('cachetemplates', 0);
+
 // Adds FirePHP
 $firephp = "
 // FirePHP
