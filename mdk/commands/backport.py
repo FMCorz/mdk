@@ -154,7 +154,7 @@ class BackportCommand(Command):
             if not stash[1].startswith('No local changes'):
                 pop = M2.git().stash(command='pop')
                 if pop[0] != 0:
-                    logging.error('An error ocured while unstashing your changes')
+                    logging.error('An error occurred while unstashing your changes')
                 else:
                     logging.info('Popped the stash')
 

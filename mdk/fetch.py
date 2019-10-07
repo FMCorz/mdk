@@ -93,7 +93,7 @@ class Fetch(object):
 
         except FetchException as e:
             if self._hasstashed:
-                logging.warning('An error occured. Some files may have been left in your stash.')
+                logging.warning('An error occurred. Some files may have been left in your stash.')
             raise e
 
         self._unstash()
@@ -120,7 +120,7 @@ class Fetch(object):
         if self._hasstashed:
             pop = self.M.git().stash(command='pop')
             if pop[0] != 0:
-                logging.error('An error ocured while unstashing your changes')
+                logging.error('An error occurred while unstashing your changes')
             else:
                 logging.info('Popped the stash')
         self._hasstashed = False
