@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v1.7.5
+------
+- Add support for repeating tests - Jun Pataleta
+- Fix typos in error/warning messages - Luca Bösch
+- Set cachetemplates config value for dev/undev scripts - Jun Pataleta
+- Add ability to define custom $CFG->prefix for new instances - David Mudrák
+- Removed extra dot being added to the filename of generated mdk run script - David Mudrák
+- Enable mobile web services in webservices script
+
 v1.7.4
 ------
 - Update config for Moodle 3.7 - Jun Pataleta
