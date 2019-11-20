@@ -209,6 +209,15 @@ def downloadProcessHook(count, size, total):
     sys.stderr.flush()
 
 
+def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
+    """
+    Use as key when naturally sorting elements.
+
+    Source: https://stackoverflow.com/a/16090640/867720
+    """
+    return [int(text) if text.isdigit() else text.lower() for text in _nsre.split(s)]
+
+
 def stableBranch(version):
     if version == 'master':
         return 'master'

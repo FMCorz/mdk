@@ -30,7 +30,7 @@ import gzip
 from tempfile import gettempdir
 from time import sleep
 from ..command import Command
-from ..tools import process, ProcessInThread, downloadProcessHook, question
+from ..tools import process, ProcessInThread, downloadProcessHook, question, natural_sort_key
 
 
 class BehatCommand(Command):
@@ -192,7 +192,8 @@ class BehatCommand(Command):
             seleniumStorageUrl = 'https://selenium-release.storage.googleapis.com/'
             url = urllib.urlopen(seleniumStorageUrl)
             content = url.read()
-            matches = sorted(re.findall(r'[a-z0-9/._-]+selenium-server-standalone-[0-9.]+\.jar', content, re.I))
+            matches = sorted(re.findall(r'[a-z0-9._-]+/selenium-server-standalone-[0-9.]+\.jar', content, re.I),
+                             key=natural_sort_key)
             if len(matches) > 0:
                 seleniumUrl = seleniumStorageUrl + matches[-1]
                 logging.info('Downloading Selenium from %s' % seleniumUrl)
