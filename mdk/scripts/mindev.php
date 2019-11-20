@@ -76,10 +76,10 @@ if ($content = file_get_contents($conffile)) {
 mdk_set_config('themedesignermode', 0);
 
 // Cache JavaScript.
-mdk_set_config('cachejs', 1);
+mdk_set_config('cachejs', 0);
 
 // Use string caching.
-mdk_set_config('langstringcache', 1);
+mdk_set_config('langstringcache', 0);
 
 // Use YUI combo loading.
 mdk_set_config('yuicomboloading', 1);
