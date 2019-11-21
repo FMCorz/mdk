@@ -138,9 +138,9 @@ class ConfigCommand(Command):
         for name in sorted(data.keys()):
             setting = data[name]
             if type(setting) != dict:
-                print u'{0:<20}: {1}'.format(u' ' * ident + name, setting)
+                print('{0:<20}: {1}'.format(' ' * ident + name, setting))
             else:
-                print u' ' * ident + '[%s]' % name
+                print(' ' * ident + '[%s]' % name)
                 self.dictDisplay(setting, ident + 2)
 
     def flatDisplay(self, data, parent='', regex=None):
@@ -149,9 +149,9 @@ class ConfigCommand(Command):
             if type(setting) != dict:
                 if regex and not regex.search(parent + name):
                     continue
-                print u'%s: %s' % (parent + name, setting)
+                print('%s: %s' % (parent + name, setting))
             else:
-                self.flatDisplay(setting, parent=parent + name + u'.', regex=regex)
+                self.flatDisplay(setting, parent=parent + name + '.', regex=regex)
 
     def run(self, args):
         if args.action == 'list':
@@ -193,9 +193,9 @@ class ConfigCommand(Command):
             setting = self.C.get(args.setting)
             if setting != None:
                 if type(setting) == dict:
-                    self.flatDisplay(setting, args.setting + u'.')
+                    self.flatDisplay(setting, args.setting + '.')
                 else:
-                    print setting
+                    print(setting)
 
         elif args.action == 'set':
             type_ = args.type

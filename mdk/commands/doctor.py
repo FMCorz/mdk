@@ -117,7 +117,7 @@ class DoctorCommand(Command):
 
     def run(self, args):
 
-        optionsCount = sum([1 for k, v in vars(args).items() if v != False])
+        optionsCount = sum([1 for k, v in list(vars(args).items()) if v != False])
         if optionsCount == 0 or (optionsCount == 1 and args.fix):
             self.argumentError('You should probably tell me what symptoms you are experiencing')
 
@@ -164,7 +164,7 @@ class DoctorCommand(Command):
     def branch(self, args):
         """Make sure the correct branch is checked out. Only on integration branches."""
 
-        print 'Checking integration instances branches'
+        print('Checking integration instances branches')
 
         if not self._checkWorkplace():
             return
@@ -176,16 +176,16 @@ class DoctorCommand(Command):
             stablebranch = M.get('stablebranch')
             currentbranch = M.currentBranch()
             if stablebranch != currentbranch:
-                print '  %s is on branch %s instead of %s' % (identifier, currentbranch, stablebranch)
+                print('  %s is on branch %s instead of %s' % (identifier, currentbranch, stablebranch))
                 if args.fix:
-                    print '    Checking out %s' % (stablebranch)
+                    print('    Checking out %s' % (stablebranch))
                     if not M.git().checkout(stablebranch):
-                        print '      Error: Checkout unsucessful!'
+                        print('      Error: Checkout unsucessful!')
 
     def cachedRepositories(self, args):
         """Ensure that the cached repositories are valid"""
 
-        print 'Checking cached repositories'
+        print('Checking cached repositories')
         cache = os.path.abspath(os.path.realpath(os.path.expanduser(self.C.get('dirs.mdk'))))
 
         dirs = [
@@ -205,46 +205,46 @@ class DoctorCommand(Command):
 
             if os.path.isdir(directory):
                 if os.path.isdir(os.path.join(directory, '.git')):
-                    print '  %s is not a bare repository' % name
+                    print('  %s is not a bare repository' % name)
                     if args.fix:
-                        print '    Renaming %s/.git directory to %s' % (directory, directory)
+                        print('    Renaming %s/.git directory to %s' % (directory, directory))
                         os.rename(directory, directory + '.tmp')
                         os.rename(os.path.join(directory + '.tmp', '.git'), directory)
                         shutil.rmtree(directory + '.tmp')
 
                 repo = git.Git(directory, self.C.get('git'))
                 if repo.getConfig('core.bare') != 'true':
-                    print '  %s core.bare is not set to true' % name
+                    print('  %s core.bare is not set to true' % name)
                     if args.fix:
-                        print '    Setting core.bare to true'
+                        print('    Setting core.bare to true')
                         repo.setConfig('core.bare', 'true')
 
                 if repo.getConfig('remote.origin.url') != d['url']:
-                    print '  %s uses an different origin (%s)' % (name, repo.getConfig('remote.origin.url'))
+                    print('  %s uses an different origin (%s)' % (name, repo.getConfig('remote.origin.url')))
                     if args.fix:
-                        print '    Setting remote.origin.url to %s' % d['url']
+                        print('    Setting remote.origin.url to %s' % d['url'])
                         repo.setConfig('remote.origin.url', d['url'])
 
                 if repo.getConfig('remote.origin.fetch') != '+refs/*:refs/*':
-                    print '  %s fetch value is invalid (%s)' % (name, repo.getConfig('remote.origin.fetch'))
+                    print('  %s fetch value is invalid (%s)' % (name, repo.getConfig('remote.origin.fetch')))
                     if args.fix:
-                        print '    Setting remote.origin.fetch to %s' % '+refs/*:refs/*'
+                        print('    Setting remote.origin.fetch to %s' % '+refs/*:refs/*')
                         repo.setConfig('remote.origin.fetch', '+refs/*:refs/*')
 
     def dependencies(self, args):
         """Check that various dependencies are met"""
 
-        print 'Checking dependencies'
+        print('Checking dependencies')
 
         # Check binaries.
         hasErrors = False
         for k in ['git', 'php', 'java', 'recess', 'grunt', 'lessc', 'shifter', 'yuidoc']:
             path = self.C.get(k)
             if not path or not os.path.isfile(path):
-                print '  The path to \'%s\' is invalid: %s' % (k, path)
+                print('  The path to \'%s\' is invalid: %s' % (k, path))
                 hasErrors = True
         if hasErrors and args.fix:
-            print '    Please manually fix the paths in your config file'
+            print('    Please manually fix the paths in your config file')
 
         # Checking editor.
         editor = resolveEditor()
@@ -257,21 +257,21 @@ class DoctorCommand(Command):
                 editor = None
 
         if not editor:
-            print '  Could not resolve the path to your editor'
+            print('  Could not resolve the path to your editor')
             if args.fix:
-                print '    Set $EDITOR, /usr/bin/editor, or use: mdk config set editor [path]'
+                print('    Set $EDITOR, /usr/bin/editor, or use: mdk config set editor [path]')
 
     def directories(self, args):
         """Check that the directories are valid"""
 
-        print 'Checking directories'
-        for k, d in self.C.get('dirs').items():
+        print('Checking directories')
+        for k, d in list(self.C.get('dirs').items()):
             d = os.path.abspath(os.path.realpath(os.path.expanduser(d)))
             if not os.path.isdir(d):
-                print '  %s does not exist' % d
+                print('  %s does not exist' % d)
                 if args.fix:
-                    print '    Creating %s' % d
-                    mkdir(d, 0777)
+                    print('    Creating %s' % d)
+                    mkdir(d, 0o777)
 
         if not self._checkWorkplace():
             return
@@ -281,15 +281,15 @@ class DoctorCommand(Command):
         for identifier in instances:
             d = self.Wp.getPath(identifier, 'extra')
             if not os.path.isdir(d):
-                print '  %s does not exist' % d
+                print('  %s does not exist' % d)
                 if args.fix:
-                    print '    Creating %s' % d
-                    mkdir(d, 0777)
+                    print('    Creating %s' % d)
+                    mkdir(d, 0o777)
 
     def masterbranch(self, args):
         """Checks the current master branch and the value set in config."""
 
-        print 'Checking master branch'
+        print('Checking master branch')
 
         if not self._checkWorkplace():
             return
@@ -301,13 +301,13 @@ class DoctorCommand(Command):
         try:
             self.Wp.updateCachedClones(verbose=False)
         except Exception:
-            print '  Could not update clone, please try again.'
+            print('  Could not update clone, please try again.')
             return
 
         repo = git.Git(repoPath, self.C.get('git'))
         result = repo.execute(['show', 'master:version.php'])
         if result[0] != 0:
-            print '  Could not read the master version.php'
+            print('  Could not read the master version.php')
             return
 
         reBranch = re.compile(r'^\s*\$branch\s*=\s*(?P<brackets>[\'"])?([0-9]+)(?P=brackets)\s*;')
@@ -318,11 +318,11 @@ class DoctorCommand(Command):
 
         masterBranch = int(self.C.get('masterBranch'))
         if not latestBranch:
-            print '  Oops, could not identify the mater branch'
+            print('  Oops, could not identify the mater branch')
         elif masterBranch != latestBranch:
-            print '  The config masterBranch is set to %d, expecting %d' % (masterBranch, latestBranch)
+            print('  The config masterBranch is set to %d, expecting %d' % (masterBranch, latestBranch))
             if args.fix:
-                print '    Setting masterBranch to %d' % (latestBranch)
+                print('    Setting masterBranch to %d' % (latestBranch))
                 self.C.set('masterBranch', latestBranch)
 
 
@@ -334,14 +334,14 @@ class DoctorCommand(Command):
         """
 
         if args.fix:
-            print 'The horse is a noble animal'
+            print('The horse is a noble animal')
         else:
-            print '<em>Hi</em>'
+            print('<em>Hi</em>')
 
     def symlink(self, args):
         """Check that the symlinks exist"""
 
-        print 'Checking symlinks'
+        print('Checking symlinks')
 
         if not self._checkWorkplace():
             return
@@ -351,23 +351,23 @@ class DoctorCommand(Command):
 
             wwwLink = os.path.join(self.Wp.www, identifier)
             if not os.path.exists(wwwLink):
-                print '  Missing link to www for %s' % (identifier)
+                print('  Missing link to www for %s' % (identifier))
                 if args.fix:
-                    print '    Creating www symlink for %s' % (identifier)
+                    print('    Creating www symlink for %s' % (identifier))
                     os.symlink(self.Wp.getPath(identifier, 'www'), wwwLink)
 
             extraLink = os.path.join(self.Wp.getMdkWebDir(), identifier)
             if not os.path.exists(extraLink):
-                print '  Missing link to extra for %s' % (identifier)
+                print('  Missing link to extra for %s' % (identifier))
                 if args.fix:
-                    print '    Creating extra symlink for %s' % (identifier)
+                    print('    Creating extra symlink for %s' % (identifier))
                     os.symlink(self.Wp.getPath(identifier, 'extra'), extraLink)
 
 
     def remotes(self, args):
         """Check that the correct remotes are used"""
 
-        print 'Checking remotes'
+        print('Checking remotes')
 
         if not self._checkWorkplace():
             return
@@ -386,23 +386,23 @@ class DoctorCommand(Command):
 
             remote = M.git().getRemote(myRemote)
             if remote != remotes['mine']:
-                print '  %s: Remote %s is %s, not %s' % (identifier, myRemote, remote, remotes['mine'])
+                print('  %s: Remote %s is %s, not %s' % (identifier, myRemote, remote, remotes['mine']))
                 if (args.fix):
-                    print '    Setting %s to %s' % (myRemote, remotes['mine'])
+                    print('    Setting %s to %s' % (myRemote, remotes['mine']))
                     M.git().setRemote(myRemote, remotes['mine'])
 
             expected = remotes['stable'] if M.isStable() else remotes['integration']
             remote = M.git().getRemote(upstreamRemote)
             if remote != expected:
-                print '  %s: Remote %s is %s, not %s' % (identifier, upstreamRemote, remote, expected)
+                print('  %s: Remote %s is %s, not %s' % (identifier, upstreamRemote, remote, expected))
                 if (args.fix):
-                    print '    Setting %s to %s' % (upstreamRemote, expected)
+                    print('    Setting %s to %s' % (upstreamRemote, expected))
                     M.git().setRemote(upstreamRemote, expected)
 
     def wwwroot(self, args):
         """Check the wwwroot of the instances"""
 
-        print 'Checking wwwroot'
+        print('Checking wwwroot')
 
         if not self._checkWorkplace():
             return
@@ -417,9 +417,9 @@ class DoctorCommand(Command):
                 actual = M.get('wwwroot')
                 expected = self.Wp.getUrl(M.get('identifier'))
                 if actual != expected:
-                    print '  %s: Found %s, not %s' % (M.get('identifier'), actual, expected)
+                    print('  %s: Found %s, not %s' % (M.get('identifier'), actual, expected))
                     if args.fix:
-                        print '    Setting %s on %s' % (expected, M.get('identifier'))
+                        print('    Setting %s on %s' % (expected, M.get('identifier')))
                         M.updateConfig('wwwroot', expected)
 
     def _checkWorkplace(self, indent=2):
@@ -427,6 +427,6 @@ class DoctorCommand(Command):
         try:
             self.Wp
         except ImportError:
-            print ' ' * indent + 'The workplace could not be loaded, did you install the dependencies?'
+            print(' ' * indent + 'The workplace could not be loaded, did you install the dependencies?')
             return False
         return True

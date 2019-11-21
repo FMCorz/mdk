@@ -26,7 +26,7 @@ import os
 from setuptools import setup, find_packages
 
 # Load version number.
-execfile('mdk/version.py')
+from mdk.version import __version__
 
 # Get the long description from the relevant file.
 longDescription = ''

@@ -62,7 +62,7 @@ class RemoveCommand(Command):
             raise Exception('This is not a Moodle instance')
 
         if not args.do and not args.force:
-            confirm = raw_input('Are you sure? (Y/n) ')
+            confirm = input('Are you sure? (Y/n) ')
             if confirm != 'Y':
                 logging.info('Aborting...')
                 return

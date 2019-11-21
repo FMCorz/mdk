@@ -59,7 +59,7 @@ class UninstallCommand(Command):
             return
 
         if not args.do:
-            confirm = raw_input('Are you sure? (Y/n) ')
+            confirm = input('Are you sure? (Y/n) ')
             if confirm != 'Y':
                 logging.info('Aborting...')
                 return

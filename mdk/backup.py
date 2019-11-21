@@ -44,7 +44,7 @@ class BackupManager(object):
     def __init__(self):
         self.path = os.path.expanduser(os.path.join(C.get('dirs.moodle'), 'backup'))
         if not os.path.exists(self.path):
-            mkdir(self.path, 0777)
+            mkdir(self.path, 0o777)
 
     def create(self, M):
         """Creates a new backup of M"""
@@ -183,7 +183,7 @@ class Backup(object):
             logging.info('Restoring instance directory')
             copy_tree(self.path, destination, preserve_symlinks=1)
             M = Wp.get(identifier)
-            chmodRecursive(Wp.getPath(identifier, 'data'), 0777)
+            chmodRecursive(Wp.getPath(identifier, 'data'), 0o777)
         except Exception as e:
             raise Exception('Error while restoring directory\n%s\nto %s. Exception: %s' % (self.path, destination, e))
 

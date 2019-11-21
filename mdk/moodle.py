@@ -364,9 +364,9 @@ class Moodle(object):
             'installed': self.isInstalled(),
             'identifier': self.identifier
         }
-        for (k, v) in self.config.items():
+        for (k, v) in list(self.config.items()):
             info[k] = v
-        for (k, v) in self.version.items():
+        for (k, v) in list(self.version.items()):
             info[k] = v
         return info
 
@@ -417,7 +417,7 @@ class Moodle(object):
             raise InstallException('Error while running the install, please manually fix the problem.\n- Command was: %s %s %s' % (C.get('php'), cli, args))
 
         configFile = os.path.join(self.path, 'config.php')
-        os.chmod(configFile, 0666)
+        os.chmod(configFile, 0o666)
         try:
             if C.get('path') != '' and C.get('path') != None:
                 self.addConfig('sessioncookiepath', '/%s/%s/' % (C.get('path'), self.identifier))
@@ -429,7 +429,7 @@ class Moodle(object):
         # Add forced $CFG to the config.php if some are globally defined.
         forceCfg = C.get('forceCfg')
         if isinstance(forceCfg, dict):
-            for cfgKey, cfgValue in forceCfg.iteritems():
+            for cfgKey, cfgValue in forceCfg.items():
                 try:
                     logging.info('Setting up forced $CFG->%s to \'%s\' in config.php', cfgKey, cfgValue)
                     self.addConfig(cfgKey, cfgValue)
@@ -715,7 +715,7 @@ class Moodle(object):
         if os.path.isdir(dataroot):
             logging.debug('Deleting dataroot content (%s)' % (dataroot))
             shutil.rmtree(dataroot)
-            mkdir(dataroot, 0777)
+            mkdir(dataroot, 0o777)
 
         # Drop the database
         dbname = self.get('dbname')

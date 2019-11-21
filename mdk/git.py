@@ -140,7 +140,7 @@ class Git(object):
             proc.kill()
             raise e
 
-        return (proc.returncode, stdout, stderr)
+        return (proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8'))
 
     def fetch(self, remote='', ref=''):
         cmd = 'fetch %s %s' % (remote, ref)

@@ -88,7 +88,7 @@ class InstallCommand(Command):
         name = M.get('identifier')
         dataDir = self.Wp.getPath(name, 'data')
         if not os.path.isdir(dataDir):
-            mkdir(dataDir, 0777)
+            mkdir(dataDir, 0o777)
 
         kwargs = {
             'engine': engine,
