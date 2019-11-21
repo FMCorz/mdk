@@ -359,14 +359,14 @@ class PluginDownloadInfo(dict):
 
         if not 'version' in list(self.keys()):
             raise ValueError('Expecting the key version')
-        elif not 'downloadurl' in list(self['version'].keys()):
+        elif not 'downloadurl' in list(self.keys()):
             raise ValueError('Expecting the key downloadurl')
         elif not 'component' in list(self.keys()):
             raise ValueError('Expecting the key component')
         elif not 'branch' in list(self.keys()):
             raise ValueError('Expecting the key branch')
 
-        dl = self['version'].get('downloadurl')
+        dl = self.get('downloadurl')
         plugin = self.get('component')
         branch = self.get('branch')
         target = os.path.join(dest, '%s-%d.zip' % (plugin, branch))
@@ -401,7 +401,7 @@ class PluginDownloadInfo(dict):
 
 class PluginRepository(object):
 
-    apiversion = '1.3'
+    apiversion = '1.2'
     uri = '/api'
     host = 'download.moodle.org'
     ssl = True
@@ -457,9 +457,6 @@ class PluginRepository(object):
 
         pluginfo = resp.get('data', {}).get('pluginfo', {})
         pluginfo['branch'] = branch
-
-        import pprint
-        print(pprint.pprint(pluginfo))
 
         return PluginDownloadInfo(pluginfo)
 

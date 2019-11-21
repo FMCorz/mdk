@@ -185,7 +185,7 @@ class PhpunitCommand(Command):
                 cliFile = 'phpunit_install_composer.php'
                 cliPath = os.path.join(M.get('path'), 'phpunit_install_composer.php')
                 (to, headers) = urllib.request.urlretrieve('http://getcomposer.org/installer', cliPath)
-                if headers.dict.get('content-encoding') == 'gzip':
+                if headers.get('content-encoding') == 'gzip':
                     f = gzip.open(cliPath, 'r')
                     content = f.read()
                     f.close()
