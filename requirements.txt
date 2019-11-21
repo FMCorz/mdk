@@ -1,6 +1,6 @@
 keyring>=3.5
 jenkinsapi>=0.3.2
-MySQL-python>=1.2.3
+mysqlclient>=1.4.5
 psycopg2>=2.4.5
 requests>=2.3.0
 watchdog>=0.8.0

@@ -23,6 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
+from io import IOBase
 import MySQLdb as mysql
 import psycopg2 as pgsql
 import pyodbc
@@ -189,7 +190,7 @@ class DB(object):
 
         if self.engine not in ('mysqli', 'mariadb'):
             raise Exception('Function dump not supported by %s' % self.engine)
-        if not type(fd) == file:
+        if not isinstance(fd, IOBase):
             raise Exception('Passed parameter is not a file object')
 
         # Looping over selected tables

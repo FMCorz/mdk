@@ -144,7 +144,7 @@ def getText(suffix='.md', initialText=None):
 def md5file(filepath):
     """Return the md5 sum of a file
     This is terribly memory inefficient!"""
-    return hashlib.md5(open(filepath).read()).hexdigest()
+    return hashlib.md5(open(filepath, 'rb').read()).hexdigest()
 
 
 def mkdir(path, perms=0o755):
