@@ -172,7 +172,6 @@ class BehatCommand(Command):
             cliFile = 'behat_install_composer.php'
             cliPath = os.path.join(M.get('path'), 'behat_install_composer.php')
             (to, headers) = urllib.request.urlretrieve('http://getcomposer.org/installer', cliPath)
-            print(dict(headers))
             if dict(headers).get('content-encoding') == 'gzip':
                 f = gzip.open(cliPath, 'r')
                 content = f.read()
