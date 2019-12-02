@@ -109,10 +109,14 @@ def launchEditor(filepath=None, suffix='.tmp'):
     editor = resolveEditor()
     if not editor:
         raise Exception('Could not locate the editor')
-    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmpfile:
-        with open(filepath, 'r') as f:
-            tmpfile.write(f.read())
-            tmpfile.flush()
+    tempdir = os.path.expanduser(C.get('dirs.tmpdir'))
+    if not os.path.exists(tempdir):
+        mkdir(tempdir)
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False, dir=tempdir) as tmpfile:
+        if filepath:
+            with open(filepath, 'r') as f:
+                tmpfile.write(f.read())
+                tmpfile.flush()
         subprocess.call([editor, tmpfile.name])
     return tmpfile.name
 
