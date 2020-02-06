@@ -248,7 +248,7 @@ class PluginCommand(Command):
             M.uninstallPlugins(args.pluginname)
         except Exception as e:
             logging.error('An error occurred while attempting to uninstall the plugin')
-            logging.error(e)
+            logging.debug(e)
             return False
 
         if args.removefiles:

@@ -176,12 +176,12 @@ def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
         cmd = shlex.split(str(cmd))
     logging.debug(' '.join(cmd))
     try:
-        proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
+        proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr, encoding='utf-8')
         (out, err) = proc.communicate()
     except KeyboardInterrupt as e:
         proc.kill()
         raise e
-    return (proc.returncode, out, err)
+    return (proc.returncode, out.decode('utf-8') if type(out) == bytes else out, err)
 
 
 def resolveEditor():
