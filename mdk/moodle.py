@@ -819,11 +819,10 @@ class Moodle(object):
 
         result = self.cli(cli, args, stdout=subprocess.PIPE, stderr=None)
         try:
-            result[1]
             resultstring = result[1].split('\n', 1)
             cannotuninstall = resultstring[0].rfind('Can not be uninstalled')
             if cannotuninstall != -1:
-                raise Exception('The plugin could not be uninstalled')
+                raise Exception('The plugin could not be uninstalled: %s' % result[1])
         except IndexError as e:
             # We should always have some text returned and so should not end up here. And we
             # raise the exception as we're unsure whether the plugin was uninstalled properly
