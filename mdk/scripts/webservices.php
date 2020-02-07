@@ -26,6 +26,15 @@ set_config('enablewsdocumentation', 1);
 // Enable each protocol.
 set_config('webserviceprotocols', 'amf,rest,soap,xmlrpc');
 
+// Enable mobile service.
+$webservicemanager = new webservice();
+$mobileservice = $webservicemanager->get_external_service_by_shortname(MOODLE_OFFICIAL_MOBILE_SERVICE);
+$mobileservice->enabled = 1;
+$webservicemanager->update_external_service($mobileservice);
+
+// Enable capability to use REST protocol.
+assign_capability('webservice/rest:use', CAP_ALLOW, $CFG->defaultuserroleid, SYSCONTEXTID, true);
+
 // Create the Web Service user.
 $user = $DB->get_record('user', array('username' => 'testtete'));
 if (!$user) {
