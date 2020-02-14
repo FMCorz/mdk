@@ -437,6 +437,7 @@ class PluginRepository(object):
                 logging.info('Found a compatible version for the plugin in local repository')
                 info['component'] = plugin
                 info['branch'] = branch
+                info['version'] = branch
                 return PluginDownloadInfo(info)
 
         # Contacting the remote repository
