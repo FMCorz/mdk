@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v1.7.6
+------
+- Language caching is no longer enabled in `mindev` script
+- JavaScript caching is no longer enabled in `mindev` script
+- Selenium versions to download were not accurately identified
+
 v1.7.5
 ------
 - Add support for repeating tests - Jun Pataleta
