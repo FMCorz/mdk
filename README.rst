@@ -41,8 +41,17 @@ Use `pip <http://www.pip-installer.org/en/latest/installing.html>`_::
     pip install moodle-sdk --user
     mdk init
 
-That's it!
+Notes
+~~~~~
 
+This method does not require ``sudo`` as it installs MDK for the current user. It is assumed that ``~/.local/bin`` is in your PATH (or `equivalent <https://docs.python.org/3/library/site.html#site.USER_BASE>`_).
+
+If it isn't, this snippet for ``~/.profile`` might be useful::
+
+    # Set PATH so it includes user's private local bin if it exists.
+    if [ -d "$HOME/.local/bin" ] ; then
+        PATH="$HOME/.local/bin:$PATH"
+    fi
 
 Homebrew
 --------
