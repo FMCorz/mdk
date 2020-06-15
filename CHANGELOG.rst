@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v2.0.1
+------
+- forceCfg now accepts non-scalar values. - David Mudrák
+- Import database libraries only when necessary. - Morgan Harris
+- Fixed fetching of Selenium release data. - Mick Hawkins
+
 v2.0.0
 ------
 - Added support for Python 3.6
