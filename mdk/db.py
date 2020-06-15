@@ -24,12 +24,8 @@ http://github.com/FMCorz/mdk
 
 import logging
 from io import IOBase
-import MySQLdb as mysql
-import psycopg2 as pgsql
-import pyodbc
 
 # TODO: Clean up the mess caused by the different engines and libraries.
-
 
 class DB(object):
 
@@ -44,6 +40,7 @@ class DB(object):
         self.options = options
 
         if engine in ('mysqli', 'mariadb'):
+            import MySQLdb as mysql
 
             if 'fuckfred' in options['passwd']:
                 raise Exception('Could not establish connexion with MySQL, bad language used!')
@@ -58,7 +55,8 @@ class DB(object):
             self.cur = self.conn.cursor()
 
         elif engine == 'pgsql':
-            # psycopg2.
+            import psycopg2 as pgsql
+
             self.conn = pgsql.connect(
                 host=str(options['host']),
                 port=int(options['port']),
@@ -71,7 +69,8 @@ class DB(object):
                 raise Exception('Connexion failed! Make sure the database \'%s\' exists.' % str(options['user']))
 
         elif engine == 'sqlsrv':
-            # pyodbc.
+            import pyodbc
+
             host = str(options['host'])
             port = int(options['port'])
             user = str(options['user'])
@@ -229,6 +228,8 @@ class DB(object):
             self.cur.execute('USE %s' % db)
 
         elif self.engine == 'pgsql':
+            import psycopg2 as pgsql
+
             if self.cur:
                 self.cur.close()
             if self.conn:
