@@ -198,6 +198,25 @@
     "forceCfg": {
         // The following example will set CFG->divertallemailsto to "root@localhost.local".
         // "divertallemailsto": "root@localhost.local"
+
+        // In order to set a CFG variable as an array rather than scalar, Python lists or dictionaries can be used.
+        // "behat_profiles": {
+        //     "default": {
+        //         "browser": "chrome",
+        //         "extensions": {
+        //             "Behat\\\\MinkExtension": {
+        //                 "selenium2": {
+        //                     "browser": "chrome"
+        //                 }
+        //             }
+        //         }
+        //     }
+        // },
+        // "behat_parallel_run": [
+        //     {"wd_host": "http:\/\/127.0.0.1:4444\/wd\/hub"},
+        //     {"wd_host": "http:\/\/127.0.0.1:4445\/wd\/hub"},
+        //     {"wd_host": "http:\/\/127.0.0.1:4446\/wd\/hub"}
+        // ]
     },
 
     // Behat related settings

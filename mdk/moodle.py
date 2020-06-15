@@ -27,6 +27,7 @@ import re
 import logging
 import shutil
 import subprocess
+import json
 from tempfile import gettempdir
 
 from .tools import getMDLFromCommitMessage, mkdir, process, parseBranch
@@ -86,6 +87,8 @@ class Moodle(object):
 
         if type(value) == bool:
             value = 'true' if value else 'false'
+        elif type(value) in (dict, list):
+            value = "json_decode('" + json.dumps(value) + "', true)"
         elif type(value) != int:
             value = "'" + str(value) + "'"
         value = str(value)
