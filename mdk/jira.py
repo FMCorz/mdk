@@ -108,7 +108,7 @@ class Jira(object):
 
         data = r.text
         if len(data) > 0:
-            f = open(dest, 'w')
+            f = open(dest, 'wb')
             f.write(data.encode('utf8'))
             f.close()
 
