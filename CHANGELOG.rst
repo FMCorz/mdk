@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v2.0.2
+------
+- Update config for Moodle 3.10 development
+- Fix TypeError when downloading patch file on python3 - Jake Dallimore
+
 v2.0.1
 ------
 - forceCfg now accepts non-scalar values. - David Mudrák
