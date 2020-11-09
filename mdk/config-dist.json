@@ -154,6 +154,10 @@
                 "branch" : "Pull 3.10 Branch",
                 "diffurl" : "Pull 3.10 Diff URL"
             },
+            "311" : {
+                "branch" : "Pull 3.11 Branch",
+                "diffurl" : "Pull 3.11 Diff URL"
+            },
             "master" : {
                 "branch" : "Pull Master Branch",
                 "diffurl" : "Pull Master Diff URL"
