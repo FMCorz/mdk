@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v2.0.3
+------
+- Update config for Moodle 3.11 development
+
 v2.0.2
 ------
 - Update config for Moodle 3.10 development
