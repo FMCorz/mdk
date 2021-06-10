@@ -299,6 +299,9 @@
 
     // Debug level of MDK. 'debug', 'info', 'warning', 'error' or 'critical'.
     "debug": "info",
+    "logging": {
+        "format": "%(color)s> %(message)s%(color_reset)s"
+    },
 
     // When enabled, MDK will try to be smart to identify the parent commit of the current branch. Instead of
     // using the stable branch it will match the branch name with an issue number and compare it with the commit
