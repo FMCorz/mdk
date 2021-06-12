@@ -43,9 +43,10 @@ class CI(object):
     url = None
     token = None
 
-    def __init__(self, url=None, token=None, load=True):
+    def __init__(self, url=None, username=None, token=None, load=True):
         self.url = url or C.get('ci.url')
         self.token = token or C.get('ci.token')
+        self.username = username or C.get('ci.username')
         if load:
             self.load()
 
@@ -64,7 +65,21 @@ class CI(object):
         logger.setLevel(logging.WARNING)
 
         # Loads the jenkins object.
-        self._jenkins = jenkins.Jenkins(self.url, requester=CrumbRequester(baseurl=self.url))
+        requester = CrumbRequester(baseurl=self.url, username=self.username, password=self.token)
+        self._jenkins = jenkins.Jenkins(self.url, username=self.username, password=self.token, requester=requester)
+
+    def runBuild(self, jobname, params, block=False, delay=5):
+        try:
+            job = self.jenkins.get_job(jobname)
+            queueitem = job.invoke(build_params=params, delay=delay, block=block)
+        except JenkinsAPIException:
+            raise CIException('Failed to invoke the build, check your permissions.')
+
+        queueitem.block_until_building()
+        buildnumber = queueitem.get_build_number()
+        build = queueitem.get_build()
+
+        return (buildnumber, build.get_build_url())
 
     def precheckRemoteBranch(self, remote, branch, integrateto, issue=None):
         """Runs the precheck job and returns the outcome"""
