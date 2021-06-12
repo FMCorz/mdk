@@ -34,6 +34,13 @@ class TrackerCommand(Command):
 
     _arguments = [
         (
+            ['--open'],
+            {
+                'action': 'store_true',
+                'help': 'Open issue in browser'
+            }
+        ),
+        (
             ['-t', '--testing'],
             {
                 'action': 'store_true',
@@ -95,8 +102,13 @@ class TrackerCommand(Command):
         if not issue or not re.match('(MDL|mdl)?(-|_)?[1-9]+', issue):
             raise Exception('Invalid or unknown issue number')
 
-        self.Jira = Jira()
         self.mdl = 'MDL-' + re.sub(r'(MDL|mdl)(-|_)?', '', issue)
+
+        if args.open:
+            Jira.openInBrowser(self.mdl)
+            return
+
+        self.Jira = Jira()
 
         if args.addlabels:
             if 'triaged' in args.addlabels:
