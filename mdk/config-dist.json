@@ -96,6 +96,13 @@
         "token": null
     },
 
+    "behatci": {
+        "jobname": "DEV.01 - Developer-requested Behat",
+        "url": "https://ci.moodle.org",
+        "username": null,
+        "token": null
+    },
+
     // The information for integrating MDK with Jira
     "tracker": {
         "emoji": {
