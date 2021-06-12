@@ -73,6 +73,13 @@ class TrackerCommand(Command):
 
     _arguments = [
         (
+            ['--open'],
+            {
+                'action': 'store_true',
+                'help': 'Open issue in browser'
+            }
+        ),
+        (
             ['--comments'],
             {
                 'action': 'store_true',
@@ -158,6 +165,11 @@ class TrackerCommand(Command):
 
 
         self.mdl = 'MDL-' + re.sub(r'(MDL|mdl)(-|_)?', '', issue)
+
+        if args.open:
+            Jira.openInBrowser(self.mdl)
+            return
+
         self.Jira = Jira()
 
         if args.addlabels:

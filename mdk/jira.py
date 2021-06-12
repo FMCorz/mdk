@@ -31,6 +31,7 @@ import re
 import logging
 import os
 import requests
+import webbrowser
 import mimetypes
 try:
     import keyring
@@ -412,6 +413,11 @@ class Jira(object):
 
         return True
 
+    @staticmethod
+    def openInBrowser(key):
+        jiraurl = C.get('tracker.url').rstrip('/')
+        url = "{0}/browse/{1}".format(jiraurl, key)
+        webbrowser.open_new_tab(url)
 
 class JiraException(Exception):
     pass
