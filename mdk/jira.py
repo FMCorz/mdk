@@ -145,6 +145,20 @@ class Jira(object):
             }
         return attachments
 
+    def getIssueComments(self, key, maxResults=5):
+        querystring = {'orderBy': '-created', 'maxResults': maxResults}
+        resp = self.request('issue/%s/comment' % (str(key)), params=querystring)
+
+        if resp['status'] == 404:
+            raise JiraIssueNotFoundException('Issue could not be found.')
+        elif not resp['status'] == 200:
+            raise JiraException('The tracker is not available.')
+
+        comments = resp['data']['comments']
+        comments.reverse()
+
+        return comments
+
     def getIssue(self, key, fields='*all,-comment'):
         """Load the issue info from the jira server using a rest api call.
 
