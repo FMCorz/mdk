@@ -28,6 +28,9 @@ mdk_set_config('debug', DEBUG_DEVELOPER);
 // Display debug messages.
 mdk_set_config('debugdisplay', 1);
 
+// Increase session lifetime to forever.
+mdk_set_config('sessiontimeout', 52 * WEEKSECS);
+
 // Any kind of password is allowed.
 mdk_set_config('passwordpolicy', 0);
 
