@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v2.0.4
+------
+- Development scripts to increase session timeout to forever
+- Rewrite git://github.com URLs as https://github.com - Andrew Lyons
+
 v2.0.3
 ------
 - Update config for Moodle 3.11 development
