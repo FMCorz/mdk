@@ -748,7 +748,7 @@ class Moodle(object):
         version = parsedbranch['version']
 
         # Get the jira config
-        repositoryurl = C.get('repositoryUrl')
+        repositoryurl = self.git().updateUnauthenticatedGithub(C.get('repositoryUrl'))
         diffurltemplate = C.get('diffUrlTemplate')
         stablebranch = self.get('stablebranch')
 

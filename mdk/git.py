@@ -143,6 +143,7 @@ class Git(object):
         return (proc.returncode, stdout.decode('utf-8'), stderr.decode('utf-8'))
 
     def fetch(self, remote='', ref=''):
+        remote = self.updateUnauthenticatedGithub(remote)
         cmd = 'fetch %s %s' % (remote, ref)
         result = self.execute(cmd)
         return result[0] == 0
@@ -198,6 +199,14 @@ class Git(object):
         )
         proc.wait()
         return proc.returncode == 0
+
+    def updateUnauthenticatedGithub(self, path):
+        """Detect and fix unauthenticated github URLs"""
+        # https://github.blog/2021-09-01-improving-git-protocol-security-github/#no-more-unauthenticated-git
+        if "git://github.com/" in path:
+            logging.warn("Repository at {} uses unauthenticated github which is no longer supported. Converting to https.".format(path))
+            return path.replace('git://github.com', 'https://github.com')
+        return path
 
     def log(self, count=10, since=None, path=None, format=None):
         """Calls the log command and returns the raw output"""
