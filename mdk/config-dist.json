@@ -173,7 +173,7 @@
 
     // The public acccess URL of your repository. It is used to populate the fields on the tracker issue,
     // and as the common read-only URL of the remote 'myRemote'.
-    "repositoryUrl": "git://github.com/YourGitHub/moodle.git",
+    "repositoryUrl": "https://github.com/YourGitHub/moodle.git",
 
     // Plugins related settings.
     "plugins": {

@@ -64,7 +64,7 @@ For development
 
 Clone the repository::
 
-    git clone git://github.com/FMCorz/mdk.git moodle-sdk
+    git clone https://github.com/FMCorz/mdk.git moodle-sdk
 
 On Debian-based systems, you will need to install the following packages::
 
