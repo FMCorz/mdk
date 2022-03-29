@@ -130,6 +130,7 @@ class Workplace(object):
         extraDir = self.getPath(name, 'extra')
         linkDir = os.path.join(self.www, name)
         extraLinkDir = os.path.join(self.getMdkWebDir(), name)
+        branch = stableBranch(version)
 
         if self.isMoodle(name):
             raise CreateException('The Moodle instance %s already exists' % name)
@@ -147,7 +148,7 @@ class Workplace(object):
 
         # Clone the instances
         logging.info('Cloning repository...')
-        process('%s clone %s %s' % (C.get('git'), repository, wwwDir))
+        process(f'{C.get("git")} clone --branch {branch} --single-branch {repository} {wwwDir}')
 
         # Symbolic link
         if os.path.islink(linkDir):
@@ -181,7 +182,6 @@ class Workplace(object):
 
         # Creating, fetch, pulling branches
         repo.fetch(C.get('upstreamRemote'))
-        branch = stableBranch(version)
         track = '%s/%s' % (C.get('upstreamRemote'), branch)
         if not repo.hasBranch(branch) and not repo.createBranch(branch, track):
             logging.error('Could not create branch %s tracking %s' % (branch, track))
