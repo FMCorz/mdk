@@ -132,6 +132,9 @@ class Workplace(object):
         extraLinkDir = os.path.join(self.getMdkWebDir(), name)
         branch = stableBranch(version)
 
+        useCacheAsUpstream = C.get('useCacheAsUpstreamRemote')
+        cloneAsShared = useCacheAsUpstream and C.get('useCacheAsSharedClone')
+
         if self.isMoodle(name):
             raise CreateException('The Moodle instance %s already exists' % name)
         elif os.path.isdir(installDir):
@@ -148,7 +151,8 @@ class Workplace(object):
 
         # Clone the instances
         logging.info('Cloning repository...')
-        process(f'{C.get("git")} clone --branch {branch} --single-branch {repository} {wwwDir}')
+        process(f'{C.get("git")} clone --branch {branch} --single-branch '
+                f'{"--shared" if cloneAsShared else ""} {repository} {wwwDir}')
 
         # Symbolic link
         if os.path.islink(linkDir):
@@ -191,7 +195,7 @@ class Workplace(object):
 
         # Fixing up remote URLs if need be, this is done after pulling the cache one because we
         # do not want to contact the real origin server from here, it is slow and pointless.
-        if not C.get('useCacheAsUpstreamRemote'):
+        if not useCacheAsUpstream:
             realupstream = C.get('remotes.integration') if integration else C.get('remotes.stable')
             if realupstream:
                 repo.setRemote(C.get('upstreamRemote'), realupstream)

@@ -301,6 +301,12 @@
     // by this setting.
     "useCacheAsUpstreamRemote": true,
 
+    // Clones the cached repository with the option --shared, which drastically reduces the
+    // size of the .git/ folder in each of the Moodle instances. Git reports this as a possible
+    // dangerous operation (https://git-scm.com/docs/git-clone) so it is not enabled by default.
+    // This requires the useCacheAsUpstreamRemote to be enabled.
+    "useCacheAsSharedClone": false,
+
     // You should not edit this, this is the branch that is considered as master by developers.
     "masterBranch": 400,
 
