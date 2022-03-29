@@ -66,18 +66,15 @@ mdk_set_config('requiremodintro', 0, 'url');
 // Don't cache templates.
 mdk_set_config('cachetemplates', 0);
 
-// Adds FirePHP
-$firephp = "
-// FirePHP
-if (@include_once('FirePHPCore/fb.php')) {
-    ob_start();
-}
-";
+// Adds moodle_database declaration to help VSCode detect moodle_database.
+$varmoodledb = '/** @var moodle_database */
+$DB = $DB;
+';
 $conffile = dirname(__FILE__) . '/config.php';
 if ($content = file_get_contents($conffile)) {
-    if (strpos($content, "include_once('FirePHPCore/fb.php')") === false) {
+    if (strpos($content, "@var moodle_database") === false) {
         if ($f = fopen($conffile, 'a')) {
-            fputs($f, $firephp);
+            fputs($f, $varmoodledb);
             fclose($f);
         }
     }
