@@ -158,6 +158,10 @@
                 "branch" : "Pull 3.11 Branch",
                 "diffurl" : "Pull 3.11 Diff URL"
             },
+            "400" : {
+                "branch" : "Pull 4.0 Branch",
+                "diffurl" : "Pull 4.0 Diff URL"
+            },
             "master" : {
                 "branch" : "Pull Master Branch",
                 "diffurl" : "Pull Master Diff URL"
@@ -308,7 +312,7 @@
     "useCacheAsSharedClone": false,
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 400,
+    "masterBranch": 401,
 
     // Aliases for MDK commands.
     // An alias starting with a ! will be executed through the command line. Those also
