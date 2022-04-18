@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v2.0.5
+------
+- Update config for Moodle 4.1 development
+- Removing FirePHP from dev script in favour of declaring $DB
+- Adding experimental setting to clone with --shared flag
+- Clone a single branch when initally cloning repository
+- Replace git://github.com URLs with https://github.com - Jun Pataleta
+
 v2.0.4
 ------
 - Development scripts to increase session timeout to forever
