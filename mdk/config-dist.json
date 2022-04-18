@@ -98,6 +98,24 @@
 
     // The information for integrating MDK with Jira
     "tracker": {
+        "emoji": {
+            ":)": "😀",
+            ":-)": "😀",
+            ":(": "🙁",
+            ":P": "😛",
+            ":D": "😁",
+            ";)": "😉",
+            "(y)": "👍",
+            "(n)": "👎",
+            "(!)": "⚠",
+            "(?)": "❓",
+            "(i)": "ℹ",
+            "(+)": "➕",
+            "(-)": "➖",
+            "(/)": "✅",
+            "(*)": "⭐",
+            "(x)": "❌"
+        },
         "url": "https://tracker.moodle.org/",
         "username": false,
         "fieldnames" : {
@@ -285,6 +303,9 @@
 
     // Debug level of MDK. 'debug', 'info', 'warning', 'error' or 'critical'.
     "debug": "info",
+    "logging": {
+        "format": "%(color)s> %(message)s%(color_reset)s"
+    },
 
     // When enabled, MDK will try to be smart to identify the parent commit of the current branch. Instead of
     // using the stable branch it will match the branch name with an issue number and compare it with the commit

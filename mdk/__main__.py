@@ -22,6 +22,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+def add_color_to_log_record(fn):
+    def new(*args):
+        from .ansi_escape_codes import AnsiCodes
+        import logging
+        levelno = args[1].levelno
+        if levelno >= logging.CRITICAL:
+            color = AnsiCodes['RED']
+        elif levelno == logging.ERROR:
+            color = AnsiCodes['RED']
+        elif levelno == logging.WARNING:
+            color = AnsiCodes['YELLOW']
+        elif levelno == logging.INFO:
+            color = AnsiCodes['GREEN']
+        elif levelno == logging.DEBUG:
+            color = AnsiCodes['GRAY']
+        else:
+            color = AnsiCodes['RESET']
+        args[1].color = color
+        args[1].color_reset = AnsiCodes['RESET']
+        return fn(*args)
+    return new
+
 def main():
 
     import sys
@@ -43,8 +65,10 @@ def main():
     except AttributeError:
         debuglevel = logging.INFO
 
-    # Set logging levels.
-    logging.basicConfig(format='%(message)s', level=debuglevel)
+    FORMAT = C.get('logging.format')
+    # Set logging format and levels.
+    logging.basicConfig(format=FORMAT, level=debuglevel)
+    logging.StreamHandler.emit = add_color_to_log_record(logging.StreamHandler.emit)
     logging.getLogger('requests').setLevel(logging.WARNING)  # Reset logging level of 'requests' module.
     logging.getLogger('keyring.backend').setLevel(logging.WARNING)
 
