@@ -138,6 +138,20 @@ class InitCommand(Command):
             C.set('dirs.storage', storage)
             break
 
+        while True:
+            git = question('What is the path of your Git installation?', C.get('git'))
+            git = self.resolve_directory(git, username)
+
+            if not os.access(git, os.X_OK):
+                logging.error('Error while executing the Git command by path %s' % git + '.\nPlease fix or use another executable path.')
+                continue
+
+            gitversion = subprocess.run([git, '--version'], stdout=subprocess.PIPE)
+            logging.info('Using ' + gitversion.stdout.decode('utf-8'))
+
+            C.set('git', git)
+            break
+
         # The default configuration file should point to the right directory for dirs.mdk,
         # we will just ensure that it exists.
         mdkdir = C.get('dirs.mdk')
