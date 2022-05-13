@@ -23,9 +23,10 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-from .. import tools, jira
+
 from ..command import Command
-from ..tools import getMDLFromCommitMessage
+from ..jira import Jira, JiraIssueNotFoundException
+from ..tools import yesOrNo, parseBranch, getMDLFromCommitMessage
 
 
 class PushCommand(Command):
@@ -119,7 +120,7 @@ class PushCommand(Command):
             branch = args.branch
 
         # Extra test to see if the commit message is correct. This prevents easy typos in branch or commit messages.
-        parsedbranch = tools.parseBranch(branch)
+        parsedbranch = parseBranch(branch)
         if parsedbranch or branch != M.get('stablebranch'):
             message = M.git().messages(count=1)[0]
 
@@ -139,12 +140,11 @@ class PushCommand(Command):
                     print('The MDL number in the last commit does not match the branch being pushed to.')
                     print('Branch: \'%s\' vs. commit: \'%s\'' % (branchmdl, mdl))
 
-                answer = tools.question('Are you sure you want to continue?', default='n')
-                if answer.lower()[0] != 'y':
+                if not yesOrNo('Are you sure you want to continue?'):
                     print('Exiting...')
                     return
 
-        J = jira.Jira()
+        J = Jira()
 
         # If the mode is not set to patch yet, and we can identify the MDL number.
         if not args.patch and parsedbranch:
@@ -153,7 +153,7 @@ class PushCommand(Command):
                 args.patch = J.isSecurityIssue(mdlIssue)
                 if args.patch:
                     logging.info('%s appears to be a security issue, switching to patch mode...', mdlIssue)
-            except jira.JiraIssueNotFoundException:
+            except JiraIssueNotFoundException:
                 # The issue was not found, do not perform
                 logging.warn('Could not check if %s is a security issue', mdlIssue)
 
