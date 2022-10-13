@@ -445,7 +445,10 @@ class PluginRepository(object):
             "branch": round(float(branch) / 10., 1),
             "plugin": plugin
         }
-
+        # If the branch is e. g. 311, we are now at 31.1 instead of 311
+        if data['branch'] > 10:
+            data['branch'] = round(float(branch) / 100., 2)
+        
         logging.info('Retrieving information for plugin %s and branch %s' % (data['plugin'], data['branch']))
         try:
             resp = self.request('pluginfo.php', 'GET', data)
