@@ -23,9 +23,8 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-
-from ..command import Command
 from ..tools import yesOrNo
+from ..command import Command
 
 
 class RemoveCommand(Command):

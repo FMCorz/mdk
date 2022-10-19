@@ -23,10 +23,9 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-
+from .. import tools, jira
 from ..command import Command
-from ..jira import Jira, JiraIssueNotFoundException
-from ..tools import yesOrNo, parseBranch, getMDLFromCommitMessage
+from ..tools import getMDLFromCommitMessage
 
 
 class PushCommand(Command):
@@ -120,7 +119,7 @@ class PushCommand(Command):
             branch = args.branch
 
         # Extra test to see if the commit message is correct. This prevents easy typos in branch or commit messages.
-        parsedbranch = parseBranch(branch)
+        parsedbranch = tools.parseBranch(branch)
         if parsedbranch or branch != M.get('stablebranch'):
             message = M.git().messages(count=1)[0]
 
@@ -144,7 +143,7 @@ class PushCommand(Command):
                     print('Exiting...')
                     return
 
-        J = Jira()
+        J = jira.Jira()
 
         # If the mode is not set to patch yet, and we can identify the MDL number.
         if not args.patch and parsedbranch:
@@ -153,7 +152,7 @@ class PushCommand(Command):
                 args.patch = J.isSecurityIssue(mdlIssue)
                 if args.patch:
                     logging.info('%s appears to be a security issue, switching to patch mode...', mdlIssue)
-            except JiraIssueNotFoundException:
+            except jira.JiraIssueNotFoundException:
                 # The issue was not found, do not perform
                 logging.warn('Could not check if %s is a security issue', mdlIssue)
 
