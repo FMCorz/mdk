@@ -23,6 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
+from ..tools import yesOrNo
 from ..command import Command
 
 
@@ -62,8 +63,7 @@ class RemoveCommand(Command):
             raise Exception('This is not a Moodle instance')
 
         if not args.do and not args.force:
-            confirm = input('Are you sure? (Y/n) ')
-            if confirm != 'Y':
+            if not yesOrNo('Are you sure?'):
                 logging.info('Aborting...')
                 return
 

@@ -23,6 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
+from ..tools import yesOrNo
 from ..command import Command
 
 
@@ -59,8 +60,7 @@ class UninstallCommand(Command):
             return
 
         if not args.do:
-            confirm = input('Are you sure? (Y/n) ')
-            if confirm != 'Y':
+            if not yesOrNo('Are you sure?'):
                 logging.info('Aborting...')
                 return
 

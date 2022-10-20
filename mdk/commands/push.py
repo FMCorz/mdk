@@ -139,8 +139,7 @@ class PushCommand(Command):
                     print('The MDL number in the last commit does not match the branch being pushed to.')
                     print('Branch: \'%s\' vs. commit: \'%s\'' % (branchmdl, mdl))
 
-                answer = tools.question('Are you sure you want to continue?', default='n')
-                if answer.lower()[0] != 'y':
+                if not yesOrNo('Are you sure you want to continue?'):
                     print('Exiting...')
                     return
 
