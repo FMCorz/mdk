@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v2.0.6
+------
+
+- Make yes or no prompts equal - Adrian Perez
+- Add vscode script to generate jsconfig.json - Andrew Nicols
+- Tracker command argument to open Jira ticket in default browser - Dongsheng Cai
+- Fix plugin version for Moodle minor versions greater than 9 - Philipp Imhof
+- Avoid PHP Notice "Undefined variable: DB" in PHPUnit setup - David Mudrák
+- Specify Git path during initialization - Adrian Perez
+
 v2.0.5
 ------
 - Update config for Moodle 4.1 development
