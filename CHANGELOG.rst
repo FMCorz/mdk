@@ -4,7 +4,7 @@ Changelog
 v2.0.7
 ------
 
-- Update config for Moodle 4.1 development - Huong Nguyen
+- Update config for Moodle 4.2 development - Huong Nguyen
 
 v2.0.6
 ------
