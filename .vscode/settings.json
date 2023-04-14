@@ -2,4 +2,7 @@
     "[python]": {
         "editor.defaultFormatter": "eeyore.yapf"
     },
+    "files.associations": {
+        "**/*.json": "jsonc"
+    }
 }

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -21,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 http://github.com/FMCorz/mdk
 """
+
 
 def main():
 

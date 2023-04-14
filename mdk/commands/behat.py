@@ -22,6 +22,7 @@ http://github.com/FMCorz/mdk
 """
 
 import os
+from pathlib import Path
 import urllib.request, urllib.parse, urllib.error
 import re
 import logging
@@ -30,7 +31,7 @@ import json
 from tempfile import gettempdir
 from time import sleep
 from ..command import Command
-from ..tools import process, ProcessInThread, downloadProcessHook, question, natural_sort_key
+from ..tools import get_absolute_path, process, ProcessInThread, downloadProcessHook, question, natural_sort_key
 
 
 class BehatCommand(Command):
@@ -213,7 +214,7 @@ class BehatCommand(Command):
             else:
                 prefix = None
 
-            outputDir = self.Wp.getExtraDir(M.get('identifier'), 'behat')
+            outputDir = (M.container.behat_faildumps or Path(self.Wp.getExtraDir(M.get('identifier'), 'behat'))).as_posix()
             outpurUrl = self.Wp.getUrl(M.get('identifier'), extra='behat')
 
             logging.info('Initialising Behat, please be patient!')
@@ -223,10 +224,10 @@ class BehatCommand(Command):
             # Preparing Behat command
             cmd = ['vendor/bin/behat']
             if args.tags:
-                cmd.append('--tags="%s"' % (args.tags))
+                cmd.append('--tags=%s' % (args.tags))
 
             if args.testname:
-                cmd.append('--name="%s"' % (args.testname))
+                cmd.append('--name=%s' % (args.testname))
 
             if not (args.tags or args.testname) and nojavascript:
                 cmd.append('--tags ~@javascript')
@@ -236,23 +237,25 @@ class BehatCommand(Command):
                     cmd.append('--format="progress,progress,pretty,html,failed"')
                     cmd.append('--out=",{0}/progress.txt,{0}/pretty.txt,{0}/status.html,{0}/failed.txt"'.format(outputDir))
                 else:
-                    cmd.append('--format="moodle_progress" --out="std"')
-                    cmd.append('--format="progress" --out="{0}/progress.txt"'.format(outputDir))
-                    cmd.append('--format="pretty" --out="{0}/pretty.txt"'.format(outputDir))
+                    cmd.append('--format=moodle_progress')
+                    cmd.append('--out=std')
+                    cmd.append('--format=progress')
+                    cmd.append('--out={0}/progress.txt'.format(outputDir))
+                    cmd.append('--format=pretty')
+                    cmd.append('--out={0}/pretty.txt'.format(outputDir))
 
-            configcandidates = ['%s/behat/behat.yml' % (M.get('behat_dataroot'))]
-            if M.branch_compare(32):
-                # Since Moodle 3.2.2 behat directory is kept under $CFG->behat_dataroot for single and parallel runs.
-                configcandidates.insert(0, '%s/behatrun/behat/behat.yml' % (M.get('behat_dataroot')))
+            # Since Moodle 3.2.2 behat directory is kept under $CFG->behat_dataroot for single and parallel runs.
+            configcandidates = ['%s/behatrun/behat/behat.yml' % M.container.behat_dataroot.as_posix()]
+            if M.branch_compare(32, '<'):
+                configcandidates.append('%s/behat/behat.yml' % M.container.behat_dataroot.as_posix())
+            cmd.append('--config=%s' % (list(filter(lambda x: M.container.exists(Path(x)), configcandidates))[0]))
 
-            cmd.append('--config=%s' % (list(filter(os.path.isfile, configcandidates))[0]))
-
-            # Checking feature argument
+            # Checking feature argument. Assume either a path relative to the dirroot, or absolute within dirroot.
             if args.feature:
-                filepath = args.feature
-                if not filepath.startswith('/'):
-                    filepath = os.path.join(M.get('path'), filepath)
-                cmd.append(filepath)
+                featurepath = Path(args.feature).resolve()
+                if featurepath.is_absolute() and not featurepath.exists():
+                    featurepath = Path(M.get('path')) / Path(args.feature.lstrip('/'))
+                cmd.append(featurepath.relative_to(Path(M.get('path'))).as_posix())
 
             phpCommand = '%s -S localhost:8000' % (self.C.get('php'))
             seleniumCommand = None

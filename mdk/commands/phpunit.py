@@ -183,14 +183,20 @@ class PhpunitCommand(Command):
                 logging.info('Installing Composer')
                 cliFile = 'phpunit_install_composer.php'
                 cliPath = os.path.join(M.get('path'), 'phpunit_install_composer.php')
+
+                opener = urllib.request.build_opener()
+                opener.addheaders = [('Accept-Encoding', 'gzip')]
+                urllib.request.install_opener(opener)
                 (to, headers) = urllib.request.urlretrieve('http://getcomposer.org/installer', cliPath)
                 if headers.get('content-encoding') == 'gzip':
                     f = gzip.open(cliPath, 'r')
-                    content = f.read()
+                    content = f.read().decode('utf-8')
                     f.close()
                     f = open(cliPath, 'w')
                     f.write(content)
                     f.close()
+                urllib.request.install_opener(urllib.request.build_opener())
+
                 M.cli('/' + cliFile, stdout=None, stderr=None)
                 os.remove(cliPath)
                 M.cli('composer.phar', args=['install', '--dev'], stdout=None, stderr=None)

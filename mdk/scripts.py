@@ -149,14 +149,17 @@ class Scripts(object):
 
     @classmethod
     @contextmanager
-    def prepare_script_in_path(cls, script, path):
+    def prepare_script_in_path(cls, script, path, container=None):
         """Temporarily copy the script to a certain directory"""
         cli = cls.find(script)
         dest = cls.get_script_destination(cli, path)
         logging.debug('Copying %s to %s' % (cli, dest))
         shutil.copyfile(cli, dest)
         if dest.endswith('.sh'):
-            os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
+            if container:
+                container.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
+            else:
+                os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
         yield dest
         os.remove(dest)
 

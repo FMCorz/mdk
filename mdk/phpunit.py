@@ -24,6 +24,8 @@ http://github.com/FMCorz/mdk
 import logging
 import os
 
+from mdk.moodle import Moodle
+
 from .config import Conf
 from .tools import mkdir
 
@@ -86,10 +88,10 @@ class PHPUnit(object):
             raise Exception('PHPUnit is only available from Moodle 2.3')
 
         # Set PHPUnit data root
-        phpunit_dataroot = self.M.get('dataroot') + '_phpu'
-        self.M.updateConfig('phpunit_dataroot', phpunit_dataroot)
-        if not os.path.isdir(phpunit_dataroot):
-            mkdir(phpunit_dataroot, 0o777)
+        phpunit_dataroot = self.M.container.phpunit_dataroot
+        self.M.updateConfig('phpunit_dataroot', phpunit_dataroot.as_posix())
+        if not self.M.container.isdir(self.M.container.phpunit_dataroot):
+            self.M.container.mkdir(self.M.container.phpunit_dataroot, 0o777)
 
         # Set PHPUnit prefix
         currentPrefix = self.M.get('phpunit_prefix')
@@ -144,7 +146,7 @@ class PHPUnit(object):
         return os.path.isfile(os.path.join(self.M.get('path'), 'composer.json'))
 
     @property
-    def M(self):
+    def M(self) -> Moodle:
         return self._M
 
     @property

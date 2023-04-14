@@ -21,24 +21,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-import os
-import re
 import logging
-import shutil
+import os
+from pathlib import Path
+import re
 import shlex
 import subprocess
 import json
 from tempfile import gettempdir
 
-from .tools import getMDLFromCommitMessage, mkdir, process, parseBranch, stableBranch
-from .db import DB
+from mdk.container import Container, DockerContainer, HostContainer
+
 from .config import Conf
-from .git import Git, GitException
+from .db import DB
 from .exceptions import InstallException, UpgradeNotAllowed
+from .git import Git, GitException
 from .jira import Jira, JiraException
 from .scripts import Scripts
+from .tools import (getMDLFromCommitMessage, parseBranch, stableBranch)
 
 C = Conf()
+
+RE_CFG_PARSE = re.compile(
+    r'^\s*\$CFG->([a-z_]+)\s*=\s*((?P<brackets>[\'"])?(.+)(?P=brackets)|([0-9.]+)|(true|false|null))\s*;$', re.I
+)
 
 
 class Moodle(object):
@@ -48,6 +54,7 @@ class Moodle(object):
     installed = False
     version = None
     config = None
+    container: Container
 
     _dbo = None
     _git = None
@@ -68,12 +75,31 @@ class Moodle(object):
         'version',
     ]
 
-    def __init__(self, path, identifier=None):
+    def __init__(self, *, path, identifier=None):
         self.path = path
         self.identifier = identifier
         self.version = {}
         self.config = {}
         self._load()
+
+        # Cheeky way to detect if we want to run something in a docker container. This is a
+        # temporary solution. Ideally the container should be constructed elsewhere. It would
+        # make sense for the Workplace to know about the default container for an instance.
+        # And maybe we could have a common argument to all `mdk` commands to set the docker name.
+        dockername = os.environ.get('MDK_DOCKER_NAME', None)
+        if dockername:
+            container = DockerContainer(name=dockername, hostpath=Path(path))
+        else:
+            dataroot = self.get('dataroot', None)
+            container = HostContainer(
+                identifier=identifier,
+                path=Path(self.path),
+                dataroot=Path(dataroot) if dataroot else None,
+                binaries={
+                    'php': C.get('php'),
+                }
+            )
+        self.container = container
 
     def addConfig(self, name, value):
         """Add a parameter to the config file
@@ -183,10 +209,12 @@ class Moodle(object):
     def cli(self, cli, args=None, **kwargs):
         """Executes a PHP CLI script relative to the Moodle directory."""
 
-        path = self.get('path')
-        if not cli.startswith(path):
-            cli = os.path.join(path, cli.lstrip('/'))
-        if not os.path.isfile(cli):
+        # Ensure path is relative.
+        if cli.startswith(self.path):
+            cli = cli[len(self.path):]
+        cli = cli.lstrip('/')
+
+        if not self.container.exists(Path(cli)):
             raise Exception('Could not find script to call')
 
         args = args or []
@@ -214,7 +242,7 @@ class Moodle(object):
 
     def exec(self, cmd, **kwargs):
         """Executes a command"""
-        return process(cmd, cwd=self.get('path'), **kwargs)
+        return self.container.exec(cmd, **kwargs)
 
     def generateBranchName(self, issue, suffix='', version=''):
         """Generates a branch name"""
@@ -308,8 +336,7 @@ class Moodle(object):
             switchcompletely = True
 
         # Set Behat data root
-        behat_dataroot = self.get('dataroot') + '_behat'
-        self.updateConfig('behat_dataroot', behat_dataroot)
+        self.updateConfig('behat_dataroot', self.container.behat_dataroot.as_posix())
 
         # Set Behat DB prefix
         currentPrefix = self.get('behat_prefix')
@@ -338,11 +365,7 @@ class Moodle(object):
                 self.removeConfig('behat_switchcompletely')
                 self.removeConfig('behat_wwwroot')
         else:
-            # Defining wwwroot.
-            wwwroot = '%s://%s/' % (C.get('scheme'), C.get('behat.host'))
-            if C.get('path') != '' and C.get('path') != None:
-                wwwroot = wwwroot + C.get('path') + '/'
-            wwwroot = wwwroot + self.identifier
+            wwwroot = self.container.behat_wwwroot
             currentWwwroot = self.get('behat_wwwroot')
             if not currentWwwroot or force:
                 self.updateConfig('behat_wwwroot', wwwroot)
@@ -558,13 +581,12 @@ class Moodle(object):
         config = os.path.join(self.path, 'config.php')
         if os.path.isfile(config):
             self.installed = True
-            prog = re.compile(
-                r'^\s*\$CFG->([a-z_]+)\s*=\s*((?P<brackets>[\'"])?(.+)(?P=brackets)|([0-9.]+)|(true|false|null))\s*;$', re.I
-            )
+
             try:
                 f = open(config, 'r')
                 for line in f:
-                    match = prog.search(line)
+
+                    match = RE_CFG_PARSE.search(line)
                     if match == None:
                         continue
 
@@ -600,9 +622,7 @@ class Moodle(object):
 
     def php(self, args=[], **kwargs):
         """Executes a PHP command."""
-
-        cmd = [C.get('php'), *args]
-        return self.exec(cmd, **kwargs)
+        return self.container.exec(['php', *args], **kwargs)
 
     def purge(self, manual=False):
         """Purge the cache of an instance"""
@@ -614,10 +634,10 @@ class Moodle(object):
         try:
             dataroot = self.get('dataroot', False)
             if manual and dataroot != False:
+                dataroot = Path(self.get('dataroot'))
                 logging.debug('Removing directories [dataroot]/cache and [dataroot]/localcache')
-                shutil.rmtree(os.path.join(dataroot, 'cache'), True)
-                shutil.rmtree(os.path.join(dataroot, 'localcache'), True)
-
+                self.container.rmtree(dataroot / 'cache')
+                self.container.rmtree(dataroot / 'localcache')
             self.cli('admin/cli/purge_caches.php', stderr=None, stdout=None)
 
         except Exception:
@@ -706,14 +726,14 @@ class Moodle(object):
 
     def runScript(self, scriptname, arguments=None, **kwargs):
         """Runs a script on the instance"""
-        args = shlex.split(arguments) if type(arguments) is str else arguments
-        with Scripts.prepare_script_in_path(scriptname, self.get('path')) as cli:
+        args = (shlex.split(arguments) if type(arguments) is str else arguments) or []
+        with Scripts.prepare_script_in_path(scriptname, self.get('path'), self.container) as cli:
             # In theory we should not be checking the type of scripts here, but as we
             # want to be able to invoke them within a container, it's better this way.
             if cli.endswith('.php'):
                 return self.cli(cli, args, **kwargs)
             elif cli.endswith('.sh'):
-                return self.exec(cli, args, **kwargs)
+                return self.exec([cli, *args], **kwargs)
             else:
                 raise Exception("Unsupport type of scripts.")
 
@@ -761,11 +781,11 @@ class Moodle(object):
             raise Exception('The instance is not installed')
 
         # Delete the content in moodledata
-        dataroot = self.get('dataroot')
-        if os.path.isdir(dataroot):
+        dataroot = Path(self.get('dataroot'))
+        if dataroot and self.container.isdir(dataroot):
             logging.debug('Deleting dataroot content (%s)' % (dataroot))
-            shutil.rmtree(dataroot)
-            mkdir(dataroot, 0o777)
+            self.container.rmtree(dataroot)
+            self.container.mkdir(dataroot, 0o777)
 
         # Drop the database
         dbname = self.get('dbname')
