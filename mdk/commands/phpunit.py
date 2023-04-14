@@ -26,7 +26,7 @@ import os
 import gzip
 import urllib.request, urllib.parse, urllib.error
 from ..command import Command
-from ..tools import process, question
+from ..tools import question
 from ..phpunit import PHPUnit
 
 
