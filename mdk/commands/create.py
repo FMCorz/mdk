@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -24,10 +23,12 @@ http://github.com/FMCorz/mdk
 
 import re
 import logging
+from pathlib import Path
+import shutil
 
 from ..db import DB
 from ..command import Command
-from ..tools import yesOrNo
+from ..tools import yesOrNo, process
 from ..exceptions import CreateException, InstallException
 
 
@@ -43,8 +44,18 @@ class CreateCommand(Command):
                 {
                     'action': 'store_true',
                     'dest': 'install',
-                    'help': 'launch the installation script after creating the instance'
-                }
+                    'help': 'launch the installation script after creating the instance',
+                },
+            ),
+            (
+                ['-m', '--mode'],
+                {
+                    'action': 'store',
+                    'choices': ['local', 'docker'],
+                    'default': 'local',
+                    'help': 'mode of management of instance',
+                    'metavar': 'mode',
+                },
             ),
             (
                 ['-e', '--engine'],
@@ -53,15 +64,15 @@ class CreateCommand(Command):
                     'choices': ['mariadb', 'mysqli', 'pgsql', 'sqlsrv'],
                     'default': self.C.get('defaultEngine'),
                     'help': 'database engine to install the instance on, use with --install',
-                    'metavar': 'engine'
-                }
+                    'metavar': 'engine',
+                },
             ),
             (
                 ['-t', '--integration'],
                 {
                     'action': 'store_true',
-                    'help': 'create an instance from integration'
-                }
+                    'help': 'create an instance from integration',
+                },
             ),
             (
                 ['-r', '--run'],
@@ -69,18 +80,19 @@ class CreateCommand(Command):
                     'action': 'store',
                     'help': 'scripts to run after installation',
                     'metavar': 'run',
-                    'nargs': '*'
-                }
+                    'nargs': '*',
+                },
             ),
             (
                 ['-n', '--identifier'],
                 {
                     'action': 'store',
                     'default': None,
-                    'help': 'use this identifier instead of generating one. The flag --suffix will be used. ' +
+                    'help':
+                        'use this identifier instead of generating one. The flag --suffix will be used. '
                         'Do not use when creating multiple versions at once',
                     'metavar': 'name',
-                }
+                },
             ),
             (
                 ['-s', '--suffix'],
@@ -89,8 +101,8 @@ class CreateCommand(Command):
                     'default': [None],
                     'help': 'suffixes for the instance name',
                     'metavar': 'suffix',
-                    'nargs': '*'
-                }
+                    'nargs': '*',
+                },
             ),
             (
                 ['-v', '--version'],
@@ -99,8 +111,8 @@ class CreateCommand(Command):
                     'default': ['master'],
                     'help': 'version of Moodle',
                     'metavar': 'version',
-                    'nargs': '*'
-                }
+                    'nargs': '*',
+                },
             ),
         ]
 
@@ -110,6 +122,7 @@ class CreateCommand(Command):
         versions = args.version
         suffixes = args.suffix
         install = args.install
+        mode = args.mode
 
         # Throw an error when --engine is used without --install. The code is currently commented out
         # because as --engine has a default value, it will always be set, and so it becomes impossible
@@ -117,7 +130,10 @@ class CreateCommand(Command):
         # the default value will cause --help not to output the default as it should... Let's put more
         # thoughts into this and perhaps use argument groups.
         # if engine and not install:
-            # self.argumentError('--engine can only be used with --install.')
+        # self.argumentError('--engine can only be used with --install.')
+
+        if mode == 'docker' and install:
+            self.argumentError('--mode docker cannot be used with --install.')
 
         for version in versions:
             for suffix in suffixes:
@@ -128,6 +144,7 @@ class CreateCommand(Command):
                     'integration': args.integration,
                     'identifier': args.identifier,
                     'install': install,
+                    'mode': mode,
                     'run': args.run
                 }
                 self.do(arguments)
@@ -141,6 +158,7 @@ class CreateCommand(Command):
         # TODO Remove these ugly lines, but I'm lazy to rewrite the variables in this method...
         class Bunch:
             __init__ = lambda self, **kw: setattr(self, '__dict__', kw)
+
         args = Bunch(**args)
 
         engine = args.engine
@@ -164,11 +182,7 @@ class CreateCommand(Command):
 
         # Create the instance
         logging.info('Creating instance %s...' % name)
-        kwargs = {
-            'name': name,
-            'version': version,
-            'integration': args.integration
-        }
+        kwargs = {'name': name, 'version': version, 'integration': args.integration}
         try:
             M = self.Wp.create(**kwargs)
         except CreateException as e:
@@ -178,8 +192,12 @@ class CreateCommand(Command):
             logging.exception('Error creating %s:\n  %s' % (name, e))
             return False
 
+        # Docker mode.
+        if args.mode == 'docker':
+            shutil.copy('/home/fmc/code/clones/moodle-docker/config.docker-template.php', Path(M.get('path')) / 'config.php')
+
         # Run the install script
-        if args.install:
+        elif args.mode == 'local' and args.install:
 
             # Checking database
             dbname = re.sub(r'[^a-zA-Z0-9]', '', name).lower()

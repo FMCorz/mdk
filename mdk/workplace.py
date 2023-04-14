@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -25,9 +24,11 @@ http://github.com/FMCorz/mdk
 import os
 import shutil
 import logging
+import json
 from .tools import mkdir, process, stableBranch
 from .exceptions import CreateException
 from .config import Conf
+from .docker import DockerFacade, MoodleDockerKnowAbout
 from . import git
 from . import moodle
 
@@ -35,25 +36,18 @@ C = Conf()
 
 
 class Workplace(object):
-
     """The name of the directory that contains the PHP files"""
     wwwDir = None
-
     """The name of the directory that contains Moodle data"""
     dataDir = None
-
     """The name of the directory that contains extra files"""
     extraDir = None
-
     """The name of the directory that makes extraDir web accessible, see getMdkWebDir"""
     mdkDir = None
-
     """The path to the storage directory"""
     path = None
-
     """The path to MDK cache"""
     cache = None
-
     """The path to the web accessible directory"""
     www = None
 
@@ -151,8 +145,10 @@ class Workplace(object):
 
         # Clone the instances
         logging.info('Cloning repository...')
-        process(f'{C.get("git")} clone --branch {branch} --single-branch '
-                f'{"--shared" if cloneAsShared else ""} {repository} {wwwDir}')
+        process(
+            f'{C.get("git")} clone --branch {branch} --single-branch '
+            f'{"--shared" if cloneAsShared else ""} {repository} {wwwDir}'
+        )
 
         # Symbolic link
         if os.path.islink(linkDir):
@@ -262,16 +258,57 @@ class Workplace(object):
 
     def get(self, name):
         """Returns an instance defined by its name, or by path"""
+
         # Extracts name from path
         if os.sep in name:
             path = os.path.abspath(os.path.realpath(name))
             if not path.startswith(self.path):
                 raise Exception('Could not find Moodle instance at %s' % name)
-            (head, name) = os.path.split(path)
+            (_, name) = os.path.split(path)
 
-        if not self.isMoodle(name):
-            raise Exception('Could not find Moodle instance %s' % name)
-        return moodle.Moodle(os.path.join(self.path, name, self.wwwDir), identifier=name)
+        # Attempt to identify a Docker variant.
+        # label = None
+        # if not self.isMoodle(name):
+        #     if '.' in name:
+        #         (altname, label) = name.rsplit('.', 2)
+        #         if self.isMoodle(altname):
+        #             name = altname
+        #             label = label or None
+        #         else:
+        #             raise Exception('Could not find Moodle instance %s' % name)
+        #     else:
+        #         raise Exception('Could not find Moodle instance %s' % name)
+
+        path = os.path.join(self.path, name, self.wwwDir)
+        kwargs = {'path': path, 'identifier': name}
+
+        # if self.isMoodleInDocker(name):
+        #     variant = None
+        #     filepath = self.getMetadataFile(name, 'docker.json')
+        #     with open(filepath, 'r') as f:
+        #         data = json.load(f)
+        #         variant = next((v for v in data['variants'] if v.get('label') == label), None)
+
+        #     if not variant:
+        #         if label:
+        #             raise Exception("The default Docker variant was not found in %s" % (name))
+        #         raise Exception("The Docker variant %s was not found in %s" % (label, name))
+
+        #     md = self.getMoodleDockerKnowAbout()
+        #     df = DockerFacade(
+        #         dockerbin=f'{md.path}/bin/moodle-docker-compose',
+        #         cwd=md.path,
+        #         env={
+        #             'COMPOSE_PROJECT_NAME': variant['projectname'],
+        #             'MOODLE_DOCKER_WWWROOT': kwargs['path'],
+        #             **{k: v
+        #                for k, v in variant['env'].items() if v is not None}
+        #         }
+        #     )
+
+        #     return moodle.MoodleInDocker(dockerfacade=df, **kwargs)
+
+        return moodle.Moodle(**kwargs)
 
     def getCachedRemote(self, integration=False):
         """Return the path to the cached remote"""
@@ -299,6 +336,24 @@ class Workplace(object):
             mkdir(mdkExtra, 0o777)
 
         return mdkExtra
+
+    def getMetadataFile(self, name, filename):
+        """Return the path to the a metadata file.
+        """
+        path = self.getExtraDir(name)
+        return os.path.join(path, filename)
+
+    _moodledocker = None
+
+    def getMoodleDockerKnowAbout(self):
+        if not self._moodledocker:
+            self._moodledocker = MoodleDockerKnowAbout(
+                path=os.path.join(self.cache, 'moodle-docker.git'),
+                giturl=C.get('moodle-docker.git'),
+                gitref=C.get('moodle-docker.gitref'),
+                gitbin=C.get('git'),
+            )
+        return self._moodledocker
 
     def getPath(self, name, mode=None):
         """Returns the path of an instance base on its name"""
@@ -343,6 +398,11 @@ class Workplace(object):
 
         return True
 
+    def isMoodleInDocker(self, name):
+        """Checks whether a Moodle in Docker"""
+        wwwDir = os.path.join(self.path, name, self.wwwDir)
+        return moodle.Moodle.isInstanceInDocker(wwwDir)
+
     def list(self, integration=None, stable=None):
         """Return the list of Moodle instances"""
         dirs = os.listdir(self.path)
@@ -361,11 +421,24 @@ class Workplace(object):
     def resolve(self, name=None, path=None):
         """Try to find a Moodle instance based on its name, a path or the working directory"""
 
+        name, variant = self.resolveIdentifierAndVariant(name, path)
+        if not name:
+            return False
+
+        return self.get(name) if not variant else self.get(f'{name}.{variant}')
+
+    def resolveIdentifierAndVariant(self, name=None, path=None):
+        """Try to find a Moodle instance based on its name, a path or the working directory"""
+
         # A name was passed, is that a valid instance?
         if name != None:
             if self.isMoodle(name):
-                return self.get(name)
-            return None
+                return (name, None)
+            if '.' in name:
+                (identifier, variant) = name.rsplit('.', 2)
+                if self.isMoodle(identifier):
+                    return (name, variant)
+            return (None, None)
 
         # If a path was not passed, let's use the current working directory.
         if path == None:
@@ -384,9 +457,9 @@ class Workplace(object):
                 (head, tail) = os.path.split(head)
 
             if self.isMoodle(tail):
-                return self.get(tail)
+                return (tail, None)
 
-        return False
+        return (None, None)
 
     def resolveMultiple(self, names=[]):
         """Return multiple instances"""

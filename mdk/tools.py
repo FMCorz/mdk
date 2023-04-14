@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -36,6 +35,7 @@ import tempfile
 from .config import Conf
 
 C = Conf()
+
 
 def yesOrNo(q):
     while True:
@@ -141,6 +141,7 @@ def getText(suffix='.md', initialText=None):
             else:
                 return text
 
+
 def md5file(filepath):
     """Return the md5 sum of a file
     This is terribly memory inefficient!"""
@@ -160,10 +161,7 @@ def parseBranch(branch):
     if not result:
         return False
 
-    parsed = {
-        'issue': result.group(pattern.groupindex['issue']),
-        'version': result.group(pattern.groupindex['version'])
-    }
+    parsed = {'issue': result.group(pattern.groupindex['issue']), 'version': result.group(pattern.groupindex['version'])}
     try:
         parsed['suffix'] = result.group(pattern.groupindex['suffix'])
     except:
@@ -171,12 +169,18 @@ def parseBranch(branch):
     return parsed
 
 
-def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
+def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, addtoenv=None):
     if type(cmd) != list:
         cmd = shlex.split(str(cmd))
     logging.debug(' '.join(cmd))
+
+    env = None
+    if addtoenv is not None:
+        env = os.environ.copy()
+        env.update(addtoenv)
+
     try:
-        proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr, encoding='utf-8')
+        proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr, encoding='utf-8', env=env)
         (out, err) = proc.communicate()
     except KeyboardInterrupt as e:
         proc.kill()

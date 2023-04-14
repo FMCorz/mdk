@@ -40,6 +40,14 @@ from .scripts import Scripts
 
 C = Conf()
 
+MODE_LOCAL = 'local'  # Is managed locally.
+MODE_DOCKER = 'docker'  # Is managed using moodle-docker.
+
+RE_CFG_IS_MOODLE_DOCKER = re.compile(r'^\s*\$CFG->([a-z_]+)\s*=\s*getenv\(\'MOODLE_DOCKER_')
+RE_CFG_PARSE = re.compile(
+    r'^\s*\$CFG->([a-z_]+)\s*=\s*((?P<brackets>[\'"])?(.+)(?P=brackets)|([0-9.]+)|(true|false|null))\s*;$', re.I
+)
+
 
 class Moodle(object):
 
@@ -52,9 +60,11 @@ class Moodle(object):
     _dbo = None
     _git = None
     _loaded = False
+    _mode = MODE_LOCAL
 
     _cos_hasstash = False
     _cos_oldbranch = None
+    _process_executor = None
 
     _reservedKeywords = [
         'branch',
@@ -68,7 +78,7 @@ class Moodle(object):
         'version',
     ]
 
-    def __init__(self, path, identifier=None):
+    def __init__(self, *, path, identifier=None):
         self.path = path
         self.identifier = identifier
         self.version = {}
@@ -489,6 +499,18 @@ class Moodle(object):
 
         return True
 
+    @staticmethod
+    def isInstanceInDocker(path):
+        config = os.path.join(path, 'config.php')
+        try:
+            with open(config, 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    if RE_CFG_IS_MOODLE_DOCKER.search(line):
+                        return True
+        except:
+            return False
+
     def isIntegration(self):
         """Returns whether an instance is an integration one or not"""
         r = C.get('upstreamRemote') or 'upstream'
@@ -498,6 +520,9 @@ class Moodle(object):
         if remote != None and remote.endswith('integration.git'):
             return True
         return False
+
+    def isModeDocker(self):
+        return self._mode == MODE_DOCKER
 
     def isStable(self):
         """Assume an instance is stable if not integration"""
@@ -561,13 +586,16 @@ class Moodle(object):
         config = os.path.join(self.path, 'config.php')
         if os.path.isfile(config):
             self.installed = True
-            prog = re.compile(
-                r'^\s*\$CFG->([a-z_]+)\s*=\s*((?P<brackets>[\'"])?(.+)(?P=brackets)|([0-9.]+)|(true|false|null))\s*;$', re.I
-            )
+
             try:
                 f = open(config, 'r')
                 for line in f:
-                    match = prog.search(line)
+
+                    # Loose detection of Docker mode.
+                    if not self._mode == MODE_DOCKER and RE_CFG_IS_MOODLE_DOCKER.search(line) is not None:
+                        self._mode = MODE_DOCKER
+
+                    match = RE_CFG_PARSE.search(line)
                     if match == None:
                         continue
 
@@ -603,7 +631,6 @@ class Moodle(object):
 
     def php(self, args=[], **kwargs):
         """Executes a PHP command."""
-
         cmd = [C.get('php'), *args]
         return self.exec(cmd, **kwargs)
 
@@ -876,3 +903,59 @@ class Moodle(object):
             # so it's better to halt the process.
             logging.error('The plugin uninstall cli code has changed and I need to be updated.')
             raise e
+
+
+class MoodleInDocker(Moodle):
+
+    def __init__(self, *, dockerfacade, **kwargs):
+        super().__init__(**kwargs)
+        self.dockerfacade = dockerfacade
+
+    def exec(self, cmd, **kwargs):
+        return self.dockerfacade.command(['exec', '-it', '-u', 'www-data', 'webserver', *cmd], **kwargs)
+
+    def install(self, fullname=None, **kwargs):
+        """Launch the install script of an Instance"""
+
+        # TODO Add docker variant to fullname.
+        if fullname == None:
+            fullname = self.identifier.replace('-', ' ').replace('_', ' ').title()
+
+        # TODO Add docker variant to shortname?
+        logging.info('Installing %s...' % self.identifier)
+        args = [
+            '--agree-license',
+            f'--fullname={fullname}',
+            f'--shortname={self.identifier}',
+            f'--adminuser={C.get("login")}',
+            f'--adminpass={C.get("passwd")}',
+            f'--adminemail=admin@example.com',
+        ]
+        cli = 'admin/cli/install_database.php'
+        result = self.cli(cli, args, stdout=None, stderr=None)
+        if result[0] != 0:
+            raise InstallException('An error occurred while running the install.')
+
+        # Add forced $CFG to the config.php if some are globally defined.
+        forceCfg = C.get('forceCfg')
+        if isinstance(forceCfg, dict):
+            for cfgKey, cfgValue in forceCfg.items():
+                try:
+                    logging.info('Setting up forced $CFG->%s to \'%s\' in config.php', cfgKey, cfgValue)
+                    self.addConfig(cfgKey, cfgValue)
+                except Exception:
+                    logging.warning('Could not append $CFG->%s to config.php', cfgKey)
+
+        self.reload()
+
+    def php(self, args=[], **kwargs):
+
+        # If the command script is absolute but in path, make it relative.
+        if args[0] and args[0].startswith(self.path):
+            args[0] = args[0][len(self.path):].lstrip('/')
+
+        return self.exec(['php', *args], **kwargs)
+
+    def uninstall(self):
+        """Uninstall the instance"""
+        raise Exception('Uninstalling docker instances is not supported, use teardown instead.')
