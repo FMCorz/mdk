@@ -23,8 +23,9 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
+
 from .config import Conf
-from .tools import mkdir, process
+from .tools import mkdir
 
 C = Conf()
 
@@ -136,7 +137,7 @@ class PHPUnit(object):
     def run(self, **kwargs):
         """Execute the command"""
         cmd = self.getCommand(**kwargs)
-        return process(cmd, self.M.get('path'), None, None)
+        return self.M.exec(cmd, stdout=None, stderr=None)
 
     def usesComposer(self):
         """Return whether or not the instance uses composer, the latter is considered installed"""

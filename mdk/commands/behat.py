@@ -254,8 +254,6 @@ class BehatCommand(Command):
                     filepath = os.path.join(M.get('path'), filepath)
                 cmd.append(filepath)
 
-            cmd = ' '.join(cmd)
-
             phpCommand = '%s -S localhost:8000' % (self.C.get('php'))
             seleniumCommand = None
             if seleniumPath:
@@ -312,7 +310,7 @@ class BehatCommand(Command):
                 try:
                     if args.faildump:
                         logging.info('More output can be found at:\n %s\n %s', outputDir, outpurUrl)
-                    process(cmd, M.path, None, None)
+                    M.exec(cmd, stdout=None, stderr=None)
                 except KeyboardInterrupt:
                     pass
 
@@ -333,7 +331,7 @@ class BehatCommand(Command):
                     logging.info('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
                 if seleniumCommand:
                     logging.info('Launch Selenium (optional):\n %s' % (seleniumCommand))
-                logging.info('Launch Behat:\n %s' % (cmd))
+                logging.info('Launch Behat:\n %s' % (' '.join(cmd)))
 
         except Exception as e:
             raise e

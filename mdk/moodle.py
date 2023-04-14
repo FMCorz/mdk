@@ -25,6 +25,7 @@ import os
 import re
 import logging
 import shutil
+import shlex
 import subprocess
 import json
 from tempfile import gettempdir
@@ -179,18 +180,21 @@ class Moodle(object):
                     raise Exception('Error while popping the stash. Probably got conflicts.')
                 self._cos_hasstash = False
 
-    def cli(self, cli, args=[], **kwargs):
+    def cli(self, cli, args=None, **kwargs):
         """Executes a PHP CLI script relative to the Moodle directory."""
 
-        localcli = os.path.join(self.get('path'), cli.lstrip('/'))
-        if not os.path.isfile(localcli):
+        path = self.get('path')
+        if not cli.startswith(path):
+            cli = os.path.join(path, cli.lstrip('/'))
+        if not os.path.isfile(cli):
             raise Exception('Could not find script to call')
 
+        args = args or []
         if type(args) is not list:
             raise Exception('List expected for command arguments')
 
-        cmd = [C.get('php'), localcli, *args]
-        return self.exec(cmd, **kwargs)
+        cmd = [cli, *args]
+        return self.php(cmd, **kwargs)
 
     def currentBranch(self):
         """Returns the current branch on the git repository"""
@@ -299,7 +303,7 @@ class Moodle(object):
             raise Exception('Behat is only available from Moodle 2.5')
 
         # Force switch completely for PHP < 5.4
-        (none, phpVersion, none) = process('%s -r "echo version_compare(phpversion(), \'5.4\');"' % (C.get('php')))
+        (none, phpVersion, none) = self.php(['-r', 'echo version_compare(phpversion(), \'5.4\');'])
         if int(phpVersion) <= 0:
             switchcompletely = True
 
@@ -594,6 +598,12 @@ class Moodle(object):
         self._loaded = True
         return True
 
+    def php(self, args=[], **kwargs):
+        """Executes a PHP command."""
+
+        cmd = [C.get('php'), *args]
+        return self.exec(cmd, **kwargs)
+
     def purge(self, manual=False):
         """Purge the cache of an instance"""
         if not self.isInstalled():
@@ -696,7 +706,16 @@ class Moodle(object):
 
     def runScript(self, scriptname, arguments=None, **kwargs):
         """Runs a script on the instance"""
-        return Scripts.run(scriptname, self.get('path'), arguments=arguments, cmdkwargs=kwargs)
+        args = shlex.split(arguments) if type(arguments) is str else arguments
+        with Scripts.prepare_script_in_path(scriptname, self.get('path')) as cli:
+            # In theory we should not be checking the type of scripts here, but as we
+            # want to be able to invoke them within a container, it's better this way.
+            if cli.endswith('.php'):
+                return self.cli(cli, args, **kwargs)
+            elif cli.endswith('.sh'):
+                return self.exec(cli, args, **kwargs)
+            else:
+                raise Exception("Unsupport type of scripts.")
 
     def update(self, remote=None):
         """Update the instance from the remote"""

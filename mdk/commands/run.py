@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -36,7 +35,7 @@ class RunCommand(Command):
                 'action': 'store_true',
                 'dest': 'list',
                 'help': 'list the available scripts'
-            }
+            },
         ),
         (
             ['-a', '--all'],
@@ -44,7 +43,7 @@ class RunCommand(Command):
                 'action': 'store_true',
                 'dest': 'all',
                 'help': 'runs the script on each instance'
-            }
+            },
         ),
         (
             ['-i', '--integration'],
@@ -52,7 +51,7 @@ class RunCommand(Command):
                 'action': 'store_true',
                 'dest': 'integration',
                 'help': 'runs the script on integration instances'
-            }
+            },
         ),
         (
             ['-s', '--stable'],
@@ -60,30 +59,33 @@ class RunCommand(Command):
                 'action': 'store_true',
                 'dest': 'stable',
                 'help': 'runs the script on stable instances'
-            }
+            },
         ),
         (
             ['-g', '--arguments'],
             {
-                'help': 'a list of arguments to pass to the script. Use --arguments="--list of --arguments" if you need to use dashes. Otherwise add -- after the argument list.',
+                'help':
+                    'a list of arguments to pass to the script. Use --arguments="--list of --arguments" if '
+                    'you need to use dashes. Otherwise add -- after the argument list.',
                 'metavar': 'arguments',
                 'nargs': '+'
-            }
+            },
         ),
         (
             ['script'],
             {
                 'nargs': '?',
                 'help': 'the name of the script to run'
-            }
+            },
         ),
         (
-            ['names'], {
+            ['names'],
+            {
                 'default': None,
                 'help': 'name of the instances',
                 'nargs': '*'
-            }
-        )
+            },
+        ),
     ]
     _description = 'Run a script on a Moodle instance'
 
