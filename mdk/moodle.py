@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -65,7 +64,7 @@ class Moodle(object):
         'path',
         'release',
         'stablebranch',
-        'version'
+        'version',
     ]
 
     def __init__(self, path, identifier=None):
@@ -180,15 +179,18 @@ class Moodle(object):
                     raise Exception('Error while popping the stash. Probably got conflicts.')
                 self._cos_hasstash = False
 
-    def cli(self, cli, args='', **kwargs):
-        """Executes a command line tool script"""
-        cli = os.path.join(self.get('path'), cli.lstrip('/'))
-        if not os.path.isfile(cli):
+    def cli(self, cli, args=[], **kwargs):
+        """Executes a PHP CLI script relative to the Moodle directory."""
+
+        localcli = os.path.join(self.get('path'), cli.lstrip('/'))
+        if not os.path.isfile(localcli):
             raise Exception('Could not find script to call')
-        if type(args) == 'list':
-            args = ' '.join(args)
-        cmd = '%s %s %s' % (C.get('php'), cli, args)
-        return process(cmd, cwd=self.get('path'), **kwargs)
+
+        if type(args) is not list:
+            raise Exception('List expected for command arguments')
+
+        cmd = [C.get('php'), localcli, *args]
+        return self.exec(cmd, **kwargs)
 
     def currentBranch(self):
         """Returns the current branch on the git repository"""
@@ -206,15 +208,16 @@ class Moodle(object):
                     pass
         return self._dbo
 
+    def exec(self, cmd, **kwargs):
+        """Executes a command"""
+        return process(cmd, cwd=self.get('path'), **kwargs)
+
     def generateBranchName(self, issue, suffix='', version=''):
         """Generates a branch name"""
         mdl = re.sub(r'(MDL|mdl)(-|_)?', '', issue)
         if version == '':
             version = self.get('branch')
-        args = {
-            'issue': mdl,
-            'version': version
-        }
+        args = {'issue': mdl, 'version': version}
         branch = C.get('wording.branchFormat') % args
         if suffix != None and suffix != '':
             branch += C.get('wording.branchSuffixSeparator') + suffix
@@ -347,7 +350,7 @@ class Moodle(object):
 
         # Force dropping the tables if there are any.
         if force:
-            result = self.cli('admin/tool/behat/cli/util.php', args='--drop', stdout=None, stderr=None)
+            result = self.cli('admin/tool/behat/cli/util.php', args=['--drop'], stdout=None, stderr=None)
             if result[0] != 0:
                 raise Exception('Error while initialising Behat. Please try manually.')
 
@@ -362,11 +365,7 @@ class Moodle(object):
     def info(self):
         """Returns a dictionary of information about this instance"""
         self._load()
-        info = {
-            'path': self.path,
-            'installed': self.isInstalled(),
-            'identifier': self.identifier
-        }
+        info = {'path': self.path, 'installed': self.isInstalled(), 'identifier': self.identifier}
         for (k, v) in list(self.config.items()):
             info[k] = v
         for (k, v) in list(self.version.items()):
@@ -395,7 +394,7 @@ class Moodle(object):
             fullname = self.identifier.replace('-', ' ').replace('_', ' ').title()
             fullname = fullname + ' ' + C.get('wording.%s' % engine)
 
-        dboptions =  C.get('db.%s' % engine)
+        dboptions = C.get('db.%s' % engine)
         if engine in ('mysqli', 'mariadb') and self.branch_compare(31):
             dboptions['charset'] = 'utf8mb4'
 
@@ -412,12 +411,31 @@ class Moodle(object):
         db.selectdb(dbname)
 
         logging.info('Installing %s...' % self.identifier)
+        args = [
+            '--wwwroot=%s' % wwwroot,
+            '--dataroot=%s' % dataDir,
+            '--dbtype=%s' % engine,
+            '--dbname=%s' % dbname,
+            '--dbuser=%s' % C.get('db.%s.user' % engine),
+            '--dbpass=%s' % C.get('db.%s.passwd' % engine),
+            '--dbhost=%s' % C.get('db.%s.host' % engine),
+            '--dbport=%s' % C.get('db.%s.port' % engine),
+            '--prefix=%s' % C.get('db.tablePrefix'),
+            '--fullname=%s' % fullname,
+            '--shortname=%s' % self.identifier,
+            '--adminuser=%s' % C.get('login'),
+            '--adminpass=%s' % C.get('passwd'),
+            '--allow-unstable',
+            '--agree-license',
+            '--non-interactive',
+        ]
         cli = 'admin/cli/install.php'
-        params = (wwwroot, dataDir, engine, dbname, C.get('db.%s.user' % engine), C.get('db.%s.passwd' % engine), C.get('db.%s.host' % engine), C.get('db.%s.port' % engine), C.get('db.tablePrefix'), fullname, self.identifier, C.get('login'), C.get('passwd'))
-        args = '--wwwroot="%s" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --dbport="%s" --prefix="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
         result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
-            raise InstallException('Error while running the install, please manually fix the problem.\n- Command was: %s %s %s' % (C.get('php'), cli, args))
+            raise InstallException(
+                'Error while running the install, please manually fix the problem.\n'
+                '- Command was: %s %s' % (cli, ' '.join(args))
+            )
 
         configFile = os.path.join(self.path, 'config.php')
         os.chmod(configFile, 0o666)
@@ -536,7 +554,9 @@ class Moodle(object):
         config = os.path.join(self.path, 'config.php')
         if os.path.isfile(config):
             self.installed = True
-            prog = re.compile(r'^\s*\$CFG->([a-z_]+)\s*=\s*((?P<brackets>[\'"])?(.+)(?P=brackets)|([0-9.]+)|(true|false|null))\s*;$', re.I)
+            prog = re.compile(
+                r'^\s*\$CFG->([a-z_]+)\s*=\s*((?P<brackets>[\'"])?(.+)(?P=brackets)|([0-9.]+)|(true|false|null))\s*;$', re.I
+            )
             try:
                 f = open(config, 'r')
                 for line in f:
@@ -783,7 +803,8 @@ class Moodle(object):
         logging.debug('Head commit resolved to %s' % (headcommit))
 
         J = Jira()
-        diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%', stablebranch).replace('%headcommit%', headcommit)
+        diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%',
+                                                                      stablebranch).replace('%headcommit%', headcommit)
 
         fieldrepositoryurl = C.get('tracker.fieldnames.repositoryurl')
         fieldbranch = C.get('tracker.fieldnames.%s.branch' % version)
@@ -799,8 +820,10 @@ class Moodle(object):
                 errormsg += ' Tracker fields belonging to legacy Moodle versions are removed from the tracker.'
             logging.error(errormsg)
         else:
-            logging.info('Setting tracker fields: \n  %s: %s \n  %s: %s \n  %s: %s' %
-                (fieldrepositoryurl, repositoryurl, fieldbranch, branch, fielddiffurl, diffurl))
+            logging.info(
+                'Setting tracker fields: \n  %s: %s \n  %s: %s \n  %s: %s' %
+                (fieldrepositoryurl, repositoryurl, fieldbranch, branch, fielddiffurl, diffurl)
+            )
             J.setCustomFields(issue, {fieldrepositoryurl: repositoryurl, fieldbranch: branch, fielddiffurl: diffurl})
 
     def upgrade(self, nocheckout=False):
@@ -817,7 +840,7 @@ class Moodle(object):
             self.checkout_stable(True)
 
         cli = '/admin/cli/upgrade.php'
-        args = '--non-interactive --allow-unstable'
+        args = ['--non-interactive', '--allow-unstable']
         result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
             raise Exception('Error while running the upgrade.')
@@ -833,7 +856,7 @@ class Moodle(object):
             raise Exception('Uninstalling plugins is only available from Moodle 3.7.')
 
         cli = '/admin/cli/uninstall_plugins.php'
-        args = '--plugins=' + name + ' --run'
+        args = ['--plugins="{}"'.format(name), '--run']
 
         result = self.cli(cli, args, stdout=subprocess.PIPE, stderr=None)
         try:

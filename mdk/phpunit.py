@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -106,22 +105,24 @@ class PHPUnit(object):
         exception = None
         try:
             if force:
-                result = self.M.cli('/admin/tool/phpunit/cli/util.php', args='--drop', stdout=None, stderr=None)
+                result = self.M.cli('/admin/tool/phpunit/cli/util.php', args=['--drop'], stdout=None, stderr=None)
             result = self.M.cli('/admin/tool/phpunit/cli/init.php', stdout=None, stderr=None)
-        except Exception as exception:
+        except Exception as exc:
+            exception = exc
             pass
 
-        if exception != None or result[0] > 0:
-            if result[0] == 129:
+        resultcode = result[0] if result[0] is not None else -1
+        if exception != None or resultcode > 0:
+            if resultcode == 129:
                 raise Exception('PHPUnit is not installed on your system')
-            elif result[0] > 0:
+            elif resultcode > 0:
                 raise Exception('Something wrong with PHPUnit configuration')
             else:
                 raise exception
 
         if C.get('phpunit.buildcomponentconfigs'):
             try:
-                result = self.M.cli('/admin/tool/phpunit/cli/util.php', args='--buildcomponentconfigs', stdout=None, stderr=None)
+                result = self.M.cli('/admin/tool/phpunit/cli/util.php', args=['--buildcomponentconfigs'], stdout=None, stderr=None)
             except Exception as exception:
                 pass
 
