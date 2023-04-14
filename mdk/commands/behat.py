@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -41,28 +40,29 @@ class BehatCommand(Command):
             {
                 'action': 'store_true',
                 'help': 'run the tests'
-            }
+            },
         ),
         (
             ['-d', '--disable'],
             {
                 'action': 'store_true',
                 'help': 'disable Behat, runs the tests first if --run has been set. Ignored from 2.7.'
-            }
-        ),
-        (
+            },
+        ), (
             ['--force'],
             {
                 'action': 'store_true',
                 'help': 'force behat re-init and reset the variables in the config file.'
-            }
+            },
         ),
         (
             ['-f', '--feature'],
             {
                 'metavar': 'path',
-                'help': 'typically a path to a feature, or an argument understood by behat (see [features]: vendor/bin/behat --help). Automatically convert path to absolute path.'
-            }
+                'help':
+                    'typically a path to a feature, or an argument understood by behat (see [features]: '
+                    'vendor/bin/behat --help). Automatically convert path to absolute path.'
+            },
         ),
         (
             ['-n', '--testname'],
@@ -70,22 +70,24 @@ class BehatCommand(Command):
                 'dest': 'testname',
                 'metavar': 'name',
                 'help': 'only execute the feature elements which match part of the given name or regex'
-            }
+            },
         ),
         (
             ['-t', '--tags'],
             {
                 'metavar': 'tags',
                 'help': 'only execute the features or scenarios with tags matching tag filter expression'
-            }
+            },
         ),
         (
             ['-j', '--no-javascript'],
             {
                 'action': 'store_true',
                 'dest': 'nojavascript',
-                'help': 'do not start Selenium and ignore Javascript (short for --tags=~@javascript). Cannot be combined with --tags or --testname.'
-            }
+                'help':
+                    'do not start Selenium and ignore Javascript (short for --tags=~@javascript). '
+                    'Cannot be combined with --tags or --testname.'
+            },
         ),
         (
             ['-D', '--no-dump'],
@@ -93,7 +95,7 @@ class BehatCommand(Command):
                 'action': 'store_false',
                 'dest': 'faildump',
                 'help': 'use the standard command without fancy screenshots or output to a directory'
-            }
+            },
         ),
         (
             ['-s', '--switch-completely'],
@@ -101,7 +103,7 @@ class BehatCommand(Command):
                 'action': 'store_true',
                 'dest': 'switchcompletely',
                 'help': 'force the switch completely setting. This will be automatically enabled for PHP < 5.4. Ignored from 2.7.'
-            }
+            },
         ),
         (
             ['--selenium'],
@@ -110,7 +112,7 @@ class BehatCommand(Command):
                 'dest': 'selenium',
                 'help': 'path to the selenium standalone server to use',
                 'metavar': 'jarfile'
-            }
+            },
         ),
         (
             ['--selenium-download'],
@@ -118,7 +120,7 @@ class BehatCommand(Command):
                 'action': 'store_true',
                 'dest': 'seleniumforcedl',
                 'help': 'force the download of the latest Selenium to the cache'
-            }
+            },
         ),
         (
             ['--selenium-verbose'],
@@ -126,16 +128,15 @@ class BehatCommand(Command):
                 'action': 'store_true',
                 'dest': 'seleniumverbose',
                 'help': 'outputs the output from selenium in the same window'
-            }
-        ),
-        (
+            },
+        ), (
             ['name'],
             {
                 'default': None,
                 'help': 'name of the instance',
                 'metavar': 'name',
                 'nargs': '?'
-            }
+            },
         )
     ]
     _description = 'Initialise Behat'
@@ -181,7 +182,7 @@ class BehatCommand(Command):
                 f.close()
             M.cli('/' + cliFile, stdout=None, stderr=None)
             os.remove(cliPath)
-            M.cli('composer.phar', args='install --dev', stdout=None, stderr=None)
+            M.cli('composer.phar', args=['install', '--dev'], stdout=None, stderr=None)
 
         # Download selenium
         seleniumPath = os.path.expanduser(os.path.join(self.C.get('dirs.mdk'), 'selenium.jar'))
@@ -192,8 +193,10 @@ class BehatCommand(Command):
             seleniumStorageUrl = 'https://selenium-release.storage.googleapis.com/'
             url = urllib.request.urlopen(seleniumStorageUrl)
             content = url.read().decode('utf-8')
-            matches = sorted(re.findall(r'[a-z0-9._-]+/selenium-server-standalone-[0-9.]+\.jar', content, re.I),
-                             key=natural_sort_key)
+            matches = sorted(
+                re.findall(r'[a-z0-9._-]+/selenium-server-standalone-[0-9.]+\.jar', content, re.I),
+                key=natural_sort_key,
+            )
             if len(matches) > 0:
                 seleniumUrl = seleniumStorageUrl + matches[-1]
                 logging.info('Downloading Selenium from %s' % seleniumUrl)
@@ -344,5 +347,5 @@ class BehatCommand(Command):
 
     def disable(self, M):
         logging.info('Disabling Behat')
-        M.cli('admin/tool/behat/cli/util.php', '--disable')
+        M.cli('admin/tool/behat/cli/util.php', ['--disable'])
         M.removeConfig('behat_switchcompletely')
