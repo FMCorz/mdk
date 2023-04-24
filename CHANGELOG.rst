@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v2.0.8
+------
+
+- Update config for Moodle 4.3 development
+
 v2.0.7
 ------
 
