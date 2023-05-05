@@ -86,7 +86,7 @@ class PHPUnit(object):
             raise Exception('PHPUnit is only available from Moodle 2.3')
 
         # Set PHPUnit data root
-        if self.M.identifier != 'questup':
+        if not hasattr(self.M, '_dockerfacade'):
             phpunit_dataroot = self.M.get('dataroot') + '_phpu'
             self.M.updateConfig('phpunit_dataroot', phpunit_dataroot)
             if not os.path.isdir(phpunit_dataroot):

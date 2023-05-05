@@ -148,6 +148,7 @@ class mdk_randomapi_users_generator extends mdk_users_generator {
         }
 
         $usernames = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 't1', 't2', 't3', 'm1', 'm2', 'm3'];
+        $usernames = ['s22', 's23', 's24', 's25', 's26', 's27', 's28', 's29', 's30'];
         $users = array_map(function($user) use (&$usernames) {
             $username = array_shift($usernames);
             return (object) [

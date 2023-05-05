@@ -85,6 +85,10 @@ class Moodle(object):
         self.config = {}
         self._load()
 
+        if identifier in ('sm', 's39php72', 'quest42'):
+            from .docker import DockerFacade
+            self._dockerfacade = DockerFacade('docker', cwd=path, workdir=os.path.join('/var/www/html', identifier))
+
     def addConfig(self, name, value):
         """Add a parameter to the config file
         Will attempt to write them before the inclusion of lib/setup.php"""
@@ -224,6 +228,12 @@ class Moodle(object):
 
     def exec(self, cmd, **kwargs):
         """Executes a command"""
+        if getattr(self, '_dockerfacade', None):
+            if cmd[0] and cmd[0].startswith(self.path):
+                cmd[0] = cmd[0][len(self.path):].lstrip('/')
+                if cmd[0].endswith('.sh'):
+                    cmd = ['/bin/bash', cmd[0]] + cmd[1:]
+            return self._dockerfacade.exec(['-it', self.identifier, *cmd], **kwargs)
         return process(cmd, cwd=self.get('path'), **kwargs)
 
     def generateBranchName(self, issue, suffix='', version=''):
@@ -631,6 +641,12 @@ class Moodle(object):
 
     def php(self, args=[], **kwargs):
         """Executes a PHP command."""
+
+        if getattr(self, '_dockerfacade', None):
+            if args[0] and args[0].startswith(self.path):
+                args[0] = args[0][len(self.path):].lstrip('/')
+            return self.exec(['php', *args], **kwargs)
+
         cmd = [C.get('php'), *args]
         return self.exec(cmd, **kwargs)
 
@@ -736,14 +752,14 @@ class Moodle(object):
 
     def runScript(self, scriptname, arguments=None, **kwargs):
         """Runs a script on the instance"""
-        args = shlex.split(arguments) if type(arguments) is str else arguments
+        args = (shlex.split(arguments) if type(arguments) is str else arguments) or []
         with Scripts.prepare_script_in_path(scriptname, self.get('path')) as cli:
             # In theory we should not be checking the type of scripts here, but as we
             # want to be able to invoke them within a container, it's better this way.
             if cli.endswith('.php'):
                 return self.cli(cli, args, **kwargs)
             elif cli.endswith('.sh'):
-                return self.exec(cli, args, **kwargs)
+                return self.exec([cli, *args], **kwargs)
             else:
                 raise Exception("Unsupport type of scripts.")
 

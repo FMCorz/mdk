@@ -64,6 +64,29 @@
     }
   },
 
+  "docker": {
+    "network": "mdk",
+    "namePrefix": "mdk",
+    "portRange": [8080, 8999],
+    "services": {
+      "postgres": {
+        "nameFormat": "pg{version}"
+      },
+      "adminer": {
+        "run": true,
+        "ports": {
+          "80": "9100"
+        }
+      },
+      "mailhog": {
+        "run": true,
+        "ports": {
+          "8025": "8025"
+        }
+      }
+    }
+  },
+
   "moodle-docker": {
     "git": "https://github.com/moodlehq/moodle-docker",
     "gitref": "master",

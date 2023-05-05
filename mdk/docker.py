@@ -32,15 +32,21 @@ C = Conf()
 
 class DockerFacade():
 
-    def __init__(self, dockerbin=None, cwd=None, env=None):
+    def __init__(self, dockerbin=None, cwd=None, env=None, workdir=None):
         self.dockerbin = dockerbin or '/home/fmc/code/clones/moodle-docker/bin/moodle-docker-compose'
+        self.workdir = workdir
         self.cwd = cwd or '/home/fmc/code/clones/moodle-docker'
         self.env = env or {}
 
     def command(self, cmd, **kwargs):
         addtoenv = kwargs.pop('addtoenv', {}).copy()
         addtoenv.update(self.env)
-        return process([self.dockerbin] + cmd, cwd=self.cwd, addtoenv=addtoenv, **kwargs)
+        command = [self.dockerbin] + cmd
+        return process(command, cwd=self.cwd, addtoenv=addtoenv, **kwargs)
+
+    def exec(self, cmd, **kwargs):
+        command = ['exec'] + (['-w', self.workdir] if self.workdir else [])
+        return self.command(command + cmd, **kwargs)
 
 
 class MoodleDockerKnowAbout():

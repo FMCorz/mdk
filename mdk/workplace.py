@@ -24,11 +24,10 @@ http://github.com/FMCorz/mdk
 import os
 import shutil
 import logging
-import json
 from .tools import mkdir, process, stableBranch
 from .exceptions import CreateException
 from .config import Conf
-from .docker import DockerFacade, MoodleDockerKnowAbout
+from .docker import MoodleDockerKnowAbout
 from . import git
 from . import moodle
 
