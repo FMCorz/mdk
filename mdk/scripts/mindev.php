@@ -54,22 +54,8 @@ mdk_set_config('requiremodintro', 0, 'page');
 mdk_set_config('requiremodintro', 0, 'resource');
 mdk_set_config('requiremodintro', 0, 'url');
 
-// Adds FirePHP
-$firephp = "
-// FirePHP
-if (@include_once('FirePHPCore/fb.php')) {
-    ob_start();
-}
-";
-$conffile = dirname(__FILE__) . '/config.php';
-if ($content = file_get_contents($conffile)) {
-    if (strpos($content, "include_once('FirePHPCore/fb.php')") === false) {
-        if ($f = fopen($conffile, 'a')) {
-            fputs($f, $firephp);
-            fclose($f);
-        }
-    }
-}
+// Disabling user tours.
+$DB->set_field('tool_usertours_tours', 'enabled', 0);
 
 //
 // Now we make sure that the performance-heavy related settings are disabled.

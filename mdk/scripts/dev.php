@@ -66,6 +66,9 @@ mdk_set_config('requiremodintro', 0, 'url');
 // Don't cache templates.
 mdk_set_config('cachetemplates', 0);
 
+// Disabling user tours.
+$DB->set_field('tool_usertours_tours', 'enabled', 0);
+
 // Adds moodle_database declaration to help VSCode detect moodle_database.
 $varmoodledb = '/** @var moodle_database */
 $DB = isset($DB) ? $DB : null;

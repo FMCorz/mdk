@@ -109,3 +109,6 @@ foreach ($resources as $r) {
 
 // Cache templates.
 mdk_set_config('cachetemplates', 1);
+
+// Re-enabling user tours.
+$DB->set_field('tool_usertours_tours', 'enabled', 1);
