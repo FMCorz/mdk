@@ -181,7 +181,7 @@
     // - %stablebranch%: The stable branch (MOODLE_23_STABLE, MOODLE_24_STABLE, master, ...);
     // - %headcommit%: The head commit.
     // This is used to populate the fields on the tracker issue.
-    "diffUrlTemplate": "https://github.com/YourGitHub/moodle/compare/%headcommit%...%branch%",
+    "diffUrlTemplate": "https://github.com/YourGitHub/moodle/compare/%headcommit%...%branch%?w=1",
 
     // The public acccess URL of your repository. It is used to populate the fields on the tracker issue,
     // and as the common read-only URL of the remote 'myRemote'.
