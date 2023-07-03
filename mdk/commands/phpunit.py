@@ -194,7 +194,7 @@ class PhpunitCommand(Command):
                     f.close()
                 M.cli('/' + cliFile, stdout=None, stderr=None)
                 os.remove(cliPath)
-                M.cli('composer.phar', args='install --dev', stdout=None, stderr=None)
+                M.cli('composer.phar', args='install', stdout=None, stderr=None)
 
         # If Oracle, ask the user for a Behat prefix, if not set.
         prefix = M.get('phpunit_prefix')

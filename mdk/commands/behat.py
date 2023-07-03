@@ -181,7 +181,7 @@ class BehatCommand(Command):
                 f.close()
             M.cli('/' + cliFile, stdout=None, stderr=None)
             os.remove(cliPath)
-            M.cli('composer.phar', args='install --dev', stdout=None, stderr=None)
+            M.cli('composer.phar', args='install', stdout=None, stderr=None)
 
         # Download selenium
         seleniumPath = os.path.expanduser(os.path.join(self.C.get('dirs.mdk'), 'selenium.jar'))
