@@ -169,22 +169,8 @@ class BehatCommand(Command):
             nojavascript = True
             logging.info('Disabling Javascript because Java is required to run Selenium and could not be found.')
 
-        # If not composer.phar, install Composer
-        if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
-            logging.info('Installing Composer')
-            cliFile = 'behat_install_composer.php'
-            cliPath = os.path.join(M.get('path'), 'behat_install_composer.php')
-            (to, headers) = urllib.request.urlretrieve('http://getcomposer.org/installer', cliPath)
-            if dict(headers).get('content-encoding') == 'gzip':
-                f = gzip.open(cliPath, 'r')
-                content = f.read()
-                f.close()
-                f = open(cliPath, 'w')
-                f.write(content)
-                f.close()
-            M.cli('/' + cliFile, stdout=None, stderr=None)
-            os.remove(cliPath)
-            M.cli('composer.phar', args=['install', '--dev'], stdout=None, stderr=None)
+        # Install Composer
+        M.installComposerAndDevDependenciesIfNeeded()
 
         # Download selenium
         useSeleniumGrid = self.C.get('behat.useSeleniumGrid')

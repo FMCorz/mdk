@@ -21,12 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import gzip
 import logging
 import os
 from pathlib import Path
 import re
 import shlex
 import subprocess
+import urllib
 import json
 from tempfile import gettempdir
 
@@ -485,6 +487,40 @@ class Moodle(object):
                     logging.warning('Could not append $CFG->%s to config.php', cfgKey)
 
         self.reload()
+
+    def installComposerAndDevDependenciesIfNeeded(self):
+        """Install composer and its dependencies if not previously installed."""
+        if os.path.isfile(os.path.join(self.get('path'), 'composer.phar')):
+            return
+
+        logging.info('Installing Composer')
+
+        none, phpVersionCompare, none = self.php(['-r', 'echo version_compare(phpversion(), \'7.2\');'])
+        phpIsGreaterThanPhp71 = phpVersionCompare == '1'
+
+        cliFile = 'mdk_install_composer.php'
+        cliPath = os.path.join(self.get('path'), cliFile)
+
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('Accept-Encoding', 'gzip')]
+        urllib.request.install_opener(opener)
+        (to, headers) = urllib.request.urlretrieve('http://getcomposer.org/installer', cliPath)
+        if headers.get('content-encoding') == 'gzip':
+            f = gzip.open(cliPath, 'r')
+            content = f.read().decode('utf-8')
+            f.close()
+            f = open(cliPath, 'w')
+            f.write(content)
+            f.close()
+        urllib.request.install_opener(urllib.request.build_opener())
+
+        if not phpIsGreaterThanPhp71:
+            self.cli(cliFile, args=['--2.2'], stdout=None, stderr=None)
+        else:
+            self.cli(cliFile, stdout=None, stderr=None)
+
+        os.remove(cliPath)
+        self.cli('composer.phar', args=['install', '--dev'], stdout=None, stderr=None)
 
     def isInstalled(self):
         """Returns whether this instance is installed or not"""
