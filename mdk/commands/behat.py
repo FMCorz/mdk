@@ -241,7 +241,10 @@ class BehatCommand(Command):
                 # Since Moodle 3.2.2 behat directory is kept under $CFG->behat_dataroot for single and parallel runs.
                 configcandidates.insert(0, '%s/behatrun/behat/behat.yml' % (M.get('behat_dataroot')))
 
-            cmd.append('--config=%s' % (list(filter(os.path.isfile, configcandidates))[0]))
+            if hasattr(M, '_dockerfacade'):
+                cmd.append('--config=%s' % configcandidates[-1])
+            else:
+                cmd.append('--config=%s' % (list(filter(os.path.isfile, configcandidates))[0]))
 
             # Checking feature argument
             if args.feature:

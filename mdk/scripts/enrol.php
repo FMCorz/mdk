@@ -68,7 +68,6 @@ foreach ($users as $user) {
         continue;
     }
     foreach ($courses as $course) {
-        if ($course->id != 4) continue;
         $instance = mdk_get_enrol_instance($course->id);
         if (!$instance) {
             continue;

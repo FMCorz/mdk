@@ -87,9 +87,11 @@ class Moodle(object):
         self.config = {}
         self._load()
 
-        if identifier in ('sm', 's39php72', 'quest42'):
+        if identifier in ('sm', 's34', 's39php72', 'quest42', 'scheduler', 'scheduler41'):
             from .docker import DockerFacade
-            self._dockerfacade = DockerFacade('docker', cwd=path, workdir=os.path.join('/var/www/html', identifier))
+            self._dockerfacade = DockerFacade(
+                'docker', cwd=path, workdir=os.path.join('/var/www/html', identifier if identifier == 'quest42' else '')
+            )
 
     def addConfig(self, name, value):
         """Add a parameter to the config file
@@ -235,7 +237,7 @@ class Moodle(object):
                 cmd[0] = cmd[0][len(self.path):].lstrip('/')
                 if cmd[0].endswith('.sh'):
                     cmd = ['/bin/bash', cmd[0]] + cmd[1:]
-            return self._dockerfacade.exec(['-it', self.identifier, *cmd], **kwargs)
+            return self._dockerfacade.exec(['-u', '0:0', '-it', self.identifier, *cmd], **kwargs)
         return process(cmd, cwd=self.get('path'), **kwargs)
 
     def generateBranchName(self, issue, suffix='', version=''):
@@ -330,46 +332,52 @@ class Moodle(object):
             switchcompletely = True
 
         # Set Behat data root
-        behat_dataroot = self.get('dataroot') + '_behat'
-        self.updateConfig('behat_dataroot', behat_dataroot)
+        if not hasattr(self, '_dockerfacade'):
+            behat_dataroot = self.get('dataroot') + '_behat'
+            self.updateConfig('behat_dataroot', behat_dataroot)
 
         # Set Behat DB prefix
         currentPrefix = self.get('behat_prefix')
         behat_prefix = prefix or 'zbehat_'
 
         # Set behat_faildump_path
-        currentFailDumpPath = self.get('behat_faildump_path')
-        if faildumppath and currentFailDumpPath != faildumppath:
-            self.updateConfig('behat_faildump_path', faildumppath)
-        elif (not faildumppath and currentFailDumpPath):
-            self.removeConfig('behat_faildump_path')
+        if not hasattr(self, '_dockerfacade'):
+            currentFailDumpPath = self.get('behat_faildump_path')
+            if faildumppath and currentFailDumpPath != faildumppath:
+                self.updateConfig('behat_faildump_path', faildumppath)
+            elif (not faildumppath and currentFailDumpPath):
+                self.removeConfig('behat_faildump_path')
 
-        if not currentPrefix or force:
-            self.updateConfig('behat_prefix', behat_prefix)
-        elif currentPrefix != behat_prefix and self.get('dbtype') != 'oci':
-            # Warn that a prefix is already set and we did not change it.
-            # No warning for Oracle as we need to set it to something else.
-            logging.warning('Behat prefix not changed, already set to \'%s\', expected \'%s\'.' % (currentPrefix, behat_prefix))
+        if not hasattr(self, '_dockerfacade'):
+            if not currentPrefix or force:
+                self.updateConfig('behat_prefix', behat_prefix)
+            elif currentPrefix != behat_prefix and self.get('dbtype') != 'oci':
+                # Warn that a prefix is already set and we did not change it.
+                # No warning for Oracle as we need to set it to something else.
+                logging.warning('Behat prefix not changed, already set to \'%s\', expected \'%s\'.' % (currentPrefix, behat_prefix))
 
         # Switch completely?
-        if self.branch_compare(26, '<'):
-            if switchcompletely:
-                self.updateConfig('behat_switchcompletely', switchcompletely)
-                self.updateConfig('behat_wwwroot', self.get('wwwroot'))
+        if not hasattr(self, '_dockerfacade'):
+            if self.branch_compare(26, '<'):
+                if switchcompletely:
+                    self.updateConfig('behat_switchcompletely', switchcompletely)
+                    self.updateConfig('behat_wwwroot', self.get('wwwroot'))
+                else:
+                    self.removeConfig('behat_switchcompletely')
+                    self.removeConfig('behat_wwwroot')
             else:
-                self.removeConfig('behat_switchcompletely')
-                self.removeConfig('behat_wwwroot')
-        else:
-            # Defining wwwroot.
-            wwwroot = '%s://%s/' % (C.get('scheme'), C.get('behat.host'))
-            if C.get('path') != '' and C.get('path') != None:
-                wwwroot = wwwroot + C.get('path') + '/'
-            wwwroot = wwwroot + self.identifier
-            currentWwwroot = self.get('behat_wwwroot')
-            if not currentWwwroot or force:
-                self.updateConfig('behat_wwwroot', wwwroot)
-            elif currentWwwroot != wwwroot:
-                logging.warning('Behat wwwroot not changed, already set to \'%s\', expected \'%s\'.' % (currentWwwroot, wwwroot))
+                # Defining wwwroot.
+                wwwroot = '%s://%s/' % (C.get('scheme'), C.get('behat.host'))
+                if C.get('path') != '' and C.get('path') != None:
+                    wwwroot = wwwroot + C.get('path') + '/'
+                wwwroot = wwwroot + self.identifier
+                currentWwwroot = self.get('behat_wwwroot')
+                if not currentWwwroot or force:
+                    self.updateConfig('behat_wwwroot', wwwroot)
+                elif currentWwwroot != wwwroot:
+                    logging.warning(
+                        'Behat wwwroot not changed, already set to \'%s\', expected \'%s\'.' % (currentWwwroot, wwwroot)
+                    )
 
         # Force a cache purge
         self.purge()
