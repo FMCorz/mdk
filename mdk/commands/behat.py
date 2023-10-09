@@ -31,6 +31,7 @@ from tempfile import gettempdir
 from time import sleep
 from ..command import Command
 from ..tools import process, ProcessInThread, downloadProcessHook, question, natural_sort_key
+from ..ci import CI, CIException
 
 
 class BehatCommand(Command):
@@ -41,6 +42,13 @@ class BehatCommand(Command):
             {
                 'action': 'store_true',
                 'help': 'run the tests'
+            }
+        ),
+        (
+            ['--ci'],
+            {
+                'action': 'store_true',
+                'help': 'run test tests on ci server instead of local'
             }
         ),
         (
@@ -140,7 +148,43 @@ class BehatCommand(Command):
     ]
     _description = 'Initialise Behat'
 
+    def runInCi(self, args):
+        M = self.Wp.resolve()
+        currentBranch = M.currentBranch()
+        username = self.C.get('behatci.username')
+        token = self.C.get('behatci.token')
+        ciurl = self.C.get('behatci.url')
+        if ciurl is None:
+            raise Exception('behat ci url must be set.')
+        if username is None or token is None:
+            raise Exception('Username and token must be set to access behatci.')
+
+        self.ci = CI(
+            url=ciurl,
+            username=username,
+            token=token,
+        )
+        jobname = self.C.get('behatci.jobname')
+        gitrepo = self.C.get('repositoryUrl')
+        print('{0:<20}: {1}'.format('Jenkin job name', jobname))
+        print('{0:<20}: {1}'.format('Git repository', gitrepo))
+        print('{0:<20}: {1}'.format('Git branch', currentBranch))
+        print('Request to run behat tests on %s...' % ciurl)
+        params = {
+            'REPOSITORY': gitrepo,
+            'BRANCH': currentBranch,
+            'NAME': args.testname,
+            'TAGS': args.tags
+        }
+
+        (buildnumber, buildurl) = self.ci.runBuild(jobname, params)
+        print('{0:<20}: #{1}'.format('Build number', buildnumber))
+        print('{0:<20}: {1}'.format('Build url', buildurl))
+
     def run(self, args):
+        if args.ci and args.run:
+            self.runInCi(args)
+            return
 
         # Loading instance
         M = self.Wp.resolve(args.name)
