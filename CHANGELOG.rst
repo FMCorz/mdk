@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v2.0.9
+-----
+
+- Disable user tours when running `dev` and `mindev` scripts
+- Make use of GitHub whitespace ignore parameter in push URLs - Andrew Lyons
+- Remove `--dev` arg from composer install - Andrew Lyons
+- Update config for Moodle 4.4 development
+
 v2.0.8
 ------
 
