@@ -322,9 +322,13 @@ class BehatCommand(Command):
 
                 # Kill the remaining processes
                 if phpServer and phpServer.is_alive():
+                    logging.debug('Killing phpServer...')
                     phpServer.kill()
+                    logging.debug('phpServer killed.')
                 if seleniumServer and seleniumServer.is_alive():
+                    logging.debug('Killing seleniumServer...')
                     seleniumServer.kill()
+                    logging.debug('seleniumServer killed.')
 
                 # Disable Behat
                 if args.disable:
