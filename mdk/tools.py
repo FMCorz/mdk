@@ -174,9 +174,21 @@ def parseBranch(branch):
 def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
     if type(cmd) != list:
         cmd = shlex.split(str(cmd))
+
     logging.debug(' '.join(cmd))
     try:
-        proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr, encoding='utf-8')
+        kwargs = dict(
+            stdout = stdout,
+            cwd = cwd,
+            stderr = stderr,
+            encoding = 'utf-8'
+        )
+        if '|' in cmd:
+            kwargs['shell'] = True
+            kwargs['stdin'] = subprocess.PIPE
+            cmd = ' '.join(cmd)
+
+        proc = subprocess.Popen(cmd, **kwargs)
         (out, err) = proc.communicate()
     except KeyboardInterrupt as e:
         proc.kill()
