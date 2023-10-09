@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v2.0.10
+-----
+
+- Fixed typo for the 403 entry in `config-dist.json` - Jun Pataleta
+
 v2.0.9
 -----
 
