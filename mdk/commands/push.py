@@ -79,7 +79,7 @@ class PushCommand(Command):
                 {
                     'action': 'store_true',
                     'dest': 'includestable',
-                    'help': 'also push the stable branch (MOODLE_xx_STABLE, master)'
+                    'help': 'also push the stable branch (MOODLE_xx_STABLE, main)'
                 }
             ),
             (

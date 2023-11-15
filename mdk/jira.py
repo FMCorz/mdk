@@ -184,7 +184,7 @@ class Jira(object):
             if key == 'repositoryurl':
                 infos['repo'] = fields.get(value)
 
-            elif key == 'master' or key.isdigit():
+            elif key in ['master', 'main'] or key.isdigit():
                 infos['branches'][key] = {
                     'branch': fields.get(value['branch']),
                     'compare': fields.get(value['diffurl'])

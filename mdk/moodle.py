@@ -30,7 +30,7 @@ import subprocess
 import json
 from tempfile import gettempdir
 
-from .tools import getMDLFromCommitMessage, mkdir, process, parseBranch
+from .tools import getMDLFromCommitMessage, mkdir, process, parseBranch, stableBranch
 from .db import DB
 from .config import Conf
 from .git import Git, GitException
@@ -129,7 +129,7 @@ class Moodle(object):
         b = self.get('branch')
         if b == None:
             raise Exception('Error while reading the branch')
-        elif b == 'master':
+        elif b in ['master', 'main']:
             b = C.get('masterBranch')
         b = int(b)
         if compare == '>=':
@@ -518,13 +518,10 @@ class Moodle(object):
                 self.version['branch'] = self.version['release'].replace('.', '')[0:2]
                 branch = self.version['branch']
             if int(branch) >= int(C.get('masterBranch')):
-                self.version['branch'] = 'master'
+                self.version['branch'] = 'main'
 
             # Stable branch
-            if self.version['branch'] == 'master':
-                self.version['stablebranch'] = 'master'
-            else:
-                self.version['stablebranch'] = 'MOODLE_%s_STABLE' % self.version['branch']
+            self.version['stablebranch'] = stableBranch(self.version['branch'], self.git())
 
             # Integration or stable?
             self.version['integration'] = self.isIntegration()
