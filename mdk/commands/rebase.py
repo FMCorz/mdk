@@ -24,7 +24,7 @@ http://github.com/FMCorz/mdk
 
 import logging
 from ..command import Command
-
+from ..tools import version_options
 
 class RebaseCommand(Command):
 
@@ -52,7 +52,7 @@ class RebaseCommand(Command):
             (
                 ['-v', '--versions'],
                 {
-                    'choices': [str(x) for x in range(13, int(self.C.get('masterBranch')))] + ['master'],
+                    'choices': version_options(),
                     'help': 'versions to rebase the issues on. Ignored if names is set.',
                     'metavar': 'version',
                     'nargs': '+'

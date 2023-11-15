@@ -224,6 +224,12 @@ def stableBranch(version):
     return 'MOODLE_%d_STABLE' % int(version)
 
 
+def version_options():
+    return ([str(x) for x in range(13, 40)]
+            + [str(x) for x in range(310, 312)]
+            + [str(x) for x in range(400, C.get('masterBranch'))]
+            + ['master'])
+
 class ProcessInThread(threading.Thread):
     """Executes a process in a separate thread"""
 
