@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v2.0.11
+-----
+
+- Fix rendering of correct version options for the `backport`, `create`, and `rebase` commands - Jun Pataleta
+- Include VScode setting to autoformat with yapf
+- Add support for Moodle's `main` branch - Jun Pataleta
+
 v2.0.10
 -----
 
