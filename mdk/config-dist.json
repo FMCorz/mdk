@@ -70,7 +70,8 @@
         // How to name your instances
         "prefixStable": "stable_",
         "prefixIntegration": "integration_",
-        "prefixMaster": "main",
+        "prefixMain": "main",
+        "prefixMaster": "master",
         "suffixSeparator": "_",
 
         // How to name your branches

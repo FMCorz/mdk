@@ -222,8 +222,7 @@ def stableBranch(version, git=None):
     if version in ['master', 'main']:
         if git is not None and not git.hasBranch('main'):
             # Fall back to master if main is not yet available.
-            logging.info('%s: The main branch is not yet available. Please run `mdk update`.\n'
-                         '  Falling back to master...' % __name__)
+            logging.info('The main branch has not been found, using master instead.')
             return 'master'
         return 'main'
     return 'MOODLE_%d_STABLE' % int(version)

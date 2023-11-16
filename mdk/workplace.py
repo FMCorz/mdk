@@ -243,8 +243,10 @@ class Workplace(object):
             name = identifier.replace(' ', '_')
         else:
             # Wording version
-            if version in ['master', 'main']:
+            if version == 'master':
                 prefixVersion = C.get('wording.prefixMaster')
+            elif version == 'main':
+                prefixVersion = C.get('wording.prefixMain')
             else:
                 prefixVersion = version
 

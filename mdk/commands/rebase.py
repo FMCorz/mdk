@@ -24,7 +24,7 @@ http://github.com/FMCorz/mdk
 
 import logging
 from ..command import Command
-from ..tools import version_options
+from ..tools import version_options, yesOrNo
 
 class RebaseCommand(Command):
 
@@ -114,7 +114,19 @@ class RebaseCommand(Command):
         if not names:
             names = []
             for v in versions:
-                names.append(self.Wp.generateInstanceName(v))
+                versionname = v
+                if v == 'main':
+                    Mcurrent = self.Wp.resolve()
+                    masterinstancename = self.Wp.generateInstanceName('master')
+                    # We're currently in a xx_master instance. Use this instead.
+                    if Mcurrent.get('identifier') == masterinstancename:
+                        versionname = 'master'
+
+                # Generate the instance name.
+                instancename = self.Wp.generateInstanceName(versionname)
+                # Add the instance name only once.
+                if instancename not in names:
+                    names.append(instancename)
 
         # Getting instances
         Mlist = self.Wp.resolveMultiple(names)
@@ -148,6 +160,15 @@ class RebaseCommand(Command):
             # Looping over each issue to rebase
             for issue in issues:
                 branch = M.generateBranchName(issue, suffix=args.suffix)
+                if M.get('stablebranch') in ['master', 'main']:
+                    masterbranch = M.generateBranchName(issue, args.suffix, 'master')
+                    if M.git().hasBranch(masterbranch):
+                        prompt = ('  It seems like you already have an existing working branch (%s).\n'
+                                  '  Would you like to rebase this branch instead?')
+                        if yesOrNo(prompt % masterbranch):
+                            # We'll rebase the issue's master branch instead
+                            branch = masterbranch
+
                 if not M.git().hasBranch(branch):
                     logging.warning('Could not find branch %s' % (branch))
                     continue
