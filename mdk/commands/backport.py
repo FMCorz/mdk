@@ -25,7 +25,7 @@ http://github.com/FMCorz/mdk
 import logging
 from .. import tools, css, jira
 from ..command import Command
-from ..tools import yesOrNo
+from ..tools import yesOrNo, version_options
 
 
 class BackportCommand(Command):
@@ -93,7 +93,7 @@ class BackportCommand(Command):
             (
                 ['-v', '--versions'],
                 {
-                    'choices': [str(x) for x in range(13, int(self.C.get('masterBranch')))] + ['master'],
+                    'choices': version_options(),
                     'help': 'versions to backport to',
                     'metavar': 'version',
                     'nargs': '+',

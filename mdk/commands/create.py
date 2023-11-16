@@ -27,7 +27,7 @@ import logging
 
 from ..db import DB
 from ..command import Command
-from ..tools import yesOrNo
+from ..tools import yesOrNo, version_options
 from ..exceptions import CreateException, InstallException
 
 
@@ -95,7 +95,7 @@ class CreateCommand(Command):
             (
                 ['-v', '--version'],
                 {
-                    'choices': [str(x) for x in range(13, int(self.C.get('masterBranch')))] + ['master'],
+                    'choices': version_options(),
                     'default': ['master'],
                     'help': 'version of Moodle',
                     'metavar': 'version',
