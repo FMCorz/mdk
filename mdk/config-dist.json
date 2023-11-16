@@ -70,6 +70,7 @@
         // How to name your instances
         "prefixStable": "stable_",
         "prefixIntegration": "integration_",
+        "prefixMain": "main",
         "prefixMaster": "master",
         "suffixSeparator": "_",
 
@@ -82,7 +83,7 @@
 
         // How to name your Moodle installation
         "integration": "Integration",
-        "master": "Master",
+        "master": "Main",
         "stable": "Stable",
         "mariadb": "MariaDB",
         "mysqli": "MySQL",
@@ -173,6 +174,11 @@
             "403" : {
                 "branch" : "Pull 4.3 Branch",
                 "diffurl" : "Pull 4.3 Diff URL"
+            },
+            // TODO: Update to Main once the fields have been renamed in the tracker.
+            "main" : {
+                "branch" : "Pull Master Branch",
+                "diffurl" : "Pull Master Diff URL"
             },
             "master" : {
                 "branch" : "Pull Master Branch",

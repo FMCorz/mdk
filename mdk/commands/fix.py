@@ -25,6 +25,7 @@ http://github.com/FMCorz/mdk
 
 import logging
 from ..command import Command
+from ..tools import yesOrNo
 
 
 class FixCommand(Command):
@@ -70,14 +71,28 @@ class FixCommand(Command):
         if not M:
             raise Exception('This is not a Moodle instance')
 
+        stablebranch = M.get('stablebranch')
+        masterbranch = ''
+        if stablebranch in ['master', 'main']:
+            # Generate a branch name for master to check later whether there's already an existing working branch.
+            masterbranch = M.generateBranchName(args.issue, args.suffix, 'master')
+
         # Branch name
         branch = M.generateBranchName(args.issue, suffix=args.suffix)
 
         # Track
-        track = '%s/%s' % (self.C.get('upstreamRemote'), M.get('stablebranch'))
+        track = '%s/%s' % (self.C.get('upstreamRemote'), stablebranch)
 
         # Git repo
         repo = M.git()
+
+        if masterbranch != '':
+            if repo.hasBranch(masterbranch):
+                prompt = ('  It seems like you already have an existing working branch (%s).\n'
+                          '  Would you like to check this out instead?')
+                if yesOrNo(prompt % masterbranch):
+                    # We'll check out the issue's master branch instead
+                    branch = masterbranch
 
         # Creating and checking out the new branch
         if not repo.hasBranch(branch):
@@ -85,7 +100,7 @@ class FixCommand(Command):
                 raise Exception('Could not create branch %s' % branch)
 
         if not repo.checkout(branch):
-            raise Exception('Error while checkout out branch %s' % branch)
+            raise Exception('Error while checking out branch %s' % branch)
 
         logging.info('Branch %s checked out' % branch)
 
