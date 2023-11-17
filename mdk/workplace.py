@@ -243,10 +243,23 @@ class Workplace(object):
             name = identifier.replace(' ', '_')
         else:
             # Wording version
+            prefixmaster = C.get('wording.prefixMaster')
             if version == 'master':
-                prefixVersion = C.get('wording.prefixMaster')
+                prefixVersion = prefixmaster
             elif version == 'main':
-                prefixVersion = C.get('wording.prefixMain')
+                prefixmain = C.get('wording.prefixMain')
+                # Check if we need to sync master and main prefix wordings. Should be a one-off thing.
+                if not C.get('wordingPrefixesChecked'):
+                    # If wording.prefixMaster has been customised while wording.prefixMain remains default,
+                    # copy wording.prefixMaster to wording.prefixMain to maintain customisation.
+                    if prefixmaster != 'master' and prefixmain == 'main':
+                        prefixmain = prefixmaster
+                        C.set('wording.prefixMain', prefixmain)
+                        logging.info('The config wording.prefixMaster (%s) has been copied to wording.prefixMain'
+                                     % prefixmain)
+                    # Set config wordingPrefixesChecked to true. We shouldn't need to do this next time.
+                    C.set('wordingPrefixesChecked', True)
+                prefixVersion = prefixmain
             else:
                 prefixVersion = version
 

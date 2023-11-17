@@ -91,6 +91,9 @@
         "sqlsrv": "SQL Server"
     },
 
+    // If false, the prefixMain and prefixMaster wordings need to be checked whether they need syncing.
+    "wordingPrefixesChecked": false,
+
     // CI Server related settings
     "ci": {
         "url": "https://integration.moodle.org",
