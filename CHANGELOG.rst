@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v2.0.12
+-----
+
+- Update `master` and `main` tracker field names to point to the renamed `Pull Main xx` fields
+- `tools.stableBranch` should be checking for the `main` branch at the remote
+- Make sure to sync `master` to `main` during `mdk update` of master/main instances
+- Check for customised `wording.prefixMaster` and sync `wording.prefixMain` if necessary
+
 v2.0.11
 -----
 
