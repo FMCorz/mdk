@@ -220,7 +220,7 @@ def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
 
 def stableBranch(version, git=None):
     if version in ['master', 'main']:
-        if git is not None and not git.hasBranch('main'):
+        if git is not None and not git.hasBranch('main', C.get('upstreamRemote')):
             # Fall back to master if main is not yet available.
             logging.info('The main branch has not been found, using master instead.')
             return 'master'
