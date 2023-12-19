@@ -86,7 +86,9 @@ class FixCommand(Command):
         # Git repo
         repo = M.git()
 
-        if masterbranch != '':
+        hasBranch = repo.hasBranch(branch)
+
+        if masterbranch != '' and not hasBranch:
             if repo.hasBranch(masterbranch):
                 prompt = ('  It seems like you already have an existing working branch (%s).\n'
                           '  Would you like to check this out instead?')
@@ -95,7 +97,7 @@ class FixCommand(Command):
                     branch = masterbranch
 
         # Creating and checking out the new branch
-        if not repo.hasBranch(branch):
+        if not hasBranch:
             if not repo.createBranch(branch, track):
                 raise Exception('Could not create branch %s' % branch)
 
