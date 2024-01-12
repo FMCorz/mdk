@@ -34,6 +34,7 @@ import shutil
 from tempfile import gettempdir
 from .config import Conf
 from . import tools
+from math import floor
 
 C = Conf()
 
@@ -415,6 +416,18 @@ class PluginRepository(object):
             cls._instance.localRepository = {} if cls._instance.localRepository == None else cls._instance.localRepository
         return cls._instance
 
+    def convert_branch(self, branch):
+        """Converts the branch name to the correct version, e. g. 39 must become 3.9, but 311 must be
+        3.11 instead of 31.1 and finally 402 must become 4.2 instead of 4.02"""
+        if branch <= 39:
+            return '{:.1f}'.format(float(branch) / 10.)
+        else:
+            major = floor(branch / 100.)
+            minor = branch - major * 100
+            if minor >= 10:
+                return '{:.2f}'.format(float(branch) / 100.)
+            return '{:.1f}'.format(major + minor / 10.)
+
     def info(self, plugin, branch):
         """Gets the download information of the plugin, branch is expected to be
         a whole integer, such as 25 for 2.5, etc...
@@ -442,13 +455,10 @@ class PluginRepository(object):
 
         # Contacting the remote repository
         data = {
-            "branch": round(float(branch) / 10., 1),
+            "branch": self.convert_branch(branch),
             "plugin": plugin
         }
-        # If the branch is e. g. 311, we are now at 31.1 instead of 311
-        if data['branch'] > 10:
-            data['branch'] = round(float(branch) / 100., 2)
-        
+
         logging.info('Retrieving information for plugin %s and branch %s' % (data['plugin'], data['branch']))
         try:
             resp = self.request('pluginfo.php', 'GET', data)
