@@ -63,7 +63,12 @@ mdk_set_config('cronclionly', $default);
 
 
 // Theme settings.
-$settingspage = $adminroot->locate('themesettings', true);
+// `themesettings` has been changed to `themesettingsadvanced` since 4.4.
+$settingspage = $adminroot->locate('themesettingsadvanced', true);
+if (empty($settingspage)) {
+    // Fall back to `themesettings` for Moodle 4.3 and below.
+    $settingspage = $adminroot->locate('themesettings', true);
+}
 $settings = $settingspage->settings;
 
 // Allow themes to be changed from the URL.
