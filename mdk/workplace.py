@@ -130,6 +130,12 @@ class Workplace(object):
         extraDir = self.getPath(name, 'extra')
         linkDir = os.path.join(self.www, name)
         extraLinkDir = os.path.join(self.getMdkWebDir(), name)
+
+        # Check the cached clones and create them if necessary.
+        self.checkCachedClones(not integration, integration)
+        # Update the cached clones.
+        self.updateCachedClones(stable=not integration, integration=integration, verbose=False)
+
         branch = stableBranch(version, git.Git(self.getCachedRemote(integration), C.get('git')))
 
         useCacheAsUpstream = C.get('useCacheAsUpstreamRemote')
@@ -140,8 +146,6 @@ class Workplace(object):
         elif os.path.isdir(installDir):
             raise CreateException('Installation path exists: %s' % installDir)
 
-        self.checkCachedClones(not integration, integration)
-        self.updateCachedClones(stable=not integration, integration=integration, verbose=False)
         mkdir(installDir, 0o755)
         mkdir(wwwDir, 0o755)
         mkdir(dataDir, 0o777)
