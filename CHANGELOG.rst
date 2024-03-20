@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v2.0.13
+-----
+
+- `mdk fix` - No need to prompt which branch to check out if `-master` when the `-main` branch already exists - Andrew Lyons
+- Fix the calculation of the plugin version during plugin installation - Philipp Imhof
+- Fix `undev` script to use correct theme settings location for 4.4 and up - Jun Pataleta
+- Fix error preventing MDK from creating new instances when it's freshly installed - Huong Nguyen
+
 v2.0.12
 -----
 
