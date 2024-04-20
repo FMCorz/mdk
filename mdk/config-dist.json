@@ -106,66 +106,6 @@
         "username": false,
         "fieldnames" : {
             "repositoryurl" : "Pull  from Repository",
-            "27" : {
-                "branch" : "Pull 2.7 Branch",
-                "diffurl" : "Pull 2.7 Diff URL"
-            },
-            "29" : {
-                "branch" : "Pull 2.9 Branch",
-                "diffurl" : "Pull 2.9 Diff URL"
-            },
-            "30" : {
-                "branch" : "Pull 3.0 Branch",
-                "diffurl" : "Pull 3.0 Diff URL"
-            },
-            "31" : {
-                "branch" : "Pull 3.1 Branch",
-                "diffurl" : "Pull 3.1 Diff URL"
-            },
-            "32" : {
-                "branch" : "Pull 3.2 Branch",
-                "diffurl" : "Pull 3.2 Diff URL"
-            },
-            "33" : {
-                "branch" : "Pull 3.3 Branch",
-                "diffurl" : "Pull 3.3 Diff URL"
-            },
-            "34" : {
-                "branch" : "Pull 3.4 Branch",
-                "diffurl" : "Pull 3.4 Diff URL"
-            },
-            "35" : {
-                "branch" : "Pull 3.5 Branch",
-                "diffurl" : "Pull 3.5 Diff URL"
-            },
-            "36" : {
-                "branch" : "Pull 3.6 Branch",
-                "diffurl" : "Pull 3.6 Diff URL"
-            },
-            "37" : {
-                "branch" : "Pull 3.7 Branch",
-                "diffurl" : "Pull 3.7 Diff URL"
-            },
-            "38" : {
-                "branch" : "Pull 3.8 Branch",
-                "diffurl" : "Pull 3.8 Diff URL"
-            },
-            "39" : {
-                "branch" : "Pull 3.9 Branch",
-                "diffurl" : "Pull 3.9 Diff URL"
-            },
-            "310" : {
-                "branch" : "Pull 3.10 Branch",
-                "diffurl" : "Pull 3.10 Diff URL"
-            },
-            "311" : {
-                "branch" : "Pull 3.11 Branch",
-                "diffurl" : "Pull 3.11 Diff URL"
-            },
-            "400" : {
-                "branch" : "Pull 4.0 Branch",
-                "diffurl" : "Pull 4.0 Diff URL"
-            },
             "401" : {
                 "branch" : "Pull 4.1 Branch",
                 "diffurl" : "Pull 4.1 Diff URL"
