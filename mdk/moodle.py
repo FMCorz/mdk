@@ -788,9 +788,16 @@ class Moodle(object):
         fieldrepositoryurl = C.get('tracker.fieldnames.repositoryurl')
         fieldbranch = C.get('tracker.fieldnames.%s.branch' % version)
         fielddiffurl = C.get('tracker.fieldnames.%s.diffurl' % version)
+        masterbranch = C.get('masterBranch')
 
         if not fieldrepositoryurl or not fieldbranch or not fielddiffurl:
-            logging.error('Cannot set tracker fields for this version (%s). The field names are not set in the config file.', version)
+            errormsg = 'Cannot set tracker fields for this version (%s).' % version
+            if version == masterbranch or version == masterbranch - 1:
+                # MDK might not have been updated with the latest release so the field names are not yet present.
+                errormsg += ' The field names are not set in the config file.'
+            else:
+                errormsg += ' Tracker fields belonging to legacy Moodle versions are removed from the tracker.'
+            logging.error(errormsg)
         else:
             logging.info('Setting tracker fields: \n  %s: %s \n  %s: %s \n  %s: %s' %
                 (fieldrepositoryurl, repositoryurl, fieldbranch, branch, fielddiffurl, diffurl))
