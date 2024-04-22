@@ -267,7 +267,10 @@
         // behat wwwroot is the host, nothing else. Use a ServerAlias or /etc/hosts entries.
         "host": "127.0.0.1",
         // The number of seconds the behat command will sleep after launching the PHP Server, or Selenium.
-        "launchSleep": 5
+        "launchSleep": 5,
+        // By default MDK will use the Selenium server 3.x.x for Behat test. Enable this setting will make
+        // MDK to use the new Selenium Grid.
+        "useSeleniumGrid": false
     },
 
     // PHPUnit related settings

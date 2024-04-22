@@ -27,6 +27,7 @@ import urllib.request, urllib.parse, urllib.error
 import re
 import logging
 import gzip
+import json
 from tempfile import gettempdir
 from time import sleep
 from ..command import Command
@@ -184,27 +185,18 @@ class BehatCommand(Command):
             M.cli('composer.phar', args='install', stdout=None, stderr=None)
 
         # Download selenium
-        seleniumPath = os.path.expanduser(os.path.join(self.C.get('dirs.mdk'), 'selenium.jar'))
+        useSeleniumGrid = self.C.get('behat.useSeleniumGrid')
+        seleniumFileName = 'selenium.jar'
+        if useSeleniumGrid:
+            seleniumFileName = 'selenium-grid.jar'
+        seleniumPath = os.path.expanduser(os.path.join(self.C.get('dirs.mdk'), seleniumFileName))
         if args.selenium:
             seleniumPath = args.selenium
         elif args.seleniumforcedl or (not nojavascript and not os.path.isfile(seleniumPath)):
-            logging.info('Attempting to find a download for Selenium')
-            seleniumStorageUrl = 'https://selenium-release.storage.googleapis.com/'
-            url = urllib.request.urlopen(seleniumStorageUrl)
-            content = url.read().decode('utf-8')
-            matches = sorted(re.findall(r'[a-z0-9._-]+/selenium-server-standalone-[0-9.]+\.jar', content, re.I),
-                             key=natural_sort_key)
-            if len(matches) > 0:
-                seleniumUrl = seleniumStorageUrl + matches[-1]
-                logging.info('Downloading Selenium from %s' % seleniumUrl)
-                if (logging.getLogger().level <= logging.INFO):
-                    urllib.request.urlretrieve(seleniumUrl, seleniumPath, downloadProcessHook)
-                    # Force a new line after the hook display
-                    logging.info('')
-                else:
-                    urllib.request.urlretrieve(seleniumUrl, seleniumPath)
+            if useSeleniumGrid:
+                self.handleDownloadSeleniumGrid(seleniumPath)
             else:
-                logging.warning('Could not locate Selenium server to download')
+                self.handleDownloadSeleniumLegacy(seleniumPath)
 
         if not nojavascript and not os.path.isfile(seleniumPath):
             raise Exception('Selenium file %s does not exist')
@@ -266,7 +258,10 @@ class BehatCommand(Command):
             phpCommand = '%s -S localhost:8000' % (self.C.get('php'))
             seleniumCommand = None
             if seleniumPath:
-                seleniumCommand = '%s -jar %s' % (self.C.get('java'), seleniumPath)
+                if self.C.get('behat.useSeleniumGrid'):
+                    seleniumCommand = '%s -jar %s standalone' % (self.C.get('java'), seleniumPath)
+                else:
+                    seleniumCommand = '%s -jar %s' % (self.C.get('java'), seleniumPath)
 
             olderThan26 = M.branch_compare(26, '<')
 
@@ -346,3 +341,45 @@ class BehatCommand(Command):
         logging.info('Disabling Behat')
         M.cli('admin/tool/behat/cli/util.php', '--disable')
         M.removeConfig('behat_switchcompletely')
+
+    def handleDownloadSeleniumLegacy(self, seleniumPath):
+        logging.info('Attempting to find a download for Selenium')
+        seleniumStorageUrl = 'https://selenium-release.storage.googleapis.com/'
+        url = urllib.request.urlopen(seleniumStorageUrl)
+        content = url.read().decode('utf-8')
+        matches = sorted(re.findall(r'[a-z0-9._-]+/selenium-server-standalone-[0-9.]+\.jar', content, re.I),
+                         key=natural_sort_key)
+        if len(matches) > 0:
+            seleniumUrl = seleniumStorageUrl + matches[-1]
+            logging.info('Downloading Selenium from %s' % seleniumUrl)
+            self.downloadSelenium(seleniumUrl, seleniumPath)
+        else:
+            logging.warning('Could not locate Selenium server to download')
+
+    def handleDownloadSeleniumGrid(self, seleniumPath):
+        logging.info('Attempting to find a download for Selenium Grid')
+        seleniumStorageUrl = 'https://api.github.com/repos/SeleniumHQ/selenium/releases/latest'
+        url = urllib.request.urlopen(seleniumStorageUrl)
+        content = json.load(url)
+        if 'assets' in content:
+            assets = content['assets']
+            matches = []
+            for asset in assets:
+                if re.search('selenium-server-[0-9.]+\.jar', asset['name']):
+                    matches.append(asset['browser_download_url'])
+            if len(matches) > 0:
+                seleniumUrl = matches[-1]
+                logging.info('Downloading Selenium Grid from %s' % seleniumUrl)
+                self.downloadSelenium(seleniumUrl, seleniumPath)
+            else:
+                logging.warning('Could not locate Selenium Grid to download')
+        else:
+            logging.warning('Could not locate Selenium Grid to download')
+
+    def downloadSelenium(self, seleniumUrl, seleniumPath):
+        if (logging.getLogger().level <= logging.INFO):
+            urllib.request.urlretrieve(seleniumUrl, seleniumPath, downloadProcessHook)
+            # Force a new line after the hook display
+            logging.info('')
+        else:
+            urllib.request.urlretrieve(seleniumUrl, seleniumPath)
