@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v2.0.14
+-----
+
+- Update config for Moodle 4.5 development
+- Add the ability to use new Selenium Grid - Huong Nguyen
+- Clean up tracker fields belonging to legacy Moodle versions
+
 v2.0.13
 -----
 
