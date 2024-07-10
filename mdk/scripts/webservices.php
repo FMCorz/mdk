@@ -24,7 +24,7 @@ set_config('enablemobilewebservice', 1);
 set_config('enablewsdocumentation', 1);
 
 // Enable each protocol.
-set_config('webserviceprotocols', 'amf,rest,soap,xmlrpc');
+set_config('webserviceprotocols', 'amf,rest,soap,xmlrpc,restful');
 
 // Enable mobile service.
 $webservicemanager = new webservice();
