@@ -35,6 +35,7 @@ commandsList = [
     'behat',
     'config',
     'create',
+    'cron',
     'css',
     'doctor',
     'fix',
