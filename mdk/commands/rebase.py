@@ -160,7 +160,7 @@ class RebaseCommand(Command):
             # Looping over each issue to rebase
             for issue in issues:
                 branch = M.generateBranchName(issue, suffix=args.suffix)
-                if M.get('stablebranch') in ['master', 'main']:
+                if M.get('stablebranch') in ['main']:
                     masterbranch = M.generateBranchName(issue, args.suffix, 'master')
                     if M.git().hasBranch(masterbranch):
                         prompt = (
