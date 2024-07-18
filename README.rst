@@ -184,11 +184,11 @@ Backup a whole instance so that it can be restored later.
 
 **Examples**
 
-Backup the instance named stable_master
+Backup the instance named stable_main
 
 ::
 
-    mdk backup stable_master
+    mdk backup stable_main
 
 List the backups
 
@@ -196,11 +196,11 @@ List the backups
 
     mdk backup --list
 
-Restore the second backup of the instance stable_master
+Restore the second backup of the instance stable_main
 
 ::
 
-    mdk backup --restore stable_master_02
+    mdk backup --restore stable_main_02
 
 
 behat
@@ -302,11 +302,11 @@ List the instances
 
     mdk info --list
 
-Display the information known about the instance *stable_master*
+Display the information known about the instance *stable_main*
 
 ::
 
-    mdk info stable_master
+    mdk info stable_main
 
 
 install
@@ -318,7 +318,7 @@ Run the command line installation script with all parameters set on an existing 
 
 ::
 
-    mdk install --engine mysqli stable_master
+    mdk install --engine mysqli stable_main
 
 
 js
@@ -431,12 +431,12 @@ Fetch the latest branches from the upstream remote and rebase your local branche
 
 **Examples**
 
-This will rebase the branches MDL-12345-xx and MDL-56789-xx on the instances stable_22, stable_23 and stable_master. And push them to your remote if successful.
+This will rebase the branches MDL-12345-xx and MDL-56789-xx on the instances stable_22, stable_23 and stable_main. And push them to your remote if successful.
 
 ::
 
-    mdk rebase --issues 12345 56789 --version 22 23 master --push
-    mdk rebase --issues MDL-12345 MDL-56789 --push stable_22 stable_23 stable_master
+    mdk rebase --issues 12345 56789 --version 22 23 main --push
+    mdk rebase --issues MDL-12345 MDL-56789 --push stable_22 stable_23 stable_main
 
 
 remove
@@ -448,7 +448,7 @@ Remove an instance, deleting every thing including the database.
 
 ::
 
-    mdk remove stable_master
+    mdk remove stable_main
 
 
 run
@@ -458,11 +458,11 @@ Execute a script on an instance. The scripts are stored in the scripts directory
 
 **Example**
 
-Set the instance stable_master ready for development
+Set the instance stable_main ready for development
 
 ::
 
-    mdk run dev stable_master
+    mdk run dev stable_main
 
 
 tracker
@@ -542,11 +542,11 @@ You can write custom scripts and execute them on your instances using the comman
 ::
 
     # From anywhere on the system
-    $ mdk run helloworld stable_master
+    $ mdk run helloworld stable_main
 
     # Is similar to typing the following command
-    $ cp /path/to/script/helloworld.php /path/to/moodle/instances/stable_master
-    $ cd /path/to/moodle/instances/stable_master
+    $ cp /path/to/script/helloworld.php /path/to/moodle/instances/stable_main
+    $ cd /path/to/moodle/instances/stable_main
     $ php helloworld.php
 
 Scripts are very handy when it comes to performing more complexed tasks.
