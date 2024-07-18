@@ -602,7 +602,7 @@ class Moodle(object):
                 self.version['branch'] = 'main'
 
             # Stable branch
-            self.version['stablebranch'] = stableBranch(self.version['branch'], self.git())
+            self.version['stablebranch'] = stableBranch(self.version['branch'])
 
             # Integration or stable?
             self.version['integration'] = self.isIntegration()
