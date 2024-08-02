@@ -85,7 +85,7 @@ class CronCommand(Command):
         logging.info('Running cron on %s' % (M.get('identifier')))
 
         cliargs = []
-        haskeepalive = M.branch_compare(401, '>=')
+        haskeepalive = M.branch_compare(401, '>')
         if not args.keepalive and haskeepalive:
             cliargs.append('--keep-alive=0')
         elif args.keepalive:
