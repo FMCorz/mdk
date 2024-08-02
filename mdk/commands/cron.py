@@ -38,6 +38,14 @@ class CronCommand(Command):
             },
         ),
         (
+            ['-t', '--task'],
+            {
+                'default': False,
+                'help': 'the name of scheduled task to run, as component:taskname or component\\taskname',
+                'dest': 'task',
+            },
+        ),
+        (
             ['name'],
             {
                 'default': None,
@@ -54,6 +62,25 @@ class CronCommand(Command):
         M = self.Wp.resolve(args.name)
         if not M:
             raise Exception('No instance to work on. Exiting...')
+
+        if args.task:
+            taskname = args.task
+            if ':' in args.task:
+                parts = args.task.split(':')
+                taskname = parts[0] + '\\task\\' + parts[1]
+            elif '\\' in args.task and not '\\task\\' in args.task:
+                parts = args.task.split('\\', 1)
+                taskname = parts[0] + '\\task\\' + parts[1]
+
+            logging.info('Executing task %s on %s' % (taskname, M.get('identifier')))
+            r, _, _ = M.cli('admin/cli/scheduled_task.php', args=['--execute=%s' % taskname], stdout=None, stderr=None)
+
+            if r > 0 and not taskname.endswith('_task'):
+                taskname += '_task'
+                logging.info('Retrying with %s' % (taskname))
+                M.cli('admin/cli/scheduled_task.php', args=['--execute=%s' % taskname], stdout=None, stderr=None)
+
+            return
 
         logging.info('Running cron on %s' % (M.get('identifier')))
 
