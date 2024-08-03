@@ -29,42 +29,39 @@ Also check the `wiki <https://github.com/FMCorz/mdk/wiki>`_.
 Docker support
 ==============
 
-As at MDK 2.1, partial support for Moodle running in Docker is available. Some commands like `phpunit`, `upgrade`, `run`, `cron` are run in the container. The `behat` command can also work but still requires some fiddling around. Other commands such as `install` will not work. Set the environment variable `MDK_DOCKER_NAME` to the name of the running container to use this feature.
+As at MDK 2.1, partial support for Moodle running in Docker is available. Some commands like ``phpunit``, ``upgrade``, ``run``, ``cron`` are run in the container. The ``behat`` command can also work but still requires some fiddling around. Other commands such as ``install`` will not work. Set the environment variable ``MDK_DOCKER_NAME`` to the name of the running container to use this feature.
 
-Usage example:
+Usage example::
 
-```
-$ MDK_DOCKER_NAME=sm mdk phpunit
+    $ MDK_DOCKER_NAME=sm mdk phpunit
 
-$ set -x MDK_DOCKER_NAME sm
-$ mdk phpunit
-```
+    $ set -x MDK_DOCKER_NAME sm
+    $ mdk phpunit
+
 
 Compatible containers
 ---------------------
 
-The Docker container must be created using [moodlehq/moodle-php-apache](https://github.com/moodlehq/moodle-php-apache).
+The Docker container must be created using `moodlehq/moodle-php-apache <https://github.com/moodlehq/moodle-php-apache>`_, here is an example::
 
-```fish
-# Replace `sm` with the name of your instance.
-set -x INSTANCE_NAME sm
+    # Replace `sm` with the name of your instance.
+    set -x INSTANCE_NAME sm
 
-# This computes the paths of the instance.
-set -x MDK_INSTANCE_DIR (mdk info -v path $INSTANCE_NAME)
-set -x MDK_STORAGE_DIR (mdk config show dirs.storage | python -c 'import sys, pathlib; print(pathlib.Path(sys.stdin.read()).expanduser().resolve(), end="")')
+    # This computes the paths of the instance.
+    set -x MDK_INSTANCE_DIR (mdk info -v path $INSTANCE_NAME)
+    set -x MDK_STORAGE_DIR (mdk config show dirs.storage | python -c 'import sys, pathlib; print(pathlib.Path(sys.stdin.read()).expanduser().resolve(), end="")')
 
-# Create a Docker network called `moodle`.
-docker network create moodle 2> /dev/null
+    # Create a Docker network called `moodle`.
+    docker network create moodle 2> /dev/null
 
-# Create and start the docker container, change the port, name and PHP version as needed.
-docker run -d \
-    --name $INSTANCE_NAME \
-    --network moodle \
-    -v $MDK_INSTANCE_DIR:/var/www/html \
-    -v $MDK_STORAGE_DIR/$INSTANCE_NAME/moodledata:/var/www/moodledata \
-    -v $MDK_STORAGE_DIR/$INSTANCE_NAME/extra/behat:/var/www/behatfaildumps \
-    -p 8800:80 moodlehq/moodle-php-apache:8.1
-```
+    # Create and start the docker container, change the port, name and PHP version as needed.
+    docker run -d \
+        --name $INSTANCE_NAME \
+        --network moodle \
+        -v $MDK_INSTANCE_DIR:/var/www/html \
+        -v $MDK_STORAGE_DIR/$INSTANCE_NAME/moodledata:/var/www/moodledata \
+        -v $MDK_STORAGE_DIR/$INSTANCE_NAME/extra/behat:/var/www/behatfaildumps \
+        -p 8800:80 moodlehq/moodle-php-apache:8.1
 
 You will want to create databases in the same network, and other services like selenium.
 
