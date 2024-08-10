@@ -216,4 +216,4 @@ class CreateCommand(Command):
                     try:
                         M.runScript(script)
                     except Exception as e:
-                        logging.warning('Error while running the script \'%s\':\  %s' % (script, e))
+                        logging.warning('Error while running the script \'%s\':s  %s' % (script, e))
