@@ -793,15 +793,6 @@ class Moodle(object):
         if not self.git().reset(to=upstream, hard=True):
             raise Exception('Error while executing git reset.')
 
-        # Sync the master branch to the main branch.
-        if stablebranch == 'main' and self.git().hasBranch('master', upstreamremote):
-            logging.info('  Syncing the master branch to the main branch...')
-            # Any issues encountered here should just be logged and not break execution.
-            if not self.git().checkout('master'):
-                logging.info('Error while checking out the master branch.')
-            if not self.git().reset(to=upstream, hard=True):
-                logging.info('Error while executing git reset on the master branch.')
-
         # Return to previous branch
         self.checkout_stable(False)
 
