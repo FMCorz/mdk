@@ -29,15 +29,26 @@ Also check the `wiki <https://github.com/FMCorz/mdk/wiki>`_.
 Docker support
 ==============
 
-As at MDK 2.1, partial support for Moodle running in Docker is available. Some commands like ``phpunit``, ``upgrade``, ``run``, ``cron`` are run in the container. The ``behat`` command can also work but still requires some fiddling around. Other commands such as ``install`` will not work. Set the environment variable ``MDK_DOCKER_NAME`` to the name of the running container to use this feature.
+As at MDK 2.1, partial support for Moodle running in Docker is available. Some commands like ``phpunit``, ``upgrade``, ``run``, ``cron`` are run in the container. The ``behat`` command can also work but still requires some fiddling around. Other commands such as ``install`` will not work.
 
-Usage example::
+Set the environment variable ``MDK_DOCKER_NAME`` to the name of the running container, or enable the config ``docker.automaticContainerLookup`` to let MDK look for a matching running container automatically.
 
+Usage examples::
+
+    # One command.
     $ MDK_DOCKER_NAME=sm mdk phpunit
 
+    # Multiple commands.
     $ set -x MDK_DOCKER_NAME sm
+    $ mdk run dev
     $ mdk phpunit
 
+    # Enable automatic resolution.
+    $ mdk config set docker.automaticContainerLookup true
+
+    # With automatic resolution.
+    $ cd /path/to/sm
+    $ mdk phpunit
 
 Compatible containers
 ---------------------

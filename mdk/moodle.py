@@ -32,7 +32,7 @@ import urllib
 import json
 from tempfile import gettempdir
 
-from mdk.container import Container, DockerContainer, HostContainer
+from mdk.container import Container, DockerContainer, HostContainer, is_docker_container_running
 
 from .config import Conf
 from .db import DB
@@ -56,7 +56,6 @@ class Moodle(object):
     installed = False
     version = None
     config = None
-    container: Container
 
     _dbo = None
     _git = None
@@ -83,25 +82,6 @@ class Moodle(object):
         self.version = {}
         self.config = {}
         self._load()
-
-        # Cheeky way to detect if we want to run something in a docker container. This is a
-        # temporary solution. Ideally the container should be constructed elsewhere. It would
-        # make sense for the Workplace to know about the default container for an instance.
-        # And maybe we could have a common argument to all `mdk` commands to set the docker name.
-        dockername = os.environ.get('MDK_DOCKER_NAME', None)
-        if dockername:
-            container = DockerContainer(name=dockername, hostpath=Path(path))
-        else:
-            dataroot = self.get('dataroot', None)
-            container = HostContainer(
-                identifier=identifier,
-                path=Path(self.path),
-                dataroot=Path(dataroot) if dataroot else None,
-                binaries={
-                    'php': C.get('php'),
-                }
-            )
-        self.container = container
 
     def addConfig(self, name, value):
         """Add a parameter to the config file
@@ -225,6 +205,47 @@ class Moodle(object):
 
         cmd = [cli, *args]
         return self.php(cmd, **kwargs)
+
+    @property
+    def container(self) -> Container:
+        """Returns the container for this instance."""
+        # Cheeky way to detect if we want to run something in a docker container. This is a
+        # temporary solution. Ideally the container should be constructed elsewhere. It would
+        # make sense for the Workplace to know about the default container for an instance.
+        # And maybe we could have a common argument to all `mdk` commands to set the docker name.
+        if not hasattr(self, '_container'):
+            checkisrunning = True
+
+            # Resolve the docker name that we want, first env, then running containers.
+            dockername = None
+            if 'MDK_DOCKER_NAME' in os.environ:
+                dockername = os.environ.get('MDK_DOCKER_NAME', None)
+            elif C.get('docker.automaticContainerLookup') and is_docker_container_running(self.identifier):
+                checkisrunning = False
+                dockername = self.identifier
+
+            # From the name, we can construct the container.
+            container = None
+            if dockername:
+                if checkisrunning and not is_docker_container_running(dockername):
+                    logging.warn('Container %s is not running or does not exist, falling back on host.' % dockername)
+                else:
+                    container = DockerContainer(name=dockername, hostpath=Path(self.path))
+
+            # Fallback on the host.
+            if not container:
+                dataroot = self.get('dataroot', None)
+                container = HostContainer(
+                    identifier=self.identifier,
+                    path=Path(self.path),
+                    dataroot=Path(dataroot) if dataroot else None,
+                    binaries={
+                        'php': C.get('php'),
+                    }
+                )
+            self._container = container
+
+        return self._container
 
     def currentBranch(self):
         """Returns the current branch on the git repository"""

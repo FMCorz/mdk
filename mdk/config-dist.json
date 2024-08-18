@@ -281,6 +281,15 @@
     // You should not edit this, this is the branch that is considered as master by developers.
     "masterBranch": 405,
 
+    // Docker-related settings.
+    "docker": {
+
+        // When enabled, this will automatically attempt to find the container in which an instance
+        // is running based on the instance name, and the running containers. This will only apply
+        // when environment variable `MDK_DOCKER_NAME` is not set.
+        "automaticContainerLookup": false
+    },
+
     // Aliases for MDK commands.
     // An alias starting with a ! will be executed through the command line. Those also
     // can use placeholders for arguments: $1, $2, ...

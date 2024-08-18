@@ -10,6 +10,12 @@ from mdk.tools import get_absolute_path, mkdir, process
 C = Conf()
 
 
+def is_docker_container_running(name: str) -> bool:
+    """Check if a Docker container is running."""
+    r, _, _ = process(['docker', 'top', name])
+    return r == 0
+
+
 class Container(abc.ABC):
     """Interface to abstract env and commands inside a container."""
 
