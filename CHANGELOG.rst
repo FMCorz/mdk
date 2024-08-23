@@ -1,6 +1,31 @@
 Changelog
 =========
 
+v2.1.1
+-----
+
+- Formatting fixes in the `README` file
+- Fix for ``mdk fix`` when checking out an issue with an existing ``*-master`` branch - Jun Pataleta
+- Minor syntax and missing import fixes - Jun Pataleta
+- Fixes related to the removal of the `master` branch in `moodle.git` - Jun Pataleta
+
+  - Removal of references to the `master` branch in the `README` file
+  - Removal of the fallback logic to `master`, especially when creating a new instance
+  - Remove syncing of the local `master` branch with the `main` branch
+
+- Support automatic resolution of the docker container name
+
+v2.1.0
+-----
+
+- YAPF support
+- Centralise execution of Moodle-bound scripts
+- Initial support for Moodle running in Docker
+- Composer install fixes
+- The ``webservices`` script now enables ``webservice_restful`` plugin when available
+- New ``cron`` command
+- New script ``mincron`` to reduce the number of tasks running during cron
+
 v2.0.14
 -----
 
