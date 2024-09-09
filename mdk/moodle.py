@@ -521,6 +521,8 @@ class Moodle(object):
         forceCfg = C.get('forceCfg')
         if isinstance(forceCfg, dict):
             for cfgKey, cfgValue in forceCfg.items():
+                if type(cfgValue) is str:
+                    cfgValue = cfgValue.replace('[name]', self.identifier)
                 try:
                     logging.info('Setting up forced $CFG->%s to \'%s\' in config.php', cfgKey, cfgValue)
                     self.addConfig(cfgKey, cfgValue)
