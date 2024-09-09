@@ -507,8 +507,8 @@ class Moodle(object):
                 '- Command was: %s %s' % (cli, ' '.join(args))
             )
 
-        configFile = os.path.join(self.path, 'config.php')
-        os.chmod(configFile, 0o666)
+        configFile = Path('config.php')
+        self.container.chmod(configFile, 0o666)
         try:
             if C.get('path') != '' and C.get('path') != None:
                 self.addConfig('sessioncookiepath', '/%s/%s/' % (C.get('path'), self.identifier))
