@@ -36,7 +36,7 @@ class Container(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def mkdir(self, path: Path) -> None:
+    def mkdir(self, path: Path, mode: int) -> None:
         pass
 
     @property
@@ -158,7 +158,7 @@ class DockerContainer(Container):
 
     def chmod(self, path: Path, mode: int) -> None:
         path = get_absolute_path(path, self.path)
-        self.exec(['chmod', f'{oct(mode):o}', path.as_posix()])
+        self.exec(['chmod', f'{mode:o}', path.as_posix()])
 
     def exists(self, path: Path) -> bool:
         r, _, _ = self.exec(['test', '-e', (get_absolute_path(path, self.path)).as_posix()])
