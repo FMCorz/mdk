@@ -35,7 +35,7 @@ from tempfile import gettempdir
 from mdk.container import Container, DockerContainer, HostContainer, is_docker_container_running
 
 from .config import Conf
-from .db import DB
+from .db import DB, get_dbo_from_profile
 from .exceptions import InstallException, UpgradeNotAllowed
 from .git import Git, GitException
 from .jira import Jira, JiraException
@@ -255,12 +255,26 @@ class Moodle(object):
         """Returns a Database object"""
         if self._dbo == None:
             engine = self.get('dbtype')
-            db = self.get('dbname')
-            if engine != None and db != None:
-                try:
-                    self._dbo = DB(engine, C.get('db.%s' % engine))
-                except:
-                    pass
+            host = self.get('dbhost')
+            user = self.get('dbuser')
+
+            # This is not ideal, we're associating the Moodle config with MDK profiles in the config, there is no
+            # guarantee that a profile will not change later on. When a profile is not a docker one, we should
+            # be using all of the Moodle config to create the database object, the only that's hard to get is the port.
+            candidates = []
+            for candidate in C.get('db').values():
+                if type(candidate) is not dict:
+                    continue
+                if candidate.get('engine') == engine and candidate.get('user') == user and candidate.get('host') == host:
+                    candidates.append(candidate)
+
+            # Better safe than sorry.
+            if not candidates:
+                raise ValueError(f'No database profile found for {engine} {user}@{host}')
+            if len(candidates) > 1:
+                raise ValueError(f'Ambiguous database profile, multiple found for {engine} {user}@{host}')
+
+            self._dbo = get_dbo_from_profile(candidates[0])
         return self._dbo
 
     def exec(self, cmd, **kwargs):
@@ -422,7 +436,7 @@ class Moodle(object):
             info[k] = v
         return info
 
-    def install(self, dbname=None, engine=None, dataDir=None, fullname=None, dropDb=False, wwwroot=None):
+    def install(self, dbprofile=None, dbname=None, engine=None, dataDir=None, fullname=None, dropDb=False, wwwroot=None):
         """Launch the install script of an Instance"""
 
         if self.isInstalled():
@@ -438,27 +452,33 @@ class Moodle(object):
             if prefixDbname:
                 dbname = prefixDbname + dbname
             dbname = dbname[:28]
-        if engine == None:
-            engine = C.get('defaultEngine')
+
+        dbprofilename = dbprofile
+        if not dbprofilename:
+            if engine is not None:
+                dbprofilename = engine
+            else:
+                dbprofilename = C.get('defaultEngine')
+        dbprofile = C.get('db.%s' % dbprofilename)
+        engine = dbprofile['engine']
+
         if fullname == None:
             fullname = self.identifier.replace('-', ' ').replace('_', ' ').title()
             fullname = fullname + ' ' + C.get('wording.%s' % engine)
 
-        dboptions = C.get('db.%s' % engine)
-        if engine in ('mysqli', 'mariadb') and self.branch_compare(31):
-            dboptions['charset'] = 'utf8mb4'
-
         logging.info('Creating database...')
-        db = DB(engine, dboptions)
-        if db.dbexists(dbname):
+        dbo = get_dbo_from_profile(dbprofile)
+        if dbo.dbexists(dbname):
             if dropDb:
-                db.dropdb(dbname)
-                db.createdb(dbname)
+                dbo.dropdb(dbname)
+                createdbkwargs = {}
+                if engine in ('mysqli', 'mariadb') and self.branch_compare(31, '<'):
+                    createdbkwargs['charset'] = 'utf8'
+                dbo.createdb(dbname, **createdbkwargs)
             else:
                 raise InstallException('Cannot install an instance on an existing database (%s)' % dbname)
         else:
-            db.createdb(dbname)
-        db.selectdb(dbname)
+            dbo.createdb(dbname)
 
         logging.info('Installing %s...' % self.identifier)
         args = [
@@ -466,10 +486,10 @@ class Moodle(object):
             '--dataroot=%s' % dataDir,
             '--dbtype=%s' % engine,
             '--dbname=%s' % dbname,
-            '--dbuser=%s' % C.get('db.%s.user' % engine),
-            '--dbpass=%s' % C.get('db.%s.passwd' % engine),
-            '--dbhost=%s' % C.get('db.%s.host' % engine),
-            '--dbport=%s' % C.get('db.%s.port' % engine),
+            '--dbuser=%s' % dbprofile['user'],
+            '--dbpass=%s' % dbprofile['passwd'],
+            '--dbhost=%s' % dbprofile['host'],
+            '--dbport=%s' % dbprofile['port'],
             '--prefix=%s' % C.get('db.tablePrefix'),
             '--fullname=%s' % fullname,
             '--shortname=%s' % self.identifier,

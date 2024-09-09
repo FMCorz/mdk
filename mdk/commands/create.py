@@ -23,13 +23,15 @@ http://github.com/FMCorz/mdk
 
 import re
 import logging
-from pathlib import Path
-import shutil
 
-from ..db import DB
+from mdk.config import Conf
+
+from ..db import DB, get_dbo_from_profile
 from ..command import Command
 from ..tools import yesOrNo, version_options
 from ..exceptions import CreateException, InstallException
+
+C = Conf()
 
 
 class CreateCommand(Command):
@@ -38,6 +40,8 @@ class CreateCommand(Command):
 
     def __init__(self, *args, **kwargs):
         super(CreateCommand, self).__init__(*args, **kwargs)
+
+        profiles = [k for k, v in C.get('db').items() if type(v) is dict and 'engine' in v]
         self._arguments = [
             (
                 ['-i', '--install'],
@@ -48,13 +52,14 @@ class CreateCommand(Command):
                 },
             ),
             (
-                ['-e', '--engine'],
+                ['-e', '--engine', '--dbprofile'],
                 {
                     'action': 'store',
-                    'choices': ['mariadb', 'mysqli', 'pgsql', 'sqlsrv'],
+                    'choices': profiles,
                     'default': self.C.get('defaultEngine'),
-                    'help': 'database engine to install the instance on, use with --install',
-                    'metavar': 'engine',
+                    'help': 'database profile to install the instance on, use with --install',
+                    'metavar': 'profile',
+                    'dest': 'dbprofile'
                 },
             ),
             (
@@ -108,7 +113,7 @@ class CreateCommand(Command):
 
     def run(self, args):
 
-        engine = args.engine
+        dbprofile = args.dbprofile
         versions = args.version
         suffixes = args.suffix
         install = args.install
@@ -126,7 +131,7 @@ class CreateCommand(Command):
                 arguments = {
                     'version': version,
                     'suffix': suffix,
-                    'engine': engine,
+                    'dbprofile': dbprofile,
                     'integration': args.integration,
                     'identifier': args.identifier,
                     'install': install,
@@ -146,7 +151,9 @@ class CreateCommand(Command):
 
         args = Bunch(**args)
 
-        engine = args.engine
+        dbprofilename = args.dbprofile
+        dbprofile = C.get('db.%s' % args.dbprofile)
+        engine = dbprofile['engine']
         version = args.version
         name = self.Wp.generateInstanceName(version, integration=args.integration, suffix=args.suffix, identifier=args.identifier)
 
@@ -185,15 +192,15 @@ class CreateCommand(Command):
             if prefixDbname:
                 dbname = prefixDbname + dbname
             dbname = dbname[:28]
-            db = DB(engine, self.C.get('db.%s' % engine))
+            dbo = get_dbo_from_profile(dbprofile)
             dropDb = False
-            if db.dbexists(dbname):
+            if dbo.dbexists(dbname):
                 logging.info('Database already exists (%s)' % dbname)
                 dropDb = yesOrNo('Do you want to remove it?')
 
             # Install
             kwargs = {
-                'engine': engine,
+                'dbprofile': dbprofilename,
                 'dbname': dbname,
                 'dropDb': dropDb,
                 'fullname': fullname,

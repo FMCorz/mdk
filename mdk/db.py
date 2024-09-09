@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -22,12 +19,238 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import abc
+from contextlib import contextmanager
 import logging
 from io import IOBase
+from typing import Any, Dict, List
 
-# TODO: Clean up the mess caused by the different engines and libraries.
+from mdk.tools import process
+
+
+def get_dbo_from_profile(profile: Dict[str, Any]) -> 'Database':
+    engine = profile.get('engine', 'unknown')
+    if 'dockername' in profile:
+        if engine == 'pgsql':
+            return PgSQLDocker(profile['dockername'])
+    elif engine == 'pgsql':
+        return PgSQLCursor(profile['host'], profile['port'], profile['user'], profile['passwd'])
+    elif engine == 'mariadb':
+        return MariaDBCursor(profile['host'], profile['port'], profile['user'], profile['passwd'])
+    elif engine == 'mysqli':
+        return MySQLCursor(profile['host'], profile['port'], profile['user'], profile['passwd'])
+    elif engine == 'sqlsrv':
+        return SQLServerCursor(profile['host'], profile['port'], profile['user'], profile['passwd'])
+    raise ValueError(f"Unsupported engine '{engine}'")
+
+
+class Database(abc.ABC):
+
+    @abc.abstractmethod
+    def createdb(self, dbname, **options):
+        pass
+
+    @abc.abstractmethod
+    def dropdb(self, dbname):
+        pass
+
+    @abc.abstractmethod
+    def dbexists(self, dbname) -> bool:
+        pass
+
+    @abc.abstractmethod
+    def dump(self, dbname, fd):
+        pass
+
+
+class MySQLCursor(Database):
+
+    _host: str
+    _port: int
+    _user: str
+    _passwd: str
+
+    def __init__(self, host, port, user, passwd):
+        self._host = str(host)
+        self._port = int(port)
+        self._user = str(user)
+        self._passwd = str(passwd)
+
+    @contextmanager
+    def cursor(self):
+        import MySQLdb as mysql
+        conn = mysql.connect(host=self._host, port=self._port, user=self._user, passwd=self._passwd, db='')
+        cursor = conn.cursor()
+        yield cursor
+        cursor.close()
+        conn.close()
+
+    def createdb(self, dbname, **options):
+        with self.cursor() as cursor:
+            charset = 'utf8mb4' if 'charset' not in options else options['charset']
+            collate = 'utf8mb4_unicode_ci' if charset == 'utf8mb4' else 'utf8_unicode_ci'
+            sql = f'CREATE DATABASE `{dbname}` CHARACTER SET {charset} COLLATE {collate}'
+            logging.debug(sql)
+            cursor.execute(sql)
+
+    def dropdb(self, dbname):
+        with self.cursor() as cursor:
+            sql = f'DROP DATABASE `{dbname}`'
+            logging.debug(sql)
+            cursor.execute(sql)
+
+    def dbexists(self, dbname):
+        with self.cursor() as cursor:
+            sql = f"SELECT 1 FROM information_schema.SCHEMATA WHERE SCHEMA_NAME LIKE '{dbname}'"
+            logging.debug(sql)
+            cursor.execute(sql)
+            return cursor.fetchone() is not None
+
+    def dump(self, dbname, fd):
+        raise NotImplementedError('This method is not implemented, but it probably should be.')
+
+
+class MariaDBCursor(MySQLCursor):
+    pass
+
+
+class PgSQLCursor(Database):
+
+    _host: str
+    _port: int
+    _user: str
+    _passwd: str
+
+    def __init__(self, host, port, user, passwd):
+        self._host = str(host)
+        self._port = int(port)
+        self._user = str(user)
+        self._passwd = str(passwd)
+
+    @contextmanager
+    def cursor(self, autocommit=None):
+        import psycopg2 as pgsql
+        conn = pgsql.connect(host=self._host, port=self._port, user=self._user, password=self._passwd)
+        if autocommit is not None:
+            conn.set_session(autocommit=autocommit)
+        try:
+            cursor = conn.cursor()
+            yield cursor
+        except:
+            raise Exception('Connection failed! Make sure the database \'%s\' exists.' % self._user)
+        cursor.close()
+        conn.close()
+
+    def createdb(self, dbname, **options):
+        with self.cursor(autocommit=True) as cursor:
+            sql = f'CREATE DATABASE "{dbname}" WITH ENCODING \'UNICODE\''
+            logging.debug(sql)
+            cursor.execute(sql)
+
+    def dropdb(self, dbname):
+        with self.cursor(autocommit=True) as cursor:
+            sql = f'DROP DATABASE IF EXISTS "{dbname}"'
+            logging.debug(sql)
+            cursor.execute(sql)
+
+    def dbexists(self, dbname):
+        with self.cursor() as cursor:
+            sql = f"SELECT 1 FROM pg_database WHERE datname='{dbname}'"
+            logging.debug(sql)
+            cursor.execute(sql)
+            return cursor.fetchone() is not None
+
+    def dump(self, dbname, fd):
+        raise NotImplementedError('This method is not implemented, but it probably should be.')
+
+
+class PgSQLDocker(Database):
+
+    def __init__(self, containername):
+        self._name = containername
+
+    def createdb(self, dbname, **options):
+        self.exec(['createdb', dbname])
+
+    def dropdb(self, dbname):
+        self.exec(['dropdb', dbname])
+
+    def dbexists(self, dbname):
+        code, stdout, _ = self.exec(['psql', '-t', '-A', '-c', f"SELECT 1 FROM pg_database WHERE datname = '{dbname}'"])
+        return code == 0 and stdout.strip() == "1"
+
+    def dump(self, dbname, fd):
+        self.exec(['pg_dump', '-d', dbname], stdout=fd)
+
+    def exec(self, command: List[str], **kwargs):
+        hostcommand = ['docker', 'exec', '-i', '-u', 'postgres', self._name, *command]
+        return process(hostcommand, **kwargs)
+
+
+class SQLServerCursor(Database):
+
+    _host: str
+    _port: int
+    _user: str
+    _passwd: str
+
+    def __init__(self, host, port, user, passwd):
+        self._host = str(host)
+        self._port = int(port)
+        self._user = str(user)
+        self._passwd = str(passwd)
+
+    @contextmanager
+    def cursor(self, autocommit=True):
+        import pyodbc
+
+        # Look for installed ODBC Driver for SQL Server.
+        drivers = pyodbc.drivers()
+        sqlsrvdriver = next((driver for driver in drivers if "for SQL Server" in driver), None)
+        if sqlsrvdriver is None:
+            installurl = 'https://sqlchoice.azurewebsites.net/en-us/sql-server/developer-get-started/python'
+            raise Exception("You need to install an ODBC Driver for SQL Server. Check out %s for more info." % installurl)
+
+        logging.debug('Using %s' % sqlsrvdriver)
+
+        connectionstr = f"DRIVER={sqlsrvdriver};SERVER={self._host};PORT={self._port};UID={self._user};PWD={self._passwd}"
+        conn = pyodbc.connect(connectionstr)
+        conn.autocommit = autocommit
+        cursor = conn.cursor()
+        yield cursor
+        cursor.close()
+        conn.close()
+
+    def createdb(self, dbname, **options):
+        with self.cursor(autocommit=False) as cursor:
+            sql = 'CREATE DATABASE "%s" COLLATE Latin1_General_CS_AS;' \
+                  'ALTER DATABASE "%s" SET ANSI_NULLS ON;' \
+                  'ALTER DATABASE "%s" SET QUOTED_IDENTIFIER ON;' \
+                  'ALTER DATABASE "%s" SET READ_COMMITTED_SNAPSHOT ON;' % (dbname, dbname, dbname, dbname)
+            logging.debug(sql)
+            cursor.execute(sql)
+
+    def dropdb(self, dbname):
+        with self.cursor(autocommit=False) as cursor:
+            sql = f'DROP DATABASE "{dbname}"'
+            logging.debug(sql)
+            cursor.execute(sql)
+
+    def dbexists(self, dbname):
+        with self.cursor() as cursor:
+            sql = f"SELECT COUNT('*') FROM master.dbo.sysdatabases WHERE name = '{dbname}'"
+            logging.debug(sql)
+            cursor.execute(sql)
+            return cursor.fetchone()[0] > 0
+
+    def dump(self, dbname, fd):
+        raise NotImplementedError('This method is not implemented, but it probably should be.')
+
 
 class DB(object):
+    """
+    .. deprecated:: 2.2 Use another class.
+    """
 
     conn = None
     cur = None
@@ -50,7 +273,7 @@ class DB(object):
                 port=int(options['port']),
                 user=options['user'],
                 passwd=options['passwd'],
-                db=''
+                db='',
             )
             self.cur = self.conn.cursor()
 
@@ -61,7 +284,7 @@ class DB(object):
                 host=str(options['host']),
                 port=int(options['port']),
                 user=str(options['user']),
-                password=str(options['passwd'])
+                password=str(options['passwd']),
             )
             try:
                 self.cur = self.conn.cursor()
@@ -243,7 +466,6 @@ class DB(object):
                 password=str(self.options['passwd']),
                 database=str(db)
             )
-
 
             self.cur = self.conn.cursor()
 

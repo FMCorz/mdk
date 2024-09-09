@@ -39,28 +39,40 @@
         // Tables name prefix to be set in the config.php during the instance creation.
         "tablePrefix": "mdl_",
         "mariadb": {
+            "engine": "mariadb",
             "host": "localhost",
             "port": "3306",
             "user": "root",
             "passwd": "root"
         },
         "mysqli": {
+            "engine": "mysqli",
             "host": "localhost",
             "port": "3306",
             "user": "root",
             "passwd": "root"
         },
         "pgsql": {
+            "engine": "pgsql",
             "host": "localhost",
             "port": "5432",
             "user": "root",
             "passwd": "root"
         },
         "sqlsrv": {
+            "engine": "sqlsrv",
             "host": "localhost",
             "port": "1433",
             "user": "SA",
             "passwd": "root"
+        },
+        "pgsql-docker": {
+            "engine": "pgsql",
+            "host": "pgsql",
+            "port": "5432",
+            "user": "postgres",
+            "passwd": "root",
+            "dockername": "pgsql"
         }
     },
 

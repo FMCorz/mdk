@@ -23,12 +23,10 @@ http://github.com/FMCorz/mdk
 
 import os
 import logging
-from .. import db
 from ..command import Command
 from ..tools import mkdir
 from ..config import Conf
 
-DB = db.DB
 C = Conf()
 
 
@@ -38,14 +36,17 @@ class InstallCommand(Command):
 
     def __init__(self, *args, **kwargs):
         super(InstallCommand, self).__init__(*args, **kwargs)
+
+        profiles = [k for k, v in C.get('db').items() if type(v) is dict and 'engine' in v]
         self._arguments = [(
-            ['-e', '--engine'],
+            ['-e', '--engine', '--dbprofile'],
             {
                 'action': 'store',
-                'choices': ['mariadb', 'mysqli', 'pgsql', 'sqlsrv'],
+                'choices': profiles,
                 'default': self.C.get('defaultEngine'),
-                'help': 'database engine to use',
-                'metavar': 'engine'
+                'help': 'database profile to use',
+                'metavar': 'profile',
+                'dest': 'dbprofile'
             },
         ), (
             ['-f', '--fullname'],
@@ -75,7 +76,7 @@ class InstallCommand(Command):
     def run(self, args):
 
         name = args.name
-        engine = args.engine
+        dbprofile = args.dbprofile
         fullname = args.fullname
 
         M = self.Wp.resolve(name)
@@ -87,7 +88,7 @@ class InstallCommand(Command):
         if not os.path.isdir(dataDir):
             mkdir(dataDir, 0o777)
 
-        kwargs = {'engine': engine, 'fullname': fullname, 'dataDir': dataDir, 'wwwroot': self.Wp.getUrl(name)}
+        kwargs = {'dbprofile': dbprofile, 'fullname': fullname, 'dataDir': dataDir, 'wwwroot': self.Wp.getUrl(name)}
         M.install(**kwargs)
 
         # Running scripts
