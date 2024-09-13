@@ -200,7 +200,7 @@ class DockerContainer(Container):
 
     @property
     def behat_wwwroot(self) -> str:
-        return 'http://127.0.0.1'
+        return f'http://{self._name}'
 
     @property
     def phpunit_dataroot(self) -> Path:
