@@ -101,6 +101,14 @@ class BehatCommand(Command):
             },
         ),
         (
+            ['-k', '--skip-init'],
+            {
+                'action': 'store_true',
+                'dest': 'skipinit',
+                'help': 'allows tests to start quicker when the instance is already initialised'
+            },
+        ),
+        (
             ['--selenium'],
             {
                 'default': None,
@@ -197,9 +205,10 @@ class BehatCommand(Command):
             outputDir = (M.container.behat_faildumps or Path(self.Wp.getExtraDir(M.get('identifier'), 'behat'))).as_posix()
             outpurUrl = self.Wp.getUrl(M.get('identifier'), extra='behat')
 
-            logging.info('Initialising Behat, please be patient!')
-            M.initBehat(switchcompletely=args.switchcompletely, force=args.force, prefix=prefix, faildumppath=outputDir)
-            logging.info('Behat ready!')
+            if not args.skipinit:
+                logging.info('Initialising Behat, please be patient!')
+                M.initBehat(force=args.force, prefix=prefix, faildumppath=outputDir)
+                logging.info('Behat ready!')
 
             # Preparing Behat command
             cmd = ['vendor/bin/behat']
