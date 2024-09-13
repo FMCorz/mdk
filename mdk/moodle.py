@@ -361,16 +361,8 @@ class Moodle(object):
         """Initialise the PHPUnit environment"""
         raise Exception('This method is deprecated, use phpunit.PHPUnit.init() instead.')
 
-    def initBehat(self, switchcompletely=False, force=False, prefix=None, faildumppath=None):
+    def initBehat(self, force=False, prefix=None, faildumppath=None):
         """Initialise the Behat environment"""
-
-        if self.branch_compare(25, '<'):
-            raise Exception('Behat is only available from Moodle 2.5')
-
-        # Force switch completely for PHP < 5.4
-        (none, phpVersion, none) = self.php(['-r', 'echo version_compare(phpversion(), \'5.4\');'])
-        if int(phpVersion) <= 0:
-            switchcompletely = True
 
         # Set Behat data root
         self.updateConfig('behat_dataroot', self.container.behat_dataroot.as_posix())
@@ -393,21 +385,12 @@ class Moodle(object):
             # No warning for Oracle as we need to set it to something else.
             logging.warning('Behat prefix not changed, already set to \'%s\', expected \'%s\'.' % (currentPrefix, behat_prefix))
 
-        # Switch completely?
-        if self.branch_compare(26, '<'):
-            if switchcompletely:
-                self.updateConfig('behat_switchcompletely', switchcompletely)
-                self.updateConfig('behat_wwwroot', self.get('wwwroot'))
-            else:
-                self.removeConfig('behat_switchcompletely')
-                self.removeConfig('behat_wwwroot')
-        else:
-            wwwroot = self.container.behat_wwwroot
-            currentWwwroot = self.get('behat_wwwroot')
-            if not currentWwwroot or force:
-                self.updateConfig('behat_wwwroot', wwwroot)
-            elif currentWwwroot != wwwroot:
-                logging.warning('Behat wwwroot not changed, already set to \'%s\', expected \'%s\'.' % (currentWwwroot, wwwroot))
+        wwwroot = self.container.behat_wwwroot
+        currentWwwroot = self.get('behat_wwwroot')
+        if not currentWwwroot or force:
+            self.updateConfig('behat_wwwroot', wwwroot)
+        elif currentWwwroot != wwwroot:
+            logging.warning('Behat wwwroot not changed, already set to \'%s\', expected \'%s\'.' % (currentWwwroot, wwwroot))
 
         # Force a cache purge
         self.purge()

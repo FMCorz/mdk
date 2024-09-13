@@ -41,7 +41,7 @@ class BehatCommand(Command):
             ['-r', '--run'],
             {
                 'action': 'store_true',
-                'help': 'run the tests'
+                'help': 'run the tests',
             },
         ),
         (
@@ -50,7 +50,8 @@ class BehatCommand(Command):
                 'action': 'store_true',
                 'help': 'disable Behat, runs the tests first if --run has been set. Ignored from 2.7.'
             },
-        ), (
+        ),
+        (
             ['--force'],
             {
                 'action': 'store_true',
@@ -100,14 +101,6 @@ class BehatCommand(Command):
             },
         ),
         (
-            ['-s', '--switch-completely'],
-            {
-                'action': 'store_true',
-                'dest': 'switchcompletely',
-                'help': 'force the switch completely setting. This will be automatically enabled for PHP < 5.4. Ignored from 2.7.'
-            },
-        ),
-        (
             ['--selenium'],
             {
                 'default': None,
@@ -131,7 +124,8 @@ class BehatCommand(Command):
                 'dest': 'seleniumverbose',
                 'help': 'outputs the output from selenium in the same window'
             },
-        ), (
+        ),
+        (
             ['name'],
             {
                 'default': None,
@@ -139,7 +133,7 @@ class BehatCommand(Command):
                 'metavar': 'name',
                 'nargs': '?'
             },
-        )
+        ),
     ]
     _description = 'Initialise Behat'
 
@@ -243,7 +237,6 @@ class BehatCommand(Command):
                     featurepath = Path(M.get('path')) / Path(args.feature.lstrip('/'))
                 cmd.append(featurepath.relative_to(Path(M.get('path'))).as_posix())
 
-            phpCommand = '%s -S localhost:8000' % (self.C.get('php'))
             seleniumCommand = None
             if seleniumPath:
                 if self.C.get('behat.useSeleniumGrid'):
@@ -251,22 +244,10 @@ class BehatCommand(Command):
                 else:
                     seleniumCommand = '%s -jar %s' % (self.C.get('java'), seleniumPath)
 
-            olderThan26 = M.branch_compare(26, '<')
-
             if args.run:
                 logging.info('Preparing Behat testing')
 
-                # Preparing PHP Server
-                phpServer = None
-                if olderThan26 and not M.get('behat_switchcompletely'):
-                    logging.info('Starting standalone PHP server')
-                    kwargs = {}
-                    kwargs['cwd'] = M.get('path')
-                    phpServer = ProcessInThread(phpCommand, **kwargs)
-                    phpServer.start()
-
                 # Launching Selenium
-                seleniumServer = None
                 if seleniumPath and not nojavascript:
                     logging.info('Starting Selenium server')
                     kwargs = {}
@@ -290,9 +271,9 @@ class BehatCommand(Command):
                 logging.info('Running Behat tests')
 
                 # Sleep for a few seconds before starting Behat
-                if phpServer or seleniumServer:
+                if seleniumServer:
                     launchSleep = int(self.C.get('behat.launchSleep'))
-                    logging.debug('Waiting for %d seconds to allow Selenium and/or the PHP Server to start ' % (launchSleep))
+                    logging.debug('Waiting for %d seconds to allow Selenium to start ' % (launchSleep))
                     sleep(launchSleep)
 
                 # Running the tests
@@ -304,8 +285,6 @@ class BehatCommand(Command):
                     pass
 
                 # Kill the remaining processes
-                if phpServer and phpServer.is_alive():
-                    phpServer.kill()
                 if seleniumServer and seleniumServer.is_alive():
                     seleniumServer.kill()
 
@@ -316,8 +295,6 @@ class BehatCommand(Command):
             else:
                 if args.faildump:
                     logging.info('More output will be accessible at:\n %s\n %s', outputDir, outpurUrl)
-                if olderThan26:
-                    logging.info('Launch PHP Server (or set $CFG->behat_switchcompletely to True):\n %s' % (phpCommand))
                 if seleniumCommand:
                     logging.info('Launch Selenium (optional):\n %s' % (seleniumCommand))
                 logging.info('Launch Behat:\n %s' % (' '.join(cmd)))
@@ -328,7 +305,6 @@ class BehatCommand(Command):
     def disable(self, M):
         logging.info('Disabling Behat')
         M.cli('admin/tool/behat/cli/util.php', ['--disable'])
-        M.removeConfig('behat_switchcompletely')
 
     def handleDownloadSeleniumLegacy(self, seleniumPath):
         logging.info('Attempting to find a download for Selenium')
