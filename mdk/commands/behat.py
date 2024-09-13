@@ -109,6 +109,14 @@ class BehatCommand(Command):
             },
         ),
         (
+            ['-S, --no-selenium'],
+            {
+                'action': 'store_true',
+                'dest': 'noselenium',
+                'help': 'when set, do not attempt to start Selenium',
+            },
+        ),
+        (
             ['--selenium'],
             {
                 'default': None,
@@ -146,6 +154,7 @@ class BehatCommand(Command):
     _description = 'Initialise Behat'
 
     def run(self, args):
+        withselenium = not (args.noselenium or args.nojavascript)
 
         # Loading instance
         M = self.Wp.resolve(args.name)
@@ -175,20 +184,22 @@ class BehatCommand(Command):
         M.installComposerAndDevDependenciesIfNeeded()
 
         # Download selenium
-        useSeleniumGrid = self.C.get('behat.useSeleniumGrid')
-        seleniumFileName = 'selenium.jar'
-        if useSeleniumGrid:
-            seleniumFileName = 'selenium-grid.jar'
-        seleniumPath = os.path.expanduser(os.path.join(self.C.get('dirs.mdk'), seleniumFileName))
-        if args.selenium:
-            seleniumPath = args.selenium
-        elif args.seleniumforcedl or (not nojavascript and not os.path.isfile(seleniumPath)):
+        seleniumPath = None
+        if withselenium:
+            useSeleniumGrid = self.C.get('behat.useSeleniumGrid')
+            seleniumFileName = 'selenium.jar'
             if useSeleniumGrid:
-                self.handleDownloadSeleniumGrid(seleniumPath)
-            else:
-                self.handleDownloadSeleniumLegacy(seleniumPath)
+                seleniumFileName = 'selenium-grid.jar'
+            seleniumPath = os.path.expanduser(os.path.join(self.C.get('dirs.mdk'), seleniumFileName))
+            if args.selenium:
+                seleniumPath = args.selenium
+            elif args.seleniumforcedl or (not nojavascript and not os.path.isfile(seleniumPath)):
+                if useSeleniumGrid:
+                    self.handleDownloadSeleniumGrid(seleniumPath)
+                else:
+                    self.handleDownloadSeleniumLegacy(seleniumPath)
 
-        if not nojavascript and not os.path.isfile(seleniumPath):
+        if withselenium and not os.path.isfile(seleniumPath):
             raise Exception('Selenium file %s does not exist')
 
         # Run cli
@@ -257,7 +268,8 @@ class BehatCommand(Command):
                 logging.info('Preparing Behat testing')
 
                 # Launching Selenium
-                if seleniumPath and not nojavascript:
+                seleniumServer = None
+                if seleniumPath and withselenium:
                     logging.info('Starting Selenium server')
                     kwargs = {}
                     if args.seleniumverbose:
