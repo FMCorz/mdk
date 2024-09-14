@@ -12,7 +12,11 @@ require_once($CFG->dirroot.'/webservice/lib.php');
 
 // We don't really need to be admin, except to be able to see the generated tokens
 // in the admin settings page, while logged in as admin.
-cron_setup_user();
+if (class_exists(\core\cron::class)) {
+    \core\cron::setup_user();
+} else {
+    cron_setup_user();
+}
 
 // Enable the Web Services.
 set_config('enablewebservices', 1);
