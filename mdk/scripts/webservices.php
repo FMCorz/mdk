@@ -39,11 +39,17 @@ $webservicemanager->update_external_service($mobileservice);
 // Enable capability to use REST protocol.
 assign_capability('webservice/rest:use', CAP_ALLOW, $CFG->defaultuserroleid, SYSCONTEXTID, true);
 
+// Rename Web Service user that was created with test username, whoops.
+$legacyuser = $DB->get_record('user', ['username' => 'testtete']);
+if ($legacyuser) {
+    $DB->update_record('user', ['id' => $legacyuser->id, 'username' => 'mdkwsuser']);
+}
+
 // Create the Web Service user.
-$user = $DB->get_record('user', array('username' => 'testtete'));
+$user = $DB->get_record('user', ['username' => 'mdkwsuser']);
 if (!$user) {
     $user = new stdClass();
-    $user->username = 'testtete';
+    $user->username = 'mdkwsuser';
     $user->firstname = 'Web';
     $user->lastname = 'Service';
     $user->password = 'test';
@@ -52,9 +58,14 @@ if (!$user) {
     $user = $dg->create_user($user);
 }
 
+// Rename role that was create with test shortname.
+if ($legacyroleid = $DB->get_field('role', 'id', ['shortname' => 'testtete'])) {
+    $DB->update_record('role', ['id' => $legacyroleid, 'shortname' => 'mdkwsrole']);
+}
+
 // Create a role for Web Services with all permissions.
-if (!$roleid = $DB->get_field('role', 'id', array('shortname' => 'testtete'))) {
-    $roleid = create_role('Web Service', 'testtete', 'MDK: All permissions given by default.', '');
+if (!$roleid = $DB->get_field('role', 'id', ['shortname' => 'mdkwsrole'])) {
+    $roleid = create_role('MDK Web Service', 'mdkwsrole', 'MDK: All permissions given by default.', '');
 }
 $context = context_system::instance();
 set_role_contextlevels($roleid, array($context->contextlevel));
