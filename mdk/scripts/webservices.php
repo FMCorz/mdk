@@ -67,9 +67,12 @@ if ($legacyroleid = $DB->get_field('role', 'id', ['shortname' => 'testtete'])) {
 if (!$roleid = $DB->get_field('role', 'id', ['shortname' => 'mdkwsrole'])) {
     $roleid = create_role('MDK Web Service', 'mdkwsrole', 'MDK: All permissions given by default.', '');
 }
+
+// Allow context levels.
 $context = context_system::instance();
 set_role_contextlevels($roleid, array($context->contextlevel));
-role_assign($roleid, $user->id, $context->id);
+
+// Assign all permissions.
 if (method_exists($context, 'get_capabilities')) {
     $capabilities = $context->get_capabilities();
 } else{
@@ -78,6 +81,15 @@ if (method_exists($context, 'get_capabilities')) {
 foreach ($capabilities as $capability) {
     assign_capability($capability->name, CAP_ALLOW, $roleid, $context->id, true);
 }
+
+// Allow role switches.
+$allows = get_default_role_archetype_allows('assign', 'manager');
+foreach ($allows as $allowid) {
+    core_role_set_assign_allowed($roleid, $allowid);
+}
+
+// Mark dirty.
+role_assign($roleid, $user->id, $context->id);
 $context->mark_dirty();
 
 // Create a new service with all functions for the user.
