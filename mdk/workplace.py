@@ -130,7 +130,7 @@ class Workplace(object):
         # Update the cached clones.
         self.updateCachedClones(stable=not integration, integration=integration, verbose=False)
 
-        branch = stableBranch(version, git.Git(self.getCachedRemote(integration), C.get('git')))
+        branch = stableBranch(version)
 
         useCacheAsUpstream = C.get('useCacheAsUpstreamRemote')
         cloneAsShared = useCacheAsUpstream and C.get('useCacheAsSharedClone')

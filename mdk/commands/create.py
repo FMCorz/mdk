@@ -159,7 +159,7 @@ class CreateCommand(Command):
 
         # Wording version
         versionNice = version
-        if version in ['master', 'main']:
+        if version in ['main']:
             versionNice = self.C.get('wording.master')
 
         # Generating names

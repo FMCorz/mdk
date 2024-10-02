@@ -73,7 +73,7 @@ class FixCommand(Command):
 
         stablebranch = M.get('stablebranch')
         masterbranch = ''
-        if stablebranch in ['master', 'main']:
+        if stablebranch in ['main']:
             # Generate a branch name for master to check later whether there's already an existing working branch.
             masterbranch = M.generateBranchName(args.issue, args.suffix, 'master')
 
