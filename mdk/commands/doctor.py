@@ -85,10 +85,17 @@ class DoctorCommand(Command):
             }
         ),
         (
+            ['--mainbranch'],
+            {
+                'action': 'store_true',
+                'help': 'Check the status of the main branch'
+            }
+        ),
+        (
             ['--masterbranch'],
             {
                 'action': 'store_true',
-                'help': 'Check the status of the master branch'
+                'help': 'With the removal of the master branch in Moodle, this is now just an alias for the `--mainbranch` argument'
             }
         ),
         (
@@ -153,8 +160,12 @@ class DoctorCommand(Command):
         if args.branch or allChecks:
             self.branch(args)
 
-        # Check the master branch
-        if args.masterbranch or allChecks:
+        # Check the main branch
+        if args.mainbranch or args.masterbranch or allChecks:
+            if args.masterbranch:
+                print('With the removal of the master branch in the Moodle repository, the `--masterbranch` argument '
+                      'is now an alias for the `--mainbranch` argument and may be removed soon from MDK as well. '
+                      'In the future, please use `--mainbranch` argument instead.')
             self.masterbranch(args)
 
         # Check what you see is what you get
@@ -287,9 +298,9 @@ class DoctorCommand(Command):
                     mkdir(d, 0o777)
 
     def masterbranch(self, args):
-        """Checks the current master branch and the value set in config."""
+        """Checks the current main branch and the value set in config."""
 
-        print('Checking master branch')
+        print('Checking the main branch')
 
         if not self._checkWorkplace():
             return
@@ -305,7 +316,7 @@ class DoctorCommand(Command):
             return
 
         repo = git.Git(repoPath, self.C.get('git'))
-        result = repo.execute(['show', 'master:version.php'])
+        result = repo.execute(['show', 'main:version.php'])
         if result[0] != 0:
             print('  Could not read the master version.php')
             return
