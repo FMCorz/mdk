@@ -35,7 +35,6 @@ from ..tools import get_absolute_path, process, ProcessInThread, downloadProcess
 
 
 class BehatCommand(Command):
-
     _arguments = [
         (
             ['-r', '--run'],
@@ -349,7 +348,7 @@ class BehatCommand(Command):
             assets = content['assets']
             matches = []
             for asset in assets:
-                if re.search('selenium-server-[0-9.]+\.jar', asset['name']):
+                if re.search(r'selenium-server-[0-9.]+\.jar', asset['name']):
                     matches.append(asset['browser_download_url'])
             if len(matches) > 0:
                 seleniumUrl = matches[-1]
