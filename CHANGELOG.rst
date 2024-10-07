@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v2.1.2
+-----
+
+- Behat command updates
+
+  - Remove support for 10+ year-old Moodle versions in the Behat command
+  - `--no-selenium` argument to skip Selenium handling
+  - `--skip-init` argument for quicker runs
+
+- Various docker and webservice support fixes
+- Disabling of the `backup`, `css`, and `js` commands for future removal
+- Update for Moodle 5.0 development - Jun Pataleta
+
 v2.1.1
 -----
 
