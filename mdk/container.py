@@ -91,7 +91,7 @@ class HostContainer(Container):
         self._binaries = binaries or {}
 
     def chmod(self, path: Path, mode: int) -> None:
-        os.chmod(path, mode)
+        os.chmod(get_absolute_path(path, self.path), mode)
 
     def exists(self, path: Path) -> bool:
         return (get_absolute_path(path, self.path)).exists()
