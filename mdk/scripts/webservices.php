@@ -84,7 +84,11 @@ foreach ($capabilities as $capability) {
 
 // Allow role switches.
 $allows = get_default_role_archetype_allows('assign', 'manager');
+
 foreach ($allows as $allowid) {
+    if ($DB->record_exists('role_allow_assign', ['roleid' => $roleid, 'allowassign' => $allowid])) {
+        continue;
+    }
     core_role_set_assign_allowed($roleid, $allowid);
 }
 
