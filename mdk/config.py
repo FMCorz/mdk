@@ -26,6 +26,7 @@ import os
 import json
 import re
 import copy
+from distutils.spawn import find_executable
 
 
 class ConfigObject(object):
@@ -59,6 +60,13 @@ class ConfigObject(object):
                     data = default
                     break
         return data
+
+    def getExecutable(self, name=None, default=None):
+        path = self.get(name, default)
+        if path != None and path:
+            return path
+        path = find_executable(name)
+        return path
 
     def getFlat(self, data=None, parent=''):
         """Return the entire data as a flat array"""
@@ -173,6 +181,10 @@ class Config(object):
     def get(self, name=None):
         """Return a setting"""
         return self.data.get(name)
+
+    def getExecutable(self, name=None):
+        """Return a path to an executable"""
+        return self.data.getExecutable(name)
 
     def load(self, allowMissing=False):
         """Loads the configuration from the config files"""
