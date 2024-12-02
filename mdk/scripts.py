@@ -26,6 +26,7 @@ import os
 import shutil
 import stat
 from contextlib import contextmanager
+from pathlib import Path
 
 from pkg_resources import resource_filename
 
@@ -157,7 +158,7 @@ class Scripts(object):
         shutil.copyfile(cli, dest)
         if dest.endswith('.sh'):
             if container:
-                container.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
+                container.chmod(Path(dest), stat.S_IRUSR | stat.S_IXUSR)
             else:
                 os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
         yield dest
