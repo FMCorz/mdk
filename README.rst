@@ -76,6 +76,36 @@ The Docker container must be created using `moodlehq/moodle-php-apache <https://
 
 You will want to create databases in the same network, and other services like selenium.
 
+PHP executable
+==============
+
+MDK can work with multiple PHP versions through Docker instances. This can cause conflicts in IDEs which refer to the host PHP executable. To correct this, you can reference `mdk php` as the PHP executable. And if the path to the PHP executable is required, create an executable as suggested :ref:`below<Custom PHP executable>`.
+
+Note that `mdk php` must be called from within the Moodle instance directory tree.
+
+VScode settings
+---------------
+
+::json
+
+    {
+        "php.validate.executablePath": "/path/to/custom/executable/php-mdk"
+        "mdlcode.cli.phpPath": "mdk php",
+    }
+
+Custom PHP executable
+---------------------
+
+On Ubuntu, you could create the file `php-mdk` in `~/.local/bin` with the following content::
+
+    #!/bin/bash
+    mdk php $@
+
+Then make it executable::
+
+    chmod 0700 ~/.local/bin/php-mdk
+
+
 Installation
 ============
 
@@ -156,6 +186,30 @@ It is possible that a new version of MDK requires new files, directories, etc...
 Command list
 ============
 
+* :ref:`alias`
+* :ref:`backport`
+* :ref:`behat`
+* :ref:`config`
+* :ref:`create`
+* :ref:`doctor`
+* :ref:`fix`
+* :ref:`info`
+* :ref:`install`
+* :ref:`php`
+* :ref:`phpunit`
+* :ref:`plugin`
+* :ref:`precheck`
+* :ref:`purge`
+* :ref:`pull`
+* :ref:`push`
+* :ref:`rebase`
+* :ref:`remove`
+* :ref:`run`
+* :ref:`tracker`
+* :ref:`uninstall`
+* :ref:`update`
+* :ref:`upgrade`
+
 alias
 -----
 
@@ -187,31 +241,6 @@ Backports the branch MDL-12345-23 from the instance stable_23 to the instance st
 ::
 
     mdk backport stable_23 --branch MDL-12345-23 --version 22 --push
-
-backup
-------
-
-Backup a whole instance so that it can be restored later.
-
-**Examples**
-
-Backup the instance named stable_main
-
-::
-
-    mdk backup stable_main
-
-List the backups
-
-::
-
-    mdk backup --list
-
-Restore the second backup of the instance stable_main
-
-::
-
-    mdk backup --restore stable_main_02
 
 
 behat
@@ -263,20 +292,6 @@ Change the value of the setting ``dirs.storage`` to ``/var/www/repositories``
 ::
 
     mdk config set dirs.storage /var/www/repositories
-
-
-css
----
-
-CSS related functions.
-
-**Example**
-
-Compile the LESS files from Bootstrapbase
-
-::
-
-    mdk css --compile
 
 
 doctor
@@ -332,24 +347,17 @@ Run the command line installation script with all parameters set on an existing 
     mdk install --engine mysqli stable_main
 
 
-js
---
 
-JS related functions.
+php
+---
 
-**Example**
+Invoke a PHP command in the context of the instance.
 
-Compile the JS modules in Atto
+**Examples**
 
 ::
 
-    mdk js shift --plugin editor_atto
-
-
-Generate the complete YUI API documentation
-
-    mdk js doc
-
+    mdk php admin/cli/purge_caches.php
 
 phpunit
 -------
