@@ -79,14 +79,14 @@ You will want to create databases in the same network, and other services like s
 PHP executable
 ==============
 
-MDK can work with multiple PHP versions through Docker instances. This can cause conflicts in IDEs which refer to the host PHP executable. To correct this, you can reference `mdk php` as the PHP executable. And if the path to the PHP executable is required, create an executable as suggested :ref:`below<Custom PHP executable>`.
+MDK can work with multiple PHP versions through Docker instances. This can cause conflicts in IDEs which refer to the host PHP executable. To correct this, you can reference ``mdk php`` as the PHP executable. And if the path to the PHP executable is required, create an executable as suggested `below <#custom-php-executable>`_.
 
-Note that `mdk php` must be called from within the Moodle instance directory tree.
+Note that ``mdk php`` must be called from within the Moodle instance directory tree.
 
 VScode settings
 ---------------
 
-::json
+::
 
     {
         "php.validate.executablePath": "/path/to/custom/executable/php-mdk"
@@ -96,7 +96,7 @@ VScode settings
 Custom PHP executable
 ---------------------
 
-On Ubuntu, you could create the file `php-mdk` in `~/.local/bin` with the following content::
+On Ubuntu, you could create the file ``php-mdk`` in ``~/.local/bin`` with the following content::
 
     #!/bin/bash
     mdk php $@
@@ -196,29 +196,29 @@ It is possible that a new version of MDK requires new files, directories, etc...
 Command list
 ============
 
-* :ref:`alias`
-* :ref:`backport`
-* :ref:`behat`
-* :ref:`config`
-* :ref:`create`
-* :ref:`doctor`
-* :ref:`fix`
-* :ref:`info`
-* :ref:`install`
-* :ref:`php`
-* :ref:`phpunit`
-* :ref:`plugin`
-* :ref:`precheck`
-* :ref:`purge`
-* :ref:`pull`
-* :ref:`push`
-* :ref:`rebase`
-* :ref:`remove`
-* :ref:`run`
-* :ref:`tracker`
-* :ref:`uninstall`
-* :ref:`update`
-* :ref:`upgrade`
+* `alias`_
+* `backport`_
+* `behat`_
+* `config`_
+* `create`_
+* `doctor`_
+* `fix`_
+* `info`_
+* `install`_
+* `php`_
+* `phpunit`_
+* `plugin`_
+* `precheck`_
+* `purge`_
+* `pull`_
+* `push`_
+* `rebase`_
+* `remove`_
+* `run`_
+* `tracker`_
+* `uninstall`_
+* `update`_
+* `upgrade`_
 
 alias
 -----
