@@ -47,7 +47,8 @@ class BehatCommand(Command):
             ['-d', '--disable'],
             {
                 'action': 'store_true',
-                'help': 'disable Behat, runs the tests first if --run has been set. Ignored from 2.7.'
+                'help': 'disable Behat, runs the tests first if --run has been set. Ignored from 2.7.',
+                'silent': True,
             },
         ),
         (

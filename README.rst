@@ -1,7 +1,7 @@
 Moodle Development Kit
 ======================
 
-A collection of tools meant to make developers' lives easier.
+A collection of tools to make developers' lives easier.
 
 Requirements
 ============
@@ -122,7 +122,7 @@ Use `pip <http://www.pip-installer.org/en/latest/installing.html>`_::
     mdk init
 
 Notes
-~~~~~
+^^^^^
 
 This method does not require ``sudo`` as it installs MDK for the current user. It is assumed that ``~/.local/bin`` is in your PATH (or `equivalent <https://docs.python.org/3/library/site.html#site.USER_BASE>`_).
 
@@ -156,8 +156,18 @@ Then from the directory where you cloned the repository::
     mdk init
 
 
+Shell completion
+----------------
+
+Fish completion
+^^^^^^^^^^^^^^^
+
+To activate fish completion::
+
+    sudo ln -s /path/to/moodle-sdk/extra/fish_completion ~/config/fish/completions/mdk.fish
+
 Bash completion
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 To activate bash completion::
 
