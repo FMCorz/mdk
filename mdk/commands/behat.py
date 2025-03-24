@@ -76,6 +76,13 @@ class BehatCommand(Command):
             },
         ),
         (
+            ['-p', '--profile'],
+            {
+                'metavar': 'profile',
+                'help': 'the profile to use for running the tests, refers to $CFG->behat_profiles.'
+            },
+        ),
+        (
             ['-t', '--tags'],
             {
                 'metavar': 'tags',
@@ -223,6 +230,9 @@ class BehatCommand(Command):
 
             # Preparing Behat command
             cmd = ['vendor/bin/behat']
+            if args.profile:
+                cmd.append('--profile=%s' % (args.profile))
+
             if args.tags:
                 cmd.append('--tags=%s' % (args.tags))
 
