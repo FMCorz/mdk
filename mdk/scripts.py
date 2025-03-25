@@ -28,8 +28,6 @@ import stat
 from contextlib import contextmanager
 from pathlib import Path
 
-from pkg_resources import resource_filename
-
 from .config import Conf
 from .exceptions import ConflictInScriptName, ScriptNotFound, UnsupportedScript
 from .tools import process
@@ -56,7 +54,7 @@ class Scripts(object):
 
             # Directory within the package.
             # This can point anywhere when the package is installed, or to the folder containing the module when it is not.
-            packageDir = resource_filename('mdk', 'scripts')
+            packageDir = os.path.join(os.path.dirname(__file__), 'scripts')
             dirs.append(os.path.split(packageDir)[0])
 
             # Legacy: directory part of the root git repository, only if we can be sure that the parent directory is still MDK.
