@@ -2,3 +2,5 @@
 config.json
 *.pyc
 .idea
+dist
+*.egg-info
