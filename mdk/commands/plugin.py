@@ -222,7 +222,7 @@ class PluginCommand(Command):
             return False
 
         branch = M.get('branch')
-        if branch in ['master', 'main']:
+        if branch in ['main']:
             branch = C.get('masterBranch')
         branch = int(branch)
 
