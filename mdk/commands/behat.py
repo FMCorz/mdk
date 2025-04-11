@@ -44,6 +44,13 @@ class BehatCommand(Command):
             },
         ),
         (
+            ['-R', '--rerun'],
+            {
+                'action': 'store_true',
+                'help': 're-run scenarios that failed during last execution, implies --run.',
+            },
+        ),
+        (
             ['-d', '--disable'],
             {
                 'action': 'store_true',
@@ -162,6 +169,7 @@ class BehatCommand(Command):
 
     def run(self, args):
         withselenium = not (args.noselenium or args.nojavascript)
+        shouldrun = args.run or args.rerun
 
         # Loading instance
         M = self.Wp.resolve(args.name)
@@ -242,6 +250,9 @@ class BehatCommand(Command):
             if not (args.tags or args.testname) and nojavascript:
                 cmd.append('--tags ~@javascript')
 
+            if args.rerun:
+                cmd.append('--rerun')
+
             if args.faildump:
                 if M.branch_compare(31, '<'):
                     cmd.append('--format="progress,progress,pretty,html,failed"')
@@ -274,7 +285,7 @@ class BehatCommand(Command):
                 else:
                     seleniumCommand = '%s -jar %s' % (self.C.get('java'), seleniumPath)
 
-            if args.run:
+            if shouldrun:
                 logging.info('Preparing Behat testing')
 
                 # Launching Selenium
