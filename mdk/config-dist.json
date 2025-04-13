@@ -295,7 +295,7 @@
     "useCacheAsSharedClone": false,
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 500,
+    "masterBranch": 501,
 
     // Docker-related settings.
     "docker": {
