@@ -287,9 +287,9 @@ class DoctorCommand(Command):
                     mkdir(d, 0o777)
 
     def masterbranch(self, args):
-        """Checks the current master branch and the value set in config."""
+        """Checks the current main branch and the value set in config."""
 
-        print('Checking master branch')
+        print('Checking main branch')
 
         if not self._checkWorkplace():
             return
@@ -305,9 +305,9 @@ class DoctorCommand(Command):
             return
 
         repo = git.Git(repoPath, self.C.get('git'))
-        result = repo.execute(['show', 'master:version.php'])
+        result = repo.execute(['show', 'main:version.php'])
         if result[0] != 0:
-            print('  Could not read the master version.php')
+            print('  Could not read the main version.php')
             return
 
         reBranch = re.compile(r'^\s*\$branch\s*=\s*(?P<brackets>[\'"])?([0-9]+)(?P=brackets)\s*;')
@@ -318,7 +318,7 @@ class DoctorCommand(Command):
 
         masterBranch = int(self.C.get('masterBranch'))
         if not latestBranch:
-            print('  Oops, could not identify the mater branch')
+            print('  Oops, could not identify the main branch')
         elif masterBranch != latestBranch:
             print('  The config masterBranch is set to %d, expecting %d' % (masterBranch, latestBranch))
             if args.fix:
