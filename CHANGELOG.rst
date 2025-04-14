@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v2.1.3
+-----
+
+- `mdk behat` now supports `--profile` and `--rerun`
+- A new `mdk php` command.
+- Remove dependence on `pkg_resources`
+- README file formatting improvements
+- Fish shell completions support
+
 v2.1.2
 -----
 
