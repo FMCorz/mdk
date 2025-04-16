@@ -138,6 +138,10 @@
                 "branch" : "Pull 4.5 Branch",
                 "diffurl" : "Pull 4.5 Diff URL"
             },
+            "500" : {
+                "branch" : "Pull 5.0 Branch",
+                "diffurl" : "Pull 5.0 Diff URL"
+            },
             "main" : {
                 "branch" : "Pull Main Branch",
                 "diffurl" : "Pull Main Diff URL"
