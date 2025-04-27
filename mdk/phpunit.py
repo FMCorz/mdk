@@ -71,6 +71,14 @@ class PHPUnit(object):
             cmd.append('--testsuite')
             cmd.append(testsuite)
 
+        outputDir = self._Wp.getExtraDir(self._M.get('identifier'), 'phpunit')
+        cmd.append('--log-json')
+        cmd.append('%s/status.json' % outputDir)
+        cmd.append('--log-tap')
+        cmd.append('%s/status.tap' % outputDir)
+        cmd.append('--log-junit')
+        cmd.append('%s/status.xml' % outputDir)
+
         return cmd
 
     def getCoverageDir(self):
