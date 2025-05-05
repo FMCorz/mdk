@@ -223,7 +223,7 @@ class FetchTracker(Fetch):
 
         ref = issueInfo.get('branches').get(str(branch), None)
         if not ref:
-            raise FetchTrackerBranchException('Could not find branch info on %s' % (str(branch), mdl))
+            raise FetchTrackerBranchException('Could not find branch info on %s, %s' % (str(branch), mdl))
 
         self.setRepo(repo)
         self.setRef(ref.get('branch'))

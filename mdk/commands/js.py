@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -24,6 +23,7 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
+import sys
 import time
 import datetime
 import watchdog.events
@@ -34,84 +34,90 @@ from .. import js, plugins
 
 class JsCommand(Command):
 
-    _arguments = [
-        (
-            ['mode'],
-            {
-                'metavar': 'mode',
-                'help': 'the type of action to perform',
-                'sub-commands':
-                    {
-                        'shift': (
-                            {
-                                'help': 'keen to use shifter?'
-                            },
-                            [
-                                (
-                                    ['-p', '--plugin'],
-                                    {
-                                        'action': 'store',
-                                        'dest': 'plugin',
-                                        'default': None,
-                                        'help': 'the name of the plugin or subsystem to target. If not passed, we do our best to guess from the current path.'
-                                    }
-                                ),
-                                (
-                                    ['-m', '--module'],
-                                    {
-                                        'action': 'store',
-                                        'dest': 'module',
-                                        'default': None,
-                                        'help': 'the name of the module in the plugin or subsystem. If omitted all the modules will be shifted, except we are in a module.'
-                                    }
-                                ),
-                                (
-                                    ['-w', '--watch'],
-                                    {
-                                        'action': 'store_true',
-                                        'dest': 'watch',
-                                        'help': 'watch for changes to re-shift'
-                                    }
-                                ),
-                                (
-                                    ['names'],
-                                    {
-                                        'default': None,
-                                        'help': 'name of the instances',
-                                        'metavar': 'names',
-                                        'nargs': '*'
-                                    }
-                                )
-                            ]
-                        ),
-                        'doc': (
-                            {
-                                'help': 'keen to generate documentation?'
-                            },
-                            [
-                                (
-                                    ['names'],
-                                    {
-                                        'default': None,
-                                        'help': 'name of the instances',
-                                        'metavar': 'names',
-                                        'nargs': '*'
-                                    }
-                                )
-                            ]
-                        )
-                    }
-            }
-        )
-    ]
+    _arguments = [(['mode'], {
+        'metavar': 'mode',
+        'help': 'the type of action to perform',
+        'sub-commands': {
+            'shift': (
+                {
+                    'help': 'keen to use shifter?'
+                },
+                [
+                    (
+                        ['-p', '--plugin'],
+                        {
+                            'action':
+                                'store',
+                            'dest':
+                                'plugin',
+                            'default':
+                                None,
+                            'help':
+                                'the name of the plugin or subsystem to target. If not passed, we do our best to guess from the current path.'
+                        },
+                    ),
+                    (
+                        ['-m', '--module'],
+                        {
+                            'action':
+                                'store',
+                            'dest':
+                                'module',
+                            'default':
+                                None,
+                            'help':
+                                'the name of the module in the plugin or subsystem. If omitted all the modules will be shifted, except we are in a module.'
+                        },
+                    ),
+                    (
+                        ['-w', '--watch'],
+                        {
+                            'action': 'store_true',
+                            'dest': 'watch',
+                            'help': 'watch for changes to re-shift'
+                        },
+                    ),
+                    (
+                        ['names'],
+                        {
+                            'default': None,
+                            'help': 'name of the instances',
+                            'metavar': 'names',
+                            'nargs': '*'
+                        },
+                    ),
+                ],
+            ),
+            'doc': (
+                {
+                    'help': 'keen to generate documentation?'
+                },
+                [
+                    (
+                        ['names'],
+                        {
+                            'default': None,
+                            'help': 'name of the instances',
+                            'metavar': 'names',
+                            'nargs': '*'
+                        },
+                    ),
+                ],
+            )
+        }
+    })]
     _description = 'Wrapper for JS functions'
 
     def run(self, args):
+        print('This command has been removed as it was obsolete and unmaintained.')
+        print('If you were using it please raise an issue to let us know.')
+        print('https://github.com/FMCorz/mdk/issues')
+        sys.exit(1)
+
         if args.mode == 'shift':
             self.shift(args)
         elif args.mode == 'doc':
             self.document(args)
-
 
     def shift(self, args):
         """The shift mode"""

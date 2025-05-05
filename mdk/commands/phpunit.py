@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -27,7 +26,7 @@ import os
 import gzip
 import urllib.request, urllib.parse, urllib.error
 from ..command import Command
-from ..tools import process, question
+from ..tools import question
 from ..phpunit import PHPUnit
 
 
@@ -39,14 +38,14 @@ class PhpunitCommand(Command):
             {
                 'action': 'store_true',
                 'help': 'force the initialisation'
-            }
+            },
         ),
         (
             ['-r', '--run'],
             {
                 'action': 'store_true',
                 'help': 'also run the tests'
-            }
+            },
         ),
         (
             ['-t', '--testcase'],
@@ -54,7 +53,7 @@ class PhpunitCommand(Command):
                 'default': None,
                 'help': 'testcase class to run (From Moodle 2.6)',
                 'metavar': 'testcase'
-            }
+            },
         ),
         (
             ['-s', '--testsuite'],
@@ -62,7 +61,7 @@ class PhpunitCommand(Command):
                 'default': None,
                 'help': 'testsuite to run',
                 'metavar': 'testsuite'
-            }
+            },
         ),
         (
             ['-u', '--unittest'],
@@ -70,7 +69,7 @@ class PhpunitCommand(Command):
                 'default': None,
                 'help': 'test file to run',
                 'metavar': 'path'
-            }
+            },
         ),
         (
             ['-k', '--skip-init'],
@@ -78,7 +77,7 @@ class PhpunitCommand(Command):
                 'action': 'store_true',
                 'dest': 'skipinit',
                 'help': 'allows tests to start quicker when the instance is already initialised'
-            }
+            },
         ),
         (
             ['-q', '--stop-on-failure'],
@@ -86,14 +85,14 @@ class PhpunitCommand(Command):
                 'action': 'store_true',
                 'dest': 'stoponfailure',
                 'help': 'stop execution upon first failure or error'
-            }
+            },
         ),
         (
             ['-c', '--coverage'],
             {
                 'action': 'store_true',
                 'help': 'creates the HTML code coverage report'
-            }
+            },
         ),
         (
             ['--filter'],
@@ -101,7 +100,7 @@ class PhpunitCommand(Command):
                 'default': None,
                 'help': 'filter to pass through to PHPUnit',
                 'metavar': 'filter'
-            }
+            },
         ),
         (
             ['--repeat'],
@@ -110,7 +109,7 @@ class PhpunitCommand(Command):
                 'help': 'run tests repeatedly for the given number of times',
                 'metavar': 'times',
                 'type': int
-            }
+            },
         ),
         (
             ['name'],
@@ -119,8 +118,8 @@ class PhpunitCommand(Command):
                 'help': 'name of the instance',
                 'metavar': 'name',
                 'nargs': '?'
-            }
-        )
+            },
+        ),
     ]
     _description = 'Initialize PHPUnit'
 
@@ -180,21 +179,7 @@ class PhpunitCommand(Command):
 
         # Install Composer
         if PU.usesComposer():
-            if not os.path.isfile(os.path.join(M.get('path'), 'composer.phar')):
-                logging.info('Installing Composer')
-                cliFile = 'phpunit_install_composer.php'
-                cliPath = os.path.join(M.get('path'), 'phpunit_install_composer.php')
-                (to, headers) = urllib.request.urlretrieve('http://getcomposer.org/installer', cliPath)
-                if headers.get('content-encoding') == 'gzip':
-                    f = gzip.open(cliPath, 'r')
-                    content = f.read()
-                    f.close()
-                    f = open(cliPath, 'w')
-                    f.write(content)
-                    f.close()
-                M.cli('/' + cliFile, stdout=None, stderr=None)
-                os.remove(cliPath)
-                M.cli('composer.phar', args='install', stdout=None, stderr=None)
+            M.installComposerAndDevDependenciesIfNeeded()
 
         # If Oracle, ask the user for a Behat prefix, if not set.
         prefix = M.get('phpunit_prefix')
@@ -205,5 +190,3 @@ class PhpunitCommand(Command):
             prefix = None
 
         PU.init(force=args.force, prefix=prefix)
-
-

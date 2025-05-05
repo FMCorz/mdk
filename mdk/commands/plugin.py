@@ -24,7 +24,7 @@ http://github.com/FMCorz/mdk
 
 from ..plugins import *
 from ..command import Command
-
+from ..exceptions import UpgradeNotAllowed
 
 class PluginCommand(Command):
 

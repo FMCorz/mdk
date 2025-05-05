@@ -192,4 +192,4 @@ class InitCommand(Command):
         print('  mdk create')
         print('(This will take some time, but don\'t worry, that\'s because the cache is still empty)')
         print('')
-        print('/!\ Please logout/login before to avoid permission issues: sudo su `whoami`')
+        print('/! Please logout/login before to avoid permission issues: sudo su `whoami`')

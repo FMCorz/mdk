@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -25,10 +24,14 @@ http://github.com/FMCorz/mdk
 import re
 import logging
 
-from ..db import DB
+from mdk.config import Conf
+
+from ..db import DB, get_dbo_from_profile
 from ..command import Command
 from ..tools import yesOrNo, version_options
 from ..exceptions import CreateException, InstallException
+
+C = Conf()
 
 
 class CreateCommand(Command):
@@ -37,31 +40,34 @@ class CreateCommand(Command):
 
     def __init__(self, *args, **kwargs):
         super(CreateCommand, self).__init__(*args, **kwargs)
+
+        profiles = [k for k, v in C.get('db').items() if type(v) is dict and 'engine' in v]
         self._arguments = [
             (
                 ['-i', '--install'],
                 {
                     'action': 'store_true',
                     'dest': 'install',
-                    'help': 'launch the installation script after creating the instance'
-                }
+                    'help': 'launch the installation script after creating the instance',
+                },
             ),
             (
-                ['-e', '--engine'],
+                ['-e', '--engine', '--dbprofile'],
                 {
                     'action': 'store',
-                    'choices': ['mariadb', 'mysqli', 'pgsql', 'sqlsrv'],
+                    'choices': profiles,
                     'default': self.C.get('defaultEngine'),
-                    'help': 'database engine to install the instance on, use with --install',
-                    'metavar': 'engine'
-                }
+                    'help': 'database profile to install the instance on, use with --install',
+                    'metavar': 'profile',
+                    'dest': 'dbprofile'
+                },
             ),
             (
                 ['-t', '--integration'],
                 {
                     'action': 'store_true',
-                    'help': 'create an instance from integration'
-                }
+                    'help': 'create an instance from integration',
+                },
             ),
             (
                 ['-r', '--run'],
@@ -69,18 +75,19 @@ class CreateCommand(Command):
                     'action': 'store',
                     'help': 'scripts to run after installation',
                     'metavar': 'run',
-                    'nargs': '*'
-                }
+                    'nargs': '*',
+                },
             ),
             (
                 ['-n', '--identifier'],
                 {
                     'action': 'store',
                     'default': None,
-                    'help': 'use this identifier instead of generating one. The flag --suffix will be used. ' +
+                    'help':
+                        'use this identifier instead of generating one. The flag --suffix will be used. '
                         'Do not use when creating multiple versions at once',
                     'metavar': 'name',
-                }
+                },
             ),
             (
                 ['-s', '--suffix'],
@@ -89,8 +96,8 @@ class CreateCommand(Command):
                     'default': [None],
                     'help': 'suffixes for the instance name',
                     'metavar': 'suffix',
-                    'nargs': '*'
-                }
+                    'nargs': '*',
+                },
             ),
             (
                 ['-v', '--version'],
@@ -99,14 +106,14 @@ class CreateCommand(Command):
                     'default': ['main'],
                     'help': 'version of Moodle',
                     'metavar': 'version',
-                    'nargs': '*'
-                }
+                    'nargs': '*',
+                },
             ),
         ]
 
     def run(self, args):
 
-        engine = args.engine
+        dbprofile = args.dbprofile
         versions = args.version
         suffixes = args.suffix
         install = args.install
@@ -117,14 +124,14 @@ class CreateCommand(Command):
         # the default value will cause --help not to output the default as it should... Let's put more
         # thoughts into this and perhaps use argument groups.
         # if engine and not install:
-            # self.argumentError('--engine can only be used with --install.')
+        # self.argumentError('--engine can only be used with --install.')
 
         for version in versions:
             for suffix in suffixes:
                 arguments = {
                     'version': version,
                     'suffix': suffix,
-                    'engine': engine,
+                    'dbprofile': dbprofile,
                     'integration': args.integration,
                     'identifier': args.identifier,
                     'install': install,
@@ -141,9 +148,12 @@ class CreateCommand(Command):
         # TODO Remove these ugly lines, but I'm lazy to rewrite the variables in this method...
         class Bunch:
             __init__ = lambda self, **kw: setattr(self, '__dict__', kw)
+
         args = Bunch(**args)
 
-        engine = args.engine
+        dbprofilename = args.dbprofile
+        dbprofile = C.get('db.%s' % args.dbprofile)
+        engine = dbprofile['engine']
         version = args.version
         name = self.Wp.generateInstanceName(version, integration=args.integration, suffix=args.suffix, identifier=args.identifier)
 
@@ -164,11 +174,7 @@ class CreateCommand(Command):
 
         # Create the instance
         logging.info('Creating instance %s...' % name)
-        kwargs = {
-            'name': name,
-            'version': version,
-            'integration': args.integration
-        }
+        kwargs = {'name': name, 'version': version, 'integration': args.integration}
         try:
             M = self.Wp.create(**kwargs)
         except CreateException as e:
@@ -178,7 +184,6 @@ class CreateCommand(Command):
             logging.exception('Error creating %s:\n  %s' % (name, e))
             return False
 
-        # Run the install script
         if args.install:
 
             # Checking database
@@ -187,15 +192,15 @@ class CreateCommand(Command):
             if prefixDbname:
                 dbname = prefixDbname + dbname
             dbname = dbname[:28]
-            db = DB(engine, self.C.get('db.%s' % engine))
+            dbo = get_dbo_from_profile(dbprofile)
             dropDb = False
-            if db.dbexists(dbname):
+            if dbo.dbexists(dbname):
                 logging.info('Database already exists (%s)' % dbname)
                 dropDb = yesOrNo('Do you want to remove it?')
 
             # Install
             kwargs = {
-                'engine': engine,
+                'dbprofile': dbprofilename,
                 'dbname': dbname,
                 'dropDb': dropDb,
                 'fullname': fullname,
@@ -218,4 +223,4 @@ class CreateCommand(Command):
                     try:
                         M.runScript(script)
                     except Exception as e:
-                        logging.warning('Error while running the script \'%s\':\  %s' % (script, e))
+                        logging.warning('Error while running the script \'%s\':s  %s' % (script, e))

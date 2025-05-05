@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -22,14 +21,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import logging
 import os
 import shutil
 import stat
-import logging
-from pkg_resources import resource_filename
-from .tools import process
+from contextlib import contextmanager
+from pathlib import Path
+
 from .config import Conf
-from .exceptions import ScriptNotFound, ConflictInScriptName, UnsupportedScript
+from .exceptions import ConflictInScriptName, ScriptNotFound, UnsupportedScript
+from .tools import process
 
 C = Conf()
 
@@ -53,7 +54,7 @@ class Scripts(object):
 
             # Directory within the package.
             # This can point anywhere when the package is installed, or to the folder containing the module when it is not.
-            packageDir = resource_filename('mdk', 'scripts')
+            packageDir = os.path.join(os.path.dirname(__file__), 'scripts')
             dirs.append(os.path.split(packageDir)[0])
 
             # Legacy: directory part of the root git repository, only if we can be sure that the parent directory is still MDK.
@@ -146,6 +147,22 @@ class Scripts(object):
         return candidate
 
     @classmethod
+    @contextmanager
+    def prepare_script_in_path(cls, script, path, container=None):
+        """Temporarily copy the script to a certain directory"""
+        cli = cls.find(script)
+        dest = cls.get_script_destination(cli, path)
+        logging.debug('Copying %s to %s' % (cli, dest))
+        shutil.copyfile(cli, dest)
+        if dest.endswith('.sh'):
+            if container:
+                container.chmod(Path(dest), stat.S_IRUSR | stat.S_IXUSR)
+            else:
+                os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
+        yield dest
+        os.remove(dest)
+
+    @classmethod
     def run(cls, script, path, arguments=None, cmdkwargs={}):
         """Executes a script at in a certain directory"""
 
@@ -155,26 +172,14 @@ class Scripts(object):
             arguments = ' '.join(arguments)
         arguments = ' ' + arguments
 
-        cli = cls.find(script)
-        dest = cls.get_script_destination(cli, path)
-
-        if cli.endswith('.php'):
-            logging.debug('Copying %s to %s' % (cli, dest))
-            shutil.copyfile(cli, dest)
-
-            cmd = '%s %s %s' % (C.get('php'), dest, arguments)
-
-            result = process(cmd, cwd=path, **cmdkwargs)
-            os.remove(dest)
-        elif cli.endswith('.sh'):
-            logging.debug('Copying %s to %s' % (cli, dest))
-            shutil.copyfile(cli, dest)
-            os.chmod(dest, stat.S_IRUSR | stat.S_IXUSR)
-
-            cmd = '%s %s' % (dest, arguments)
-            result = process(cmd, cwd=path, **cmdkwargs)
-            os.remove(dest)
-        else:
-            raise UnsupportedScript('Script not supported')
+        with cls.prepare_script_in_path(script, path) as dest:
+            if dest.endswith('.php'):
+                cmd = '%s %s %s' % (C.get('php'), dest, arguments)
+                result = process(cmd, cwd=path, **cmdkwargs)
+            elif dest.endswith('.sh'):
+                cmd = '%s %s' % (dest, arguments)
+                result = process(cmd, cwd=path, **cmdkwargs)
+            else:
+                raise UnsupportedScript('Script not supported')
 
         return result[0]

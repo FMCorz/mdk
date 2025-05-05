@@ -1,6 +1,53 @@
 Changelog
 =========
 
+v2.1.3
+-----
+
+- `mdk behat` now supports `--profile` and `--rerun`
+- A new `mdk php` command.
+- Remove dependence on `pkg_resources`
+- README file formatting improvements
+- Fish shell completions support
+
+v2.1.2
+-----
+
+- Behat command updates
+
+  - Remove support for 10+ year-old Moodle versions in the Behat command
+  - `--no-selenium` argument to skip Selenium handling
+  - `--skip-init` argument for quicker runs
+
+- Various docker and webservice support fixes
+- Disabling of the `backup`, `css`, and `js` commands for future removal
+- Update for Moodle 5.0 development - Jun Pataleta
+
+v2.1.1
+-----
+
+- Formatting fixes in the `README` file
+- Fix for ``mdk fix`` when checking out an issue with an existing ``*-master`` branch - Jun Pataleta
+- Minor syntax and missing import fixes - Jun Pataleta
+- Fixes related to the removal of the `master` branch in `moodle.git` - Jun Pataleta
+
+  - Removal of references to the `master` branch in the `README` file
+  - Removal of the fallback logic to `master`, especially when creating a new instance
+  - Remove syncing of the local `master` branch with the `main` branch
+
+- Support automatic resolution of the docker container name
+
+v2.1.0
+-----
+
+- YAPF support
+- Centralise execution of Moodle-bound scripts
+- Initial support for Moodle running in Docker
+- Composer install fixes
+- The ``webservices`` script now enables ``webservice_restful`` plugin when available
+- New ``cron`` command
+- New script ``mincron`` to reduce the number of tasks running during cron
+
 v2.0.14
 -----
 

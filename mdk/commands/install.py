@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -24,11 +23,11 @@ http://github.com/FMCorz/mdk
 
 import os
 import logging
-from .. import db
 from ..command import Command
 from ..tools import mkdir
+from ..config import Conf
 
-DB = db.DB
+C = Conf()
 
 
 class InstallCommand(Command):
@@ -37,48 +36,47 @@ class InstallCommand(Command):
 
     def __init__(self, *args, **kwargs):
         super(InstallCommand, self).__init__(*args, **kwargs)
-        self._arguments = [
-            (
-                ['-e', '--engine'],
-                {
+
+        profiles = [k for k, v in C.get('db').items() if type(v) is dict and 'engine' in v]
+        self._arguments = [(
+            ['-e', '--engine', '--dbprofile'],
+            {
                 'action': 'store',
-                  'choices': ['mariadb', 'mysqli', 'pgsql', 'sqlsrv'],
-                  'default': self.C.get('defaultEngine'),
-                  'help': 'database engine to use',
-                  'metavar': 'engine'
-                }
-            ),
-            (
-                ['-f', '--fullname'],
-                {
-                    'action': 'store',
-                    'help': 'full name of the instance',
-                    'metavar': 'fullname'
-                }
-            ),
-            (
-                ['-r', '--run'],
-                {
-                    'action': 'store',
-                    'help': 'scripts to run after installation',
-                    'metavar': 'run',
-                    'nargs': '*'
-                }
-            ),
-            (
-                ['name'],
-                {
-                    'default': None,
-                    'help': 'name of the instance',
-                    'metavar': 'name',
-                    'nargs': '?'
-                })
-        ]
+                'choices': profiles,
+                'default': self.C.get('defaultEngine'),
+                'help': 'database profile to use',
+                'metavar': 'profile',
+                'dest': 'dbprofile'
+            },
+        ), (
+            ['-f', '--fullname'],
+            {
+                'action': 'store',
+                'help': 'full name of the instance',
+                'metavar': 'fullname'
+            },
+        ), (
+            ['-r', '--run'],
+            {
+                'action': 'store',
+                'help': 'scripts to run after installation',
+                'metavar': 'run',
+                'nargs': '*'
+            },
+        ), (
+            ['name'],
+            {
+                'default': None,
+                'help': 'name of the instance',
+                'metavar': 'name',
+                'nargs': '?'
+            },
+        )]
 
     def run(self, args):
 
         name = args.name
-        engine = args.engine
+        dbprofile = args.dbprofile
         fullname = args.fullname
 
         M = self.Wp.resolve(name)
@@ -90,12 +88,7 @@ class InstallCommand(Command):
         if not os.path.isdir(dataDir):
             mkdir(dataDir, 0o777)
 
-        kwargs = {
-            'engine': engine,
-            'fullname': fullname,
-            'dataDir': dataDir,
-            'wwwroot': self.Wp.getUrl(name)
-        }
+        kwargs = {'dbprofile': dbprofile, 'fullname': fullname, 'dataDir': dataDir, 'wwwroot': self.Wp.getUrl(name)}
         M.install(**kwargs)
 
         # Running scripts

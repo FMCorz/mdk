@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -21,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 http://github.com/FMCorz/mdk
 """
+
 
 def main():
 
@@ -55,25 +55,39 @@ def main():
     parser.add_argument('-h', '--help', action='store_true', help='show this help message and exit')
     parser.add_argument('-l', '--list', action='store_true', help='list the available commands')
     parser.add_argument('-v', '--version', action='store_true', help='display the current version')
-    parser.add_argument(*['--%s'%base64.b64decode(f) for f in ('aWNhbnRyZWFj', 'aWNhbnRyZWFk')], dest='asdf', action='store_true', help=argparse.SUPPRESS)
+    parser.add_argument('--debug', action='store_true', help="sets the debugging level to 'debug'")
+    parser.add_argument(
+        *['--%s' % base64.b64decode(f).decode() for f in ('aWNhbnRyZWFj', 'aWNhbnRyZWFk')],
+        dest='asdf',
+        action='store_true',
+        help=argparse.SUPPRESS
+    )
     parser.add_argument('command', metavar='command', nargs='?', help='command to call', choices=choices)
     parser.add_argument('args', metavar='arguments', nargs=argparse.REMAINDER, help='arguments of the command')
     parsedargs = parser.parse_args()
-
     cmd = parsedargs.command
     args = parsedargs.args
 
-    # There is no command, what do we do?
-    if not cmd:
-        if parsedargs.version:
-            print('MDK version %s' % __version__)
-        elif parsedargs.asdf:
-            print(base64.b64decode('U29ycnkgRGF2ZSwgTURLIGNhbm5vdCBoZWxwIHlvdSB3aXRoIHRoYXQuLi4='))
-        elif parsedargs.list:
-            for c in sorted(commandsList):
-                print('{0:<15} {1}'.format(c, getCommand(c)._description))
-        else:
-            parser.print_help()
+    # Enable debugging verbosity.
+    if parsedargs.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    # What do we do?
+    if parsedargs.help:
+        parser.print_help()
+        sys.exit(0)
+    elif parsedargs.version:
+        print('MDK version %s' % __version__)
+        sys.exit(0)
+    elif parsedargs.list:
+        for c in sorted(commandsList):
+            print('{0:<15} {1}'.format(c, getCommand(c)._description))
+        sys.exit(0)
+    elif parsedargs.asdf:
+        print(base64.b64decode('U29ycnkgRGF2ZSwgTURLIGNhbm5vdCBoZWxwIHlvdSB3aXRoIHRoYXQuLi4=').decode())
+        sys.exit(0)
+    elif not cmd:
+        parser.print_help()
         sys.exit(0)
 
     # Looking up for an alias
@@ -105,6 +119,7 @@ def main():
         logging.error('%s: %s', e.__class__.__name__, e)
         logging.debug(''.join(traceback.format_tb(info[2])))
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

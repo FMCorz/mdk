@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -22,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+from pathlib import Path
 import sys
 import os
 import signal
@@ -36,6 +36,7 @@ import tempfile
 from .config import Conf
 
 C = Conf()
+
 
 def yesOrNo(q):
     while True:
@@ -141,6 +142,7 @@ def getText(suffix='.md', initialText=None):
             else:
                 return text
 
+
 def md5file(filepath):
     """Return the md5 sum of a file
     This is terribly memory inefficient!"""
@@ -160,10 +162,7 @@ def parseBranch(branch):
     if not result:
         return False
 
-    parsed = {
-        'issue': result.group(pattern.groupindex['issue']),
-        'version': result.group(pattern.groupindex['version'])
-    }
+    parsed = {'issue': result.group(pattern.groupindex['issue']), 'version': result.group(pattern.groupindex['version'])}
     try:
         parsed['suffix'] = result.group(pattern.groupindex['suffix'])
     except:
@@ -171,12 +170,18 @@ def parseBranch(branch):
     return parsed
 
 
-def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
+def process(cmd, cwd=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, addtoenv=None):
     if type(cmd) != list:
         cmd = shlex.split(str(cmd))
     logging.debug(' '.join(cmd))
+
+    env = None
+    if addtoenv is not None:
+        env = os.environ.copy()
+        env.update(addtoenv)
+
     try:
-        proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr, encoding='utf-8')
+        proc = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr, encoding='utf-8', env=env)
         (out, err) = proc.communicate()
     except KeyboardInterrupt as e:
         proc.kill()
@@ -209,6 +214,13 @@ def downloadProcessHook(count, size, total):
     sys.stderr.flush()
 
 
+def get_absolute_path(path: Path, parent: Path):
+    """Make a path absolute using parent if not absolute yet."""
+    if not path.is_absolute():
+        return parent / path
+    return path
+
+
 def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
     """
     Use as key when naturally sorting elements.
@@ -220,10 +232,6 @@ def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
 
 def stableBranch(version, git=None):
     if version in ['master', 'main']:
-        if git is not None and not git.hasBranch('main', C.get('upstreamRemote')):
-            # Fall back to master if main is not yet available.
-            logging.info('The main branch has not been found, using master instead.')
-            return 'master'
         return 'main'
     return 'MOODLE_%d_STABLE' % int(version)
 

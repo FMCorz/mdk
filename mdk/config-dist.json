@@ -39,28 +39,40 @@
         // Tables name prefix to be set in the config.php during the instance creation.
         "tablePrefix": "mdl_",
         "mariadb": {
+            "engine": "mariadb",
             "host": "localhost",
             "port": "3306",
             "user": "root",
             "passwd": "root"
         },
         "mysqli": {
+            "engine": "mysqli",
             "host": "localhost",
             "port": "3306",
             "user": "root",
             "passwd": "root"
         },
         "pgsql": {
+            "engine": "pgsql",
             "host": "localhost",
             "port": "5432",
             "user": "root",
             "passwd": "root"
         },
         "sqlsrv": {
+            "engine": "sqlsrv",
             "host": "localhost",
             "port": "1433",
             "user": "SA",
             "passwd": "root"
+        },
+        "pgsql-docker": {
+            "engine": "pgsql",
+            "host": "pgsql",
+            "port": "5432",
+            "user": "postgres",
+            "passwd": "root",
+            "dockername": "pgsql"
         }
     },
 
@@ -121,6 +133,14 @@
             "404" : {
                 "branch" : "Pull 4.4 Branch",
                 "diffurl" : "Pull 4.4 Diff URL"
+            },
+            "405" : {
+                "branch" : "Pull 4.5 Branch",
+                "diffurl" : "Pull 4.5 Diff URL"
+            },
+            "500" : {
+                "branch" : "Pull 5.0 Branch",
+                "diffurl" : "Pull 5.0 Diff URL"
             },
             "main" : {
                 "branch" : "Pull Main Branch",
@@ -279,7 +299,16 @@
     "useCacheAsSharedClone": false,
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 405,
+    "masterBranch": 501,
+
+    // Docker-related settings.
+    "docker": {
+
+        // When enabled, this will automatically attempt to find the container in which an instance
+        // is running based on the instance name, and the running containers. This will only apply
+        // when environment variable `MDK_DOCKER_NAME` is not set.
+        "automaticContainerLookup": false
+    },
 
     // Aliases for MDK commands.
     // An alias starting with a ! will be executed through the command line. Those also

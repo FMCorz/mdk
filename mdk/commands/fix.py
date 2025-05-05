@@ -88,13 +88,16 @@ class FixCommand(Command):
 
         hasBranch = repo.hasBranch(branch)
 
+        # In this case, `stablebranch` would be 'main'.
         if masterbranch != '' and not hasBranch:
+            # If the *-main branch does not yet exist, check there's an already equivalent *-master branch.
             if repo.hasBranch(masterbranch):
                 prompt = ('  It seems like you already have an existing working branch (%s).\n'
                           '  Would you like to check this out instead?')
                 if yesOrNo(prompt % masterbranch):
-                    # We'll check out the issue's master branch instead
+                    # We'll check out the issue's *-master branch instead.
                     branch = masterbranch
+                    hasBranch = True
 
         # Creating and checking out the new branch
         if not hasBranch:

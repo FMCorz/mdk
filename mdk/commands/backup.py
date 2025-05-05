@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -22,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import sys
 import time
 import logging
 from distutils.errors import DistutilsFileError
@@ -39,7 +37,7 @@ class BackupCommand(Command):
                 'dest': 'info',
                 'help': 'lists all the information about a backup',
                 'metavar': 'backup'
-            }
+            },
         ),
         (
             ['-l', '--list'],
@@ -55,7 +53,7 @@ class BackupCommand(Command):
                 'dest': 'restore',
                 'help': 'restore a backup',
                 'metavar': 'backup'
-            }
+            },
         ),
         (
             ['name'],
@@ -63,13 +61,19 @@ class BackupCommand(Command):
                 'default': None,
                 'help': 'name of the instance',
                 'nargs': '?'
-            }
-        )
+            },
+        ),
     ]
 
     _description = 'Backup a Moodle instance'
 
     def run(self, args):
+        print('This command has been removed as it was poorly supported and unmaintained.')
+        print('If you were using it please raise an issue to let us know.')
+        print('https://github.com/FMCorz/mdk/issues')
+        sys.exit(1)
+        return
+
         name = args.name
         BackupManager = backup.BackupManager()
 
@@ -110,11 +114,15 @@ class BackupCommand(Command):
             try:
                 M = B.restore()
             except BackupDirectoryExistsException:
-                raise Exception('Cannot restore an instance on an existing directory. Please remove %s first.' % B.get('identifier') +
-                    'Run: moodle remove %s' % B.get('identifier'))
+                raise Exception(
+                    'Cannot restore an instance on an existing directory. Please remove %s first.' % B.get('identifier') +
+                    'Run: moodle remove %s' % B.get('identifier')
+                )
             except BackupDBExistsException:
-                raise Exception('The database %s already exists. Please remove it first.' % B.get('dbname') +
-                    'This command could help: moodle remove %s' % B.get('identifier'))
+                raise Exception(
+                    'The database %s already exists. Please remove it first.' % B.get('dbname') +
+                    'This command could help: moodle remove %s' % B.get('identifier')
+                )
 
             # Loads M object and display information
             logging.info('')
@@ -139,7 +147,9 @@ class BackupCommand(Command):
                 raise Exception('Does not support backup for the DB engine %s yet, sorry!' % M.get('dbtype'))
 
             except DistutilsFileError:
-                raise Exception('Error while copying files. Check the permissions on the data directory.' +
-                    'Or run: sudo chmod -R 0777 %s' % M.get('dataroot'))
+                raise Exception(
+                    'Error while copying files. Check the permissions on the data directory.' +
+                    'Or run: sudo chmod -R 0777 %s' % M.get('dataroot')
+                )
 
             logging.info('Done.')

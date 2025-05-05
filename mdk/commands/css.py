@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -24,6 +23,7 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
+import sys
 import time
 import watchdog.events
 import watchdog.observers
@@ -40,7 +40,7 @@ class CssCommand(Command):
                 'action': 'store_true',
                 'dest': 'compile',
                 'help': 'compile the theme less files'
-            }
+            },
         ),
         (
             ['-s', '--sheets'],
@@ -50,7 +50,7 @@ class CssCommand(Command):
                 'default': None,
                 'help': 'the sheets to work on without their extensions. When not specified, it is guessed from the less folder.',
                 'nargs': '+'
-            }
+            },
         ),
         (
             ['-t', '--theme'],
@@ -59,7 +59,7 @@ class CssCommand(Command):
                 'dest': 'theme',
                 'default': None,
                 'help': 'the theme to work on. The default is \'bootstrapbase\' but is ignored if we are in a theme folder.',
-            }
+            },
         ),
         (
             ['-d', '--debug'],
@@ -67,7 +67,7 @@ class CssCommand(Command):
                 'action': 'store_true',
                 'dest': 'debug',
                 'help': 'produce an unminified debugging version with source maps'
-            }
+            },
         ),
         (
             ['-w', '--watch'],
@@ -75,7 +75,7 @@ class CssCommand(Command):
                 'action': 'store_true',
                 'dest': 'watch',
                 'help': 'watch the directory'
-            }
+            },
         ),
         (
             ['names'],
@@ -84,12 +84,16 @@ class CssCommand(Command):
                 'help': 'name of the instances',
                 'metavar': 'names',
                 'nargs': '*'
-            }
-        )
+            },
+        ),
     ]
     _description = 'Wrapper for CSS functions'
 
     def run(self, args):
+        print('This command has been removed as it was obsolete and unmaintained.')
+        print('If you were using it please raise an issue to let us know.')
+        print('https://github.com/FMCorz/mdk/issues')
+        sys.exit(1)
 
         Mlist = self.Wp.resolveMultiple(args.names)
         if len(Mlist) < 1:

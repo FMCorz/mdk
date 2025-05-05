@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -24,8 +23,11 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
+
+from mdk.moodle import Moodle
+
 from .config import Conf
-from .tools import mkdir, process
+from .tools import mkdir
 
 C = Conf()
 
@@ -86,10 +88,10 @@ class PHPUnit(object):
             raise Exception('PHPUnit is only available from Moodle 2.3')
 
         # Set PHPUnit data root
-        phpunit_dataroot = self.M.get('dataroot') + '_phpu'
-        self.M.updateConfig('phpunit_dataroot', phpunit_dataroot)
-        if not os.path.isdir(phpunit_dataroot):
-            mkdir(phpunit_dataroot, 0o777)
+        phpunit_dataroot = self.M.container.phpunit_dataroot
+        self.M.updateConfig('phpunit_dataroot', phpunit_dataroot.as_posix())
+        if not self.M.container.isdir(self.M.container.phpunit_dataroot):
+            self.M.container.mkdir(self.M.container.phpunit_dataroot, 0o777)
 
         # Set PHPUnit prefix
         currentPrefix = self.M.get('phpunit_prefix')
@@ -106,22 +108,24 @@ class PHPUnit(object):
         exception = None
         try:
             if force:
-                result = self.M.cli('/admin/tool/phpunit/cli/util.php', args='--drop', stdout=None, stderr=None)
+                result = self.M.cli('/admin/tool/phpunit/cli/util.php', args=['--drop'], stdout=None, stderr=None)
             result = self.M.cli('/admin/tool/phpunit/cli/init.php', stdout=None, stderr=None)
-        except Exception as exception:
+        except Exception as exc:
+            exception = exc
             pass
 
-        if exception != None or result[0] > 0:
-            if result[0] == 129:
+        resultcode = result[0] if result[0] is not None else -1
+        if exception != None or resultcode > 0:
+            if resultcode == 129:
                 raise Exception('PHPUnit is not installed on your system')
-            elif result[0] > 0:
+            elif resultcode > 0:
                 raise Exception('Something wrong with PHPUnit configuration')
             else:
                 raise exception
 
         if C.get('phpunit.buildcomponentconfigs'):
             try:
-                result = self.M.cli('/admin/tool/phpunit/cli/util.php', args='--buildcomponentconfigs', stdout=None, stderr=None)
+                result = self.M.cli('/admin/tool/phpunit/cli/util.php', args=['--buildcomponentconfigs'], stdout=None, stderr=None)
             except Exception as exception:
                 pass
 
@@ -135,14 +139,14 @@ class PHPUnit(object):
     def run(self, **kwargs):
         """Execute the command"""
         cmd = self.getCommand(**kwargs)
-        return process(cmd, self.M.get('path'), None, None)
+        return self.M.exec(cmd, stdout=None, stderr=None)
 
     def usesComposer(self):
         """Return whether or not the instance uses composer, the latter is considered installed"""
         return os.path.isfile(os.path.join(self.M.get('path'), 'composer.json'))
 
     @property
-    def M(self):
+    def M(self) -> Moodle:
         return self._M
 
     @property

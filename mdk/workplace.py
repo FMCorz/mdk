@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -25,6 +24,8 @@ http://github.com/FMCorz/mdk
 import os
 import shutil
 import logging
+from typing import Optional
+
 from .tools import mkdir, process, stableBranch
 from .exceptions import CreateException
 from .config import Conf
@@ -35,25 +36,18 @@ C = Conf()
 
 
 class Workplace(object):
-
     """The name of the directory that contains the PHP files"""
     wwwDir = None
-
     """The name of the directory that contains Moodle data"""
     dataDir = None
-
     """The name of the directory that contains extra files"""
     extraDir = None
-
     """The name of the directory that makes extraDir web accessible, see getMdkWebDir"""
     mdkDir = None
-
     """The path to the storage directory"""
     path = None
-
     """The path to MDK cache"""
     cache = None
-
     """The path to the web accessible directory"""
     www = None
 
@@ -155,8 +149,10 @@ class Workplace(object):
 
         # Clone the instances
         logging.info('Cloning repository...')
-        process(f'{C.get("git")} clone --branch {branch} --single-branch '
-                f'{"--shared" if cloneAsShared else ""} {repository} {wwwDir}')
+        process(
+            f'{C.get("git")} clone --branch {branch} --single-branch '
+            f'{"--shared" if cloneAsShared else ""} {repository} {wwwDir}'
+        )
 
         # Symbolic link
         if os.path.islink(linkDir):
@@ -259,8 +255,7 @@ class Workplace(object):
                     if prefixmaster != 'master' and prefixmain == 'main':
                         prefixmain = prefixmaster
                         C.set('wording.prefixMain', prefixmain)
-                        logging.info('The config wording.prefixMaster (%s) has been copied to wording.prefixMain'
-                                     % prefixmain)
+                        logging.info('The config wording.prefixMaster (%s) has been copied to wording.prefixMain' % prefixmain)
                     # Set config wordingPrefixesChecked to true. We shouldn't need to do this next time.
                     C.set('wordingPrefixesChecked', True)
                 prefixVersion = prefixmain
@@ -281,16 +276,21 @@ class Workplace(object):
 
     def get(self, name):
         """Returns an instance defined by its name, or by path"""
+
         # Extracts name from path
         if os.sep in name:
             path = os.path.abspath(os.path.realpath(name))
             if not path.startswith(self.path):
                 raise Exception('Could not find Moodle instance at %s' % name)
-            (head, name) = os.path.split(path)
+            _, name = os.path.split(path)
 
         if not self.isMoodle(name):
             raise Exception('Could not find Moodle instance %s' % name)
-        return moodle.Moodle(os.path.join(self.path, name, self.wwwDir), identifier=name)
+
+        path = os.path.join(self.path, name, self.wwwDir)
+        kwargs = {'path': path, 'identifier': name}
+
+        return moodle.Moodle(**kwargs)
 
     def getCachedRemote(self, integration=False):
         """Return the path to the cached remote"""
@@ -377,7 +377,7 @@ class Workplace(object):
             names.append(d)
         return names
 
-    def resolve(self, name=None, path=None):
+    def resolve(self, name=None, path=None) -> Optional[moodle.Moodle]:
         """Try to find a Moodle instance based on its name, a path or the working directory"""
 
         # A name was passed, is that a valid instance?
@@ -405,7 +405,7 @@ class Workplace(object):
             if self.isMoodle(tail):
                 return self.get(tail)
 
-        return False
+        return None
 
     def resolveMultiple(self, names=[]):
         """Return multiple instances"""

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -26,6 +25,7 @@ import logging
 from ..command import Command
 from ..tools import version_options, yesOrNo
 
+
 class RebaseCommand(Command):
 
     _description = 'Rebase branches'
@@ -39,55 +39,55 @@ class RebaseCommand(Command):
                     'help': 'issues to be rebased',
                     'metavar': 'issues',
                     'nargs': '+',
-                    'required': True
-                }
+                    'required': True,
+                },
             ),
             (
                 ['-s', '--suffix'],
                 {
                     'help': 'the suffix of the branch of those issues',
-                    'metavar': 'suffix'
-                }
+                    'metavar': 'suffix',
+                },
             ),
             (
                 ['-v', '--versions'],
                 {
-                    'choices': version_options(),
+                    'choices': 'version_options(),,',
                     'help': 'versions to rebase the issues on. Ignored if names is set.',
                     'metavar': 'version',
-                    'nargs': '+'
-                }
+                    'nargs': '+',
+                },
             ),
             (
                 ['-p', '--push'],
                 {
                     'action': 'store_true',
-                    'help': 'push the branch after successful rebase'
-                }
+                    'help': 'push the branch after successful rebase',
+                },
             ),
             (
                 ['-t', '--update-tracker'],
                 {
                     'action': 'store_true',
                     'dest': 'updatetracker',
-                    'help': 'to use with --push, also add the diff information to the tracker issue'
-                }
+                    'help': 'to use with --push, also add the diff information to the tracker issue',
+                },
             ),
             (
                 ['-r', '--remote'],
                 {
                     'default': self.C.get('myRemote'),
                     'help': 'the remote to push the branch to. Default is %s.' % self.C.get('myRemote'),
-                    'metavar': 'remote'
-                }
+                    'metavar': 'remote',
+                },
             ),
             (
                 ['-f', '--force-push'],
                 {
                     'action': 'store_true',
                     'dest': 'forcepush',
-                    'help': 'Force the push'
-                }
+                    'help': 'Force the push',
+                },
             ),
             (
                 ['names'],
@@ -95,9 +95,9 @@ class RebaseCommand(Command):
                     'default': None,
                     'help': 'name of the instances to rebase',
                     'metavar': 'names',
-                    'nargs': '*'
-                }
-            )
+                    'nargs': '*',
+                },
+            ),
         ]
 
     def run(self, args):
@@ -163,8 +163,10 @@ class RebaseCommand(Command):
                 if M.get('stablebranch') in ['master', 'main']:
                     masterbranch = M.generateBranchName(issue, args.suffix, 'master')
                     if M.git().hasBranch(masterbranch):
-                        prompt = ('  It seems like you already have an existing working branch (%s).\n'
-                                  '  Would you like to rebase this branch instead?')
+                        prompt = (
+                            '  It seems like you already have an existing working branch (%s).\n'
+                            '  Would you like to rebase this branch instead?'
+                        )
                         if yesOrNo(prompt % masterbranch):
                             # We'll rebase the issue's master branch instead
                             branch = masterbranch

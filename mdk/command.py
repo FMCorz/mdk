@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -30,20 +29,20 @@ class Command(object):
     """Represents a command"""
 
     _arguments = [
-            (
-                ['foo'],
-                {
-                    'help': 'I\'m an argument'
-                }
-            ),
-            (
-                ['-b', '--bar'],
-                {
-                    'action': 'store_true',
-                    'help': 'I\'m a flag'
-                }
-            )
-        ]
+        (
+            ['foo'],
+            {
+                'help': 'I\'m an argument'
+            },
+        ),
+        (
+            ['-b', '--bar'],
+            {
+                'action': 'store_true',
+                'help': 'I\'m a flag'
+            },
+        ),
+    ]
     _description = 'Undocumented command'
 
     __C = None
@@ -116,8 +115,7 @@ class CommandRunner(object):
         return self._command
 
     def run(self, sysargs=sys.argv, prog=None):
-        parser = CommandArgumentParser(description=self.command.description, prog=prog,
-            formatter_class=CommandArgumentFormatter)
+        parser = CommandArgumentParser(description=self.command.description, prog=prog, formatter_class=CommandArgumentFormatter)
         for argument in self.command.arguments:
             args = argument[0]
             kwargs = argument[1]
@@ -141,7 +139,11 @@ class CommandRunner(object):
                     del kwargs['silent']
                     kwargs['help'] = argparse.SUPPRESS
                 parser.add_argument(*args, **kwargs)
-        args = parser.parse_args(sysargs)
+
+        if hasattr(self.command, 'parse_args'):
+            args = self.command.parse_args(parser, sysargs)
+        else:
+            args = parser.parse_args(sysargs)
 
         try:
             self.command.run(args)

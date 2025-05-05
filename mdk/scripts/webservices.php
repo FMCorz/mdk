@@ -12,7 +12,11 @@ require_once($CFG->dirroot.'/webservice/lib.php');
 
 // We don't really need to be admin, except to be able to see the generated tokens
 // in the admin settings page, while logged in as admin.
-cron_setup_user();
+if (class_exists(\core\cron::class)) {
+    \core\cron::setup_user();
+} else {
+    cron_setup_user();
+}
 
 // Enable the Web Services.
 set_config('enablewebservices', 1);
@@ -24,7 +28,7 @@ set_config('enablemobilewebservice', 1);
 set_config('enablewsdocumentation', 1);
 
 // Enable each protocol.
-set_config('webserviceprotocols', 'amf,rest,soap,xmlrpc');
+set_config('webserviceprotocols', 'amf,rest,soap,xmlrpc,restful');
 
 // Enable mobile service.
 $webservicemanager = new webservice();
@@ -35,11 +39,17 @@ $webservicemanager->update_external_service($mobileservice);
 // Enable capability to use REST protocol.
 assign_capability('webservice/rest:use', CAP_ALLOW, $CFG->defaultuserroleid, SYSCONTEXTID, true);
 
+// Rename Web Service user that was created with test username, whoops.
+$legacyuser = $DB->get_record('user', ['username' => 'testtete']);
+if ($legacyuser) {
+    $DB->update_record('user', ['id' => $legacyuser->id, 'username' => 'mdkwsuser']);
+}
+
 // Create the Web Service user.
-$user = $DB->get_record('user', array('username' => 'testtete'));
+$user = $DB->get_record('user', ['username' => 'mdkwsuser']);
 if (!$user) {
     $user = new stdClass();
-    $user->username = 'testtete';
+    $user->username = 'mdkwsuser';
     $user->firstname = 'Web';
     $user->lastname = 'Service';
     $user->password = 'test';
@@ -48,13 +58,21 @@ if (!$user) {
     $user = $dg->create_user($user);
 }
 
-// Create a role for Web Services with all permissions.
-if (!$roleid = $DB->get_field('role', 'id', array('shortname' => 'testtete'))) {
-    $roleid = create_role('Web Service', 'testtete', 'MDK: All permissions given by default.', '');
+// Rename role that was create with test shortname.
+if ($legacyroleid = $DB->get_field('role', 'id', ['shortname' => 'testtete'])) {
+    $DB->update_record('role', ['id' => $legacyroleid, 'shortname' => 'mdkwsrole']);
 }
+
+// Create a role for Web Services with all permissions.
+if (!$roleid = $DB->get_field('role', 'id', ['shortname' => 'mdkwsrole'])) {
+    $roleid = create_role('MDK Web Service', 'mdkwsrole', 'MDK: All permissions given by default.', '');
+}
+
+// Allow context levels.
 $context = context_system::instance();
 set_role_contextlevels($roleid, array($context->contextlevel));
-role_assign($roleid, $user->id, $context->id);
+
+// Assign all permissions.
 if (method_exists($context, 'get_capabilities')) {
     $capabilities = $context->get_capabilities();
 } else{
@@ -63,6 +81,19 @@ if (method_exists($context, 'get_capabilities')) {
 foreach ($capabilities as $capability) {
     assign_capability($capability->name, CAP_ALLOW, $roleid, $context->id, true);
 }
+
+// Allow role switches.
+$allows = get_default_role_archetype_allows('assign', 'manager');
+
+foreach ($allows as $allowid) {
+    if ($DB->record_exists('role_allow_assign', ['roleid' => $roleid, 'allowassign' => $allowid])) {
+        continue;
+    }
+    core_role_set_assign_allowed($roleid, $allowid);
+}
+
+// Mark dirty.
+role_assign($roleid, $user->id, $context->id);
 $context->mark_dirty();
 
 // Create a new service with all functions for the user.

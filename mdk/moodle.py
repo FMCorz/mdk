@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -22,23 +21,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-import os
-import re
+import gzip
 import logging
-import shutil
+import os
+from pathlib import Path
+import re
+import shlex
 import subprocess
+import urllib
 import json
 from tempfile import gettempdir
 
-from .tools import getMDLFromCommitMessage, mkdir, process, parseBranch, stableBranch
-from .db import DB
+from mdk.container import Container, DockerContainer, HostContainer, is_docker_container_running
+
 from .config import Conf
-from .git import Git, GitException
+from .db import DB, get_dbo_from_profile
 from .exceptions import InstallException, UpgradeNotAllowed
+from .git import Git, GitException
 from .jira import Jira, JiraException
 from .scripts import Scripts
+from .tools import (getMDLFromCommitMessage, parseBranch, stableBranch)
 
 C = Conf()
+
+RE_CFG_PARSE = re.compile(
+    r'^\s*\$CFG->([a-z_]+)\s*=\s*((?P<brackets>[\'"])?(.+)(?P=brackets)|([0-9.]+)|(true|false|null))\s*;$', re.I
+)
 
 
 class Moodle(object):
@@ -65,10 +73,10 @@ class Moodle(object):
         'path',
         'release',
         'stablebranch',
-        'version'
+        'version',
     ]
 
-    def __init__(self, path, identifier=None):
+    def __init__(self, *, path, identifier=None):
         self.path = path
         self.identifier = identifier
         self.version = {}
@@ -180,15 +188,64 @@ class Moodle(object):
                     raise Exception('Error while popping the stash. Probably got conflicts.')
                 self._cos_hasstash = False
 
-    def cli(self, cli, args='', **kwargs):
-        """Executes a command line tool script"""
-        cli = os.path.join(self.get('path'), cli.lstrip('/'))
-        if not os.path.isfile(cli):
+    def cli(self, cli, args=None, **kwargs):
+        """Executes a PHP CLI script relative to the Moodle directory."""
+
+        # Ensure path is relative.
+        if cli.startswith(self.path):
+            cli = cli[len(self.path):]
+        cli = cli.lstrip('/')
+
+        if not self.container.exists(Path(cli)):
             raise Exception('Could not find script to call')
-        if type(args) == 'list':
-            args = ' '.join(args)
-        cmd = '%s %s %s' % (C.get('php'), cli, args)
-        return process(cmd, cwd=self.get('path'), **kwargs)
+
+        args = args or []
+        if type(args) is not list:
+            raise Exception('List expected for command arguments')
+
+        cmd = [cli, *args]
+        return self.php(cmd, **kwargs)
+
+    @property
+    def container(self) -> Container:
+        """Returns the container for this instance."""
+        # Cheeky way to detect if we want to run something in a docker container. This is a
+        # temporary solution. Ideally the container should be constructed elsewhere. It would
+        # make sense for the Workplace to know about the default container for an instance.
+        # And maybe we could have a common argument to all `mdk` commands to set the docker name.
+        if not hasattr(self, '_container'):
+            checkisrunning = True
+
+            # Resolve the docker name that we want, first env, then running containers.
+            dockername = None
+            if 'MDK_DOCKER_NAME' in os.environ:
+                dockername = os.environ.get('MDK_DOCKER_NAME', None)
+            elif C.get('docker.automaticContainerLookup') and is_docker_container_running(self.identifier):
+                checkisrunning = False
+                dockername = self.identifier
+
+            # From the name, we can construct the container.
+            container = None
+            if dockername:
+                if checkisrunning and not is_docker_container_running(dockername):
+                    logging.warn('Container %s is not running or does not exist, falling back on host.' % dockername)
+                else:
+                    container = DockerContainer(name=dockername, hostpath=Path(self.path))
+
+            # Fallback on the host.
+            if not container:
+                dataroot = self.get('dataroot', None)
+                container = HostContainer(
+                    identifier=self.identifier,
+                    path=Path(self.path),
+                    dataroot=Path(dataroot) if dataroot else None,
+                    binaries={
+                        'php': C.get('php'),
+                    }
+                )
+            self._container = container
+
+        return self._container
 
     def currentBranch(self):
         """Returns the current branch on the git repository"""
@@ -198,23 +255,38 @@ class Moodle(object):
         """Returns a Database object"""
         if self._dbo == None:
             engine = self.get('dbtype')
-            db = self.get('dbname')
-            if engine != None and db != None:
-                try:
-                    self._dbo = DB(engine, C.get('db.%s' % engine))
-                except:
-                    pass
+            host = self.get('dbhost')
+            user = self.get('dbuser')
+
+            # This is not ideal, we're associating the Moodle config with MDK profiles in the config, there is no
+            # guarantee that a profile will not change later on. When a profile is not a docker one, we should
+            # be using all of the Moodle config to create the database object, the only that's hard to get is the port.
+            candidates = []
+            for candidate in C.get('db').values():
+                if type(candidate) is not dict:
+                    continue
+                if candidate.get('engine') == engine and candidate.get('user') == user and candidate.get('host') == host:
+                    candidates.append(candidate)
+
+            # Better safe than sorry.
+            if not candidates:
+                raise ValueError(f'No database profile found for {engine} {user}@{host}')
+            if len(candidates) > 1:
+                raise ValueError(f'Ambiguous database profile, multiple found for {engine} {user}@{host}')
+
+            self._dbo = get_dbo_from_profile(candidates[0])
         return self._dbo
+
+    def exec(self, cmd, **kwargs):
+        """Executes a command"""
+        return self.container.exec(cmd, **kwargs)
 
     def generateBranchName(self, issue, suffix='', version=''):
         """Generates a branch name"""
         mdl = re.sub(r'(MDL|mdl)(-|_)?', '', issue)
         if version == '':
             version = self.get('branch')
-        args = {
-            'issue': mdl,
-            'version': version
-        }
+        args = {'issue': mdl, 'version': version}
         branch = C.get('wording.branchFormat') % args
         if suffix != None and suffix != '':
             branch += C.get('wording.branchSuffixSeparator') + suffix
@@ -289,20 +361,11 @@ class Moodle(object):
         """Initialise the PHPUnit environment"""
         raise Exception('This method is deprecated, use phpunit.PHPUnit.init() instead.')
 
-    def initBehat(self, switchcompletely=False, force=False, prefix=None, faildumppath=None):
+    def initBehat(self, force=False, prefix=None, faildumppath=None):
         """Initialise the Behat environment"""
 
-        if self.branch_compare(25, '<'):
-            raise Exception('Behat is only available from Moodle 2.5')
-
-        # Force switch completely for PHP < 5.4
-        (none, phpVersion, none) = process('%s -r "echo version_compare(phpversion(), \'5.4\');"' % (C.get('php')))
-        if int(phpVersion) <= 0:
-            switchcompletely = True
-
         # Set Behat data root
-        behat_dataroot = self.get('dataroot') + '_behat'
-        self.updateConfig('behat_dataroot', behat_dataroot)
+        self.updateConfig('behat_dataroot', self.container.behat_dataroot.as_posix())
 
         # Set Behat DB prefix
         currentPrefix = self.get('behat_prefix')
@@ -322,32 +385,19 @@ class Moodle(object):
             # No warning for Oracle as we need to set it to something else.
             logging.warning('Behat prefix not changed, already set to \'%s\', expected \'%s\'.' % (currentPrefix, behat_prefix))
 
-        # Switch completely?
-        if self.branch_compare(26, '<'):
-            if switchcompletely:
-                self.updateConfig('behat_switchcompletely', switchcompletely)
-                self.updateConfig('behat_wwwroot', self.get('wwwroot'))
-            else:
-                self.removeConfig('behat_switchcompletely')
-                self.removeConfig('behat_wwwroot')
-        else:
-            # Defining wwwroot.
-            wwwroot = '%s://%s/' % (C.get('scheme'), C.get('behat.host'))
-            if C.get('path') != '' and C.get('path') != None:
-                wwwroot = wwwroot + C.get('path') + '/'
-            wwwroot = wwwroot + self.identifier
-            currentWwwroot = self.get('behat_wwwroot')
-            if not currentWwwroot or force:
-                self.updateConfig('behat_wwwroot', wwwroot)
-            elif currentWwwroot != wwwroot:
-                logging.warning('Behat wwwroot not changed, already set to \'%s\', expected \'%s\'.' % (currentWwwroot, wwwroot))
+        wwwroot = self.container.behat_wwwroot
+        currentWwwroot = self.get('behat_wwwroot')
+        if not currentWwwroot or force:
+            self.updateConfig('behat_wwwroot', wwwroot)
+        elif currentWwwroot != wwwroot:
+            logging.warning('Behat wwwroot not changed, already set to \'%s\', expected \'%s\'.' % (currentWwwroot, wwwroot))
 
         # Force a cache purge
         self.purge()
 
         # Force dropping the tables if there are any.
         if force:
-            result = self.cli('admin/tool/behat/cli/util.php', args='--drop', stdout=None, stderr=None)
+            result = self.cli('admin/tool/behat/cli/util.php', args=['--drop'], stdout=None, stderr=None)
             if result[0] != 0:
                 raise Exception('Error while initialising Behat. Please try manually.')
 
@@ -362,18 +412,14 @@ class Moodle(object):
     def info(self):
         """Returns a dictionary of information about this instance"""
         self._load()
-        info = {
-            'path': self.path,
-            'installed': self.isInstalled(),
-            'identifier': self.identifier
-        }
+        info = {'path': self.path, 'installed': self.isInstalled(), 'identifier': self.identifier}
         for (k, v) in list(self.config.items()):
             info[k] = v
         for (k, v) in list(self.version.items()):
             info[k] = v
         return info
 
-    def install(self, dbname=None, engine=None, dataDir=None, fullname=None, dropDb=False, wwwroot=None):
+    def install(self, dbprofile=None, dbname=None, engine=None, dataDir=None, fullname=None, dropDb=False, wwwroot=None):
         """Launch the install script of an Instance"""
 
         if self.isInstalled():
@@ -389,38 +435,63 @@ class Moodle(object):
             if prefixDbname:
                 dbname = prefixDbname + dbname
             dbname = dbname[:28]
-        if engine == None:
-            engine = C.get('defaultEngine')
+
+        dbprofilename = dbprofile
+        if not dbprofilename:
+            if engine is not None:
+                dbprofilename = engine
+            else:
+                dbprofilename = C.get('defaultEngine')
+        dbprofile = C.get('db.%s' % dbprofilename)
+        engine = dbprofile['engine']
+
         if fullname == None:
             fullname = self.identifier.replace('-', ' ').replace('_', ' ').title()
             fullname = fullname + ' ' + C.get('wording.%s' % engine)
 
-        dboptions =  C.get('db.%s' % engine)
-        if engine in ('mysqli', 'mariadb') and self.branch_compare(31):
-            dboptions['charset'] = 'utf8mb4'
-
         logging.info('Creating database...')
-        db = DB(engine, dboptions)
-        if db.dbexists(dbname):
+        dbo = get_dbo_from_profile(dbprofile)
+        if dbo.dbexists(dbname):
             if dropDb:
-                db.dropdb(dbname)
-                db.createdb(dbname)
+                dbo.dropdb(dbname)
+                createdbkwargs = {}
+                if engine in ('mysqli', 'mariadb') and self.branch_compare(31, '<'):
+                    createdbkwargs['charset'] = 'utf8'
+                dbo.createdb(dbname, **createdbkwargs)
             else:
                 raise InstallException('Cannot install an instance on an existing database (%s)' % dbname)
         else:
-            db.createdb(dbname)
-        db.selectdb(dbname)
+            dbo.createdb(dbname)
 
         logging.info('Installing %s...' % self.identifier)
+        args = [
+            '--wwwroot=%s' % wwwroot,
+            '--dataroot=%s' % dataDir,
+            '--dbtype=%s' % engine,
+            '--dbname=%s' % dbname,
+            '--dbuser=%s' % dbprofile['user'],
+            '--dbpass=%s' % dbprofile['passwd'],
+            '--dbhost=%s' % dbprofile['host'],
+            '--dbport=%s' % dbprofile['port'],
+            '--prefix=%s' % C.get('db.tablePrefix'),
+            '--fullname=%s' % fullname,
+            '--shortname=%s' % self.identifier,
+            '--adminuser=%s' % C.get('login'),
+            '--adminpass=%s' % C.get('passwd'),
+            '--allow-unstable',
+            '--agree-license',
+            '--non-interactive',
+        ]
         cli = 'admin/cli/install.php'
-        params = (wwwroot, dataDir, engine, dbname, C.get('db.%s.user' % engine), C.get('db.%s.passwd' % engine), C.get('db.%s.host' % engine), C.get('db.%s.port' % engine), C.get('db.tablePrefix'), fullname, self.identifier, C.get('login'), C.get('passwd'))
-        args = '--wwwroot="%s" --dataroot="%s" --dbtype="%s" --dbname="%s" --dbuser="%s" --dbpass="%s" --dbhost="%s" --dbport="%s" --prefix="%s" --fullname="%s" --shortname="%s" --adminuser="%s" --adminpass="%s" --allow-unstable --agree-license --non-interactive' % params
         result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
-            raise InstallException('Error while running the install, please manually fix the problem.\n- Command was: %s %s %s' % (C.get('php'), cli, args))
+            raise InstallException(
+                'Error while running the install, please manually fix the problem.\n'
+                '- Command was: %s %s' % (cli, ' '.join(args))
+            )
 
-        configFile = os.path.join(self.path, 'config.php')
-        os.chmod(configFile, 0o666)
+        configFile = Path('config.php')
+        self.container.chmod(configFile, 0o666)
         try:
             if C.get('path') != '' and C.get('path') != None:
                 self.addConfig('sessioncookiepath', '/%s/%s/' % (C.get('path'), self.identifier))
@@ -433,6 +504,8 @@ class Moodle(object):
         forceCfg = C.get('forceCfg')
         if isinstance(forceCfg, dict):
             for cfgKey, cfgValue in forceCfg.items():
+                if type(cfgValue) is str:
+                    cfgValue = cfgValue.replace('[name]', self.identifier)
                 try:
                     logging.info('Setting up forced $CFG->%s to \'%s\' in config.php', cfgKey, cfgValue)
                     self.addConfig(cfgKey, cfgValue)
@@ -440,6 +513,40 @@ class Moodle(object):
                     logging.warning('Could not append $CFG->%s to config.php', cfgKey)
 
         self.reload()
+
+    def installComposerAndDevDependenciesIfNeeded(self):
+        """Install composer and its dependencies if not previously installed."""
+        if os.path.isfile(os.path.join(self.get('path'), 'composer.phar')):
+            return
+
+        logging.info('Installing Composer')
+
+        none, phpVersionCompare, none = self.php(['-r', 'echo version_compare(phpversion(), \'7.2\');'])
+        phpIsGreaterThanPhp71 = phpVersionCompare == '1'
+
+        cliFile = 'mdk_install_composer.php'
+        cliPath = os.path.join(self.get('path'), cliFile)
+
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('Accept-Encoding', 'gzip')]
+        urllib.request.install_opener(opener)
+        (to, headers) = urllib.request.urlretrieve('http://getcomposer.org/installer', cliPath)
+        if headers.get('content-encoding') == 'gzip':
+            f = gzip.open(cliPath, 'r')
+            content = f.read().decode('utf-8')
+            f.close()
+            f = open(cliPath, 'w')
+            f.write(content)
+            f.close()
+        urllib.request.install_opener(urllib.request.build_opener())
+
+        if not phpIsGreaterThanPhp71:
+            self.cli(cliFile, args=['--2.2'], stdout=None, stderr=None)
+        else:
+            self.cli(cliFile, stdout=None, stderr=None)
+
+        os.remove(cliPath)
+        self.cli('composer.phar', args=['install', '--dev'], stdout=None, stderr=None)
 
     def isInstalled(self):
         """Returns whether this instance is installed or not"""
@@ -536,11 +643,12 @@ class Moodle(object):
         config = os.path.join(self.path, 'config.php')
         if os.path.isfile(config):
             self.installed = True
-            prog = re.compile(r'^\s*\$CFG->([a-z_]+)\s*=\s*((?P<brackets>[\'"])?(.+)(?P=brackets)|([0-9.]+)|(true|false|null))\s*;$', re.I)
+
             try:
                 f = open(config, 'r')
                 for line in f:
-                    match = prog.search(line)
+
+                    match = RE_CFG_PARSE.search(line)
                     if match == None:
                         continue
 
@@ -574,6 +682,10 @@ class Moodle(object):
         self._loaded = True
         return True
 
+    def php(self, args=[], **kwargs):
+        """Executes a PHP command."""
+        return self.container.exec(['php', *args], **kwargs)
+
     def purge(self, manual=False):
         """Purge the cache of an instance"""
         if not self.isInstalled():
@@ -584,10 +696,10 @@ class Moodle(object):
         try:
             dataroot = self.get('dataroot', False)
             if manual and dataroot != False:
+                dataroot = Path(self.get('dataroot'))
                 logging.debug('Removing directories [dataroot]/cache and [dataroot]/localcache')
-                shutil.rmtree(os.path.join(dataroot, 'cache'), True)
-                shutil.rmtree(os.path.join(dataroot, 'localcache'), True)
-
+                self.container.rmtree(dataroot / 'cache')
+                self.container.rmtree(dataroot / 'localcache')
             self.cli('admin/cli/purge_caches.php', stderr=None, stdout=None)
 
         except Exception:
@@ -676,7 +788,16 @@ class Moodle(object):
 
     def runScript(self, scriptname, arguments=None, **kwargs):
         """Runs a script on the instance"""
-        return Scripts.run(scriptname, self.get('path'), arguments=arguments, cmdkwargs=kwargs)
+        args = (shlex.split(arguments) if type(arguments) is str else arguments) or []
+        with Scripts.prepare_script_in_path(scriptname, self.get('path'), self.container) as cli:
+            # In theory we should not be checking the type of scripts here, but as we
+            # want to be able to invoke them within a container, it's better this way.
+            if cli.endswith('.php'):
+                return self.cli(cli, args, **kwargs)
+            elif cli.endswith('.sh'):
+                return self.exec([cli, *args], **kwargs)
+            else:
+                raise Exception("Unsupport type of scripts.")
 
     def update(self, remote=None):
         """Update the instance from the remote"""
@@ -698,15 +819,6 @@ class Moodle(object):
         if not self.git().reset(to=upstream, hard=True):
             raise Exception('Error while executing git reset.')
 
-        # Sync the master branch to the main branch.
-        if stablebranch == 'main' and self.git().hasBranch('master', upstreamremote):
-            logging.info('  Syncing the master branch to the main branch...')
-            # Any issues encountered here should just be logged and not break execution.
-            if not self.git().checkout('master'):
-                logging.info('Error while checking out the master branch.')
-            if not self.git().reset(to=upstream, hard=True):
-                logging.info('Error while executing git reset on the master branch.')
-
         # Return to previous branch
         self.checkout_stable(False)
 
@@ -722,11 +834,11 @@ class Moodle(object):
             raise Exception('The instance is not installed')
 
         # Delete the content in moodledata
-        dataroot = self.get('dataroot')
-        if os.path.isdir(dataroot):
+        dataroot = Path(self.get('dataroot'))
+        if dataroot and self.container.isdir(dataroot):
             logging.debug('Deleting dataroot content (%s)' % (dataroot))
-            shutil.rmtree(dataroot)
-            mkdir(dataroot, 0o777)
+            self.container.rmtree(dataroot)
+            self.container.mkdir(dataroot, 0o777)
 
         # Drop the database
         dbname = self.get('dbname')
@@ -783,7 +895,8 @@ class Moodle(object):
         logging.debug('Head commit resolved to %s' % (headcommit))
 
         J = Jira()
-        diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%', stablebranch).replace('%headcommit%', headcommit)
+        diffurl = diffurltemplate.replace('%branch%', branch).replace('%stablebranch%',
+                                                                      stablebranch).replace('%headcommit%', headcommit)
 
         fieldrepositoryurl = C.get('tracker.fieldnames.repositoryurl')
         fieldbranch = C.get('tracker.fieldnames.%s.branch' % version)
@@ -799,8 +912,10 @@ class Moodle(object):
                 errormsg += ' Tracker fields belonging to legacy Moodle versions are removed from the tracker.'
             logging.error(errormsg)
         else:
-            logging.info('Setting tracker fields: \n  %s: %s \n  %s: %s \n  %s: %s' %
-                (fieldrepositoryurl, repositoryurl, fieldbranch, branch, fielddiffurl, diffurl))
+            logging.info(
+                'Setting tracker fields: \n  %s: %s \n  %s: %s \n  %s: %s' %
+                (fieldrepositoryurl, repositoryurl, fieldbranch, branch, fielddiffurl, diffurl)
+            )
             J.setCustomFields(issue, {fieldrepositoryurl: repositoryurl, fieldbranch: branch, fielddiffurl: diffurl})
 
     def upgrade(self, nocheckout=False):
@@ -817,7 +932,7 @@ class Moodle(object):
             self.checkout_stable(True)
 
         cli = '/admin/cli/upgrade.php'
-        args = '--non-interactive --allow-unstable'
+        args = ['--non-interactive', '--allow-unstable']
         result = self.cli(cli, args, stdout=None, stderr=None)
         if result[0] != 0:
             raise Exception('Error while running the upgrade.')
@@ -833,7 +948,7 @@ class Moodle(object):
             raise Exception('Uninstalling plugins is only available from Moodle 3.7.')
 
         cli = '/admin/cli/uninstall_plugins.php'
-        args = '--plugins=' + name + ' --run'
+        args = ['--plugins="{}"'.format(name), '--run']
 
         result = self.cli(cli, args, stdout=subprocess.PIPE, stderr=None)
         try:

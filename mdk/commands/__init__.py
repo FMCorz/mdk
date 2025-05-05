@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -28,6 +27,7 @@ def getCommand(cmd):
     cls = cmd.capitalize() + 'Command'
     return getattr(getattr(getattr(__import__('mdk.%s.%s' % ('commands', cmd)), 'commands'), cmd), cls)
 
+
 commandsList = [
     'alias',
     'backport',
@@ -35,6 +35,7 @@ commandsList = [
     'behat',
     'config',
     'create',
+    'cron',
     'css',
     'doctor',
     'fix',
@@ -43,6 +44,7 @@ commandsList = [
     'install',
     'js',
     'lang',
+    'php',
     'phpunit',
     'plugin',
     'precheck',
@@ -55,5 +57,5 @@ commandsList = [
     'tracker',
     'uninstall',
     'update',
-    'upgrade'
+    'upgrade',
 ]
