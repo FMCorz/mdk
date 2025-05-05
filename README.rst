@@ -369,6 +369,35 @@ Invoke a PHP command in the context of the instance.
 
     mdk php admin/cli/purge_caches.php
 
+lang
+----
+
+Lang related functions.
+
+**Example**
+
+Add new string identifier
+
+::
+
+    mdk lang add newstringid -d "the newstringid description" lang.php
+
+
+Sort the existing string identifiers in a file
+
+::
+
+    mdk lang sort lang.php
+
+Review the modified language string on the pull branch
+
+To use "review" action, developer must pull a patch with testing mode ``mdk pull <mdl> -t`` and then use the below command:
+
+::
+
+    mdk lang review
+
+
 phpunit
 -------
 
