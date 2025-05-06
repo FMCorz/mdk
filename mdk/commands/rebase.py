@@ -52,7 +52,7 @@ class RebaseCommand(Command):
             (
                 ['-v', '--versions'],
                 {
-                    'choices': 'version_options(),,',
+                    'choices': version_options(),
                     'help': 'versions to rebase the issues on. Ignored if names is set.',
                     'metavar': 'version',
                     'nargs': '+',
