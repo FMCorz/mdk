@@ -143,7 +143,7 @@ class TrackerCommand(Command):
         print('-' * 72)
         for l in textwrap.wrap(title, 68, initial_indent='  ', subsequent_indent='    '):
             print(l)
-        print('  {0} - {1} - {2}'.format(issue['fields']['issuetype']['name'], issue['fields']['priority']['name'], 'https://tracker.moodle.org/browse/' + issue['key']))
+        print('  {0} - {1} - {2}'.format(issue['fields']['issuetype']['name'], issue['fields']['priority']['name'], 'https://moodle.atlassian.net/browse/' + issue['key']))
         status = '{0} {1} {2}'.format(issue['fields']['status']['name'], resolution, resolutiondate).strip()
         print('  {0}'.format(status))
 
@@ -158,16 +158,16 @@ class TrackerCommand(Command):
 
         vw = '[ V: %d - W: %d ]' % (issue['fields']['votes']['votes'], issue['fields']['watches']['watchCount'])
         print('{0:->70}--'.format(vw))
-        print('{0:<20}: {1} ({2}) on {3}'.format('Reporter', issue['fields']['reporter']['displayName'], issue['fields']['reporter']['name'], created))
+        print('{0:<20}: {1} ({2}) on {3}'.format('Reporter', issue['fields']['reporter']['displayName'], issue['fields']['reporter']['emailAddress'], created))
 
         if issue['fields'].get('assignee') != None:
-            print('{0:<20}: {1} ({2})'.format('Assignee', issue['fields']['assignee']['displayName'], issue['fields']['assignee']['name']))
+            print('{0:<20}: {1} ({2})'.format('Assignee', issue['fields']['assignee']['displayName'], issue['fields']['assignee']['emailAddress']))
         if issue['named'].get('Peer reviewer'):
-            print('{0:<20}: {1} ({2})'.format('Peer reviewer', issue['named']['Peer reviewer']['displayName'], issue['named']['Peer reviewer']['name']))
+            print('{0:<20}: {1} ({2})'.format('Peer reviewer', issue['named']['Peer reviewer']['displayName'], issue['named']['Peer reviewer']['emailAddress']))
         if issue['named'].get('Integrator'):
-            print('{0:<20}: {1} ({2})'.format('Integrator', issue['named']['Integrator']['displayName'], issue['named']['Integrator']['name']))
+            print('{0:<20}: {1} ({2})'.format('Integrator', issue['named']['Integrator']['displayName'], issue['named']['Integrator']['emailAddress']))
         if issue['named'].get('Tester'):
-            print('{0:<20}: {1} ({2})'.format('Tester', issue['named']['Tester']['displayName'], issue['named']['Tester']['name']))
+            print('{0:<20}: {1} ({2})'.format('Tester', issue['named']['Tester']['displayName'], issue['named']['Tester']['emailAddress']))
 
         if args.testing and issue['named'].get('Testing Instructions'):
             print('-' * 72)

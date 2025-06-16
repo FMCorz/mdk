@@ -114,7 +114,7 @@
 
     // The information for integrating MDK with Jira
     "tracker": {
-        "url": "https://tracker.moodle.org/",
+        "url": "https://moodle.atlassian.net/",
         "username": false,
         "fieldnames" : {
             "repositoryurl" : "Pull  from Repository",
