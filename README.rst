@@ -507,7 +507,7 @@ Gets some information about the issue on the tracker.
     ------------------------------------------------------------------------
       MDL-34543: New assignment module - Feedback file exists for an
         assignment but not shown in the Feedback files picker
-      Bug - Critical - https://tracker.moodle.org/browse/MDL-34543
+      Bug - Critical - https://moodle.atlassian.net/browse/MDL-34543
       Closed (Fixed) 2012-08-17 07:25
     -------------------------------------------------------[ V: 7 - W: 7 ]--
     Reporter            : Paul Hague (paulhague) on 2012-07-26 08:30

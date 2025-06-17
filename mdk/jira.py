@@ -203,6 +203,17 @@ class Jira(object):
 
         self.version = resp['data']
 
+    def checkApiKey(self):
+        """Check if the API key is valid by fetching API Key info"""
+        resp = self.request('myself')
+
+        if (resp['status'] == 401):
+            raise JiraException('The API key is not valid. Please check your username and API key.')
+        elif (resp['status'] != 200):
+            raise JiraException('Unexpected response code: %s' % (str(resp['status'])))
+
+        return True
+
     def info(self):
         """Returns a dictionary of information about this instance"""
         info = {}
@@ -233,7 +244,7 @@ class Jira(object):
 
         try:
             # str() is needed because keyring does not handle unicode.
-            self.password = keyring.get_password('mdk-jira-password', str(self.username))
+            self.password = keyring.get_password('mdk-jira-apikey', str(self.username))
         except:
             # Do not die if keyring package is not available.
             self.password = None
@@ -247,22 +258,24 @@ class Jira(object):
             # Testing basic auth
             if self.password:
                 try:
-                    self.getServerInfo()
+                    self.checkApiKey()
                     self._loaded = True
                 except JiraException:
                     askUsername = True
-                    print('Either the username and password don\'t match or you may need to enter a Captcha to continue.')
+                    self.password= None
+                    print('Unable to fetch information about the current user. The API key may have expired.')
             if not self._loaded:
                 if askUsername:
-                    self.username = question('What is the username to use to connect to Moodle Tracker?', default=self.username if self.username else None)
-                self.password = question('Enter the password for username \'%s\' on Moodle Tracker?' % self.username, password=True)
+                    self.username = question('What is the e-mail address used to connect to Moodle Tracker?', default=self.username if self.username else None)
+                self.password = question('Enter the API Key for username \'%s\' on Moodle Tracker?\nVisit https://id.atlassian.com/manage-profile/security/api-tokens to create a new API key.' % self.username, password=True)
+
 
         # Save the username to the config file
         if self.username != C.get('tracker.username'):
             C.set('tracker.username', self.username)
 
         try:
-            keyring.set_password('mdk-jira-password', str(self.username), str(self.password))
+            keyring.set_password('mdk-jira-apikey', str(self.username), str(self.password))
         except:
             # Do not die if keyring package is not available.
             pass
