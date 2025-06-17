@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v2.1.4
+-----
+
+- Update Jira authentication for the migration to Jira Cloud - Andrew Lyons
+- Use the `main` branch for the `doctor --masterbranch` command - Jun Pataleta
+- Minor syntax fixes - Jayce Birrell, Jun Pataleta
+
 v2.1.3
 -----
 
