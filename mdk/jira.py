@@ -349,7 +349,7 @@ class Jira(object):
         The updates parameter is a dictionary of key values where the key is the custom field name
         and the value is the new value to set.
 
-        /!\ This only works for fields of type text.
+        !!! This only works for fields of type text.
         """
 
         issue = self.getIssue(key)
