@@ -194,9 +194,22 @@ class Moodle(object):
         # Ensure path is relative.
         if cli.startswith(self.path):
             cli = cli[len(self.path):]
+
         cli = cli.lstrip('/')
 
+        branch = self.get('branch')
+
+        if self.branch_compare(501, '>='):
+            # From Moodle 5.1 onwards, Moodle moves to a public directory.
+            # Initially all content is moved there, but it will gradually move out.
+            if not self.container.exists(Path(cli)):
+                if not cli.startswith('public') and self.container.exists(Path('public/version.php')):
+                    if self.container.exists(Path('public', cli)):
+                        # If the version.php is in the public directory, we need to run the script from there.
+                        cli = os.path.join('public', cli)
+
         if not self.container.exists(Path(cli)):
+            # If the version.php is in the public directory, we need to run the script from there.
             raise Exception('Could not find script to call')
 
         args = args or []
