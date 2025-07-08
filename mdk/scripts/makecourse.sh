@@ -9,6 +9,10 @@ FULLNAME="Moodle Development $I"
 SIZE="S"
 CLI="admin/tool/generator/cli/maketestcourse.php"
 
+if [ -d "public" ] && [ -e "public/$CLI" ]; then
+    CLI="public/$CLI"
+fi
+
 if [ ! -e "$CLI" ]; then
     echo "Cannot create a course: the CLI script to create test courses could not be found."
     exit 1
