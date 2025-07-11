@@ -377,7 +377,14 @@ class Workplace(object):
             names.append(d)
         return names
 
-    def resolve(self, name=None, path=None) -> Optional[moodle.Moodle]:
+    def resolve(self, name=None, path=None, raise_exception=False) -> Optional[moodle.Moodle]:
+        """Try to find a Moodle instance based on its name, a path or the working directory"""
+        M = self._resolve(name=name, path=path)
+        if M is None and raise_exception:
+            raise Exception('Could not find a Moodle instance.')
+        return M
+
+    def _resolve(self, name=None, path=None) -> Optional[moodle.Moodle]:
         """Try to find a Moodle instance based on its name, a path or the working directory"""
 
         # A name was passed, is that a valid instance?

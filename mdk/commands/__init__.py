@@ -43,6 +43,7 @@ commandsList = [
     'init',
     'install',
     'js',
+    'open',
     'php',
     'phpunit',
     'plugin',
