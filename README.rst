@@ -148,11 +148,11 @@ Clone the repository::
 
 On Debian-based systems, you will need to install the following packages::
 
-    sudo apt-get install python-pip libmysqlclient-dev libpq-dev python-dev unixodbc-dev
+    sudo apt-get install python3-pip libmysqlclient-dev libpq-dev python3-dev unixodbc-dev
 
 Then from the directory where you cloned the repository::
 
-    python setup.py develop --user
+    pip3 install --user -e . --break-system-packages
     mdk init
 
 
@@ -164,7 +164,7 @@ Fish completion
 
 To activate fish completion::
 
-    sudo ln -s /path/to/moodle-sdk/extra/fish_completion ~/config/fish/completions/mdk.fish
+    sudo ln -s /path/to/moodle-sdk/extra/fish_completion.fish ~/.config/fish/completions/mdk.fish
 
 Bash completion
 ^^^^^^^^^^^^^^^
