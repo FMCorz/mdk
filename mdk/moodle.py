@@ -426,7 +426,7 @@ class Moodle(object):
             raise InstallException('Instance already installed!')
 
         if not wwwroot:
-            raise InstallException('Cannot install without a value for wwwroot')
+            wwwroot = self.container.wwwroot
         if dataDir == None or not os.path.isdir(dataDir):
             raise InstallException('Cannot install instance without knowing where the data directory is')
         if dbname == None:

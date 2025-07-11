@@ -205,7 +205,6 @@ class CreateCommand(Command):
                 'dropDb': dropDb,
                 'fullname': fullname,
                 'dataDir': self.Wp.getPath(name, 'data'),
-                'wwwroot': self.Wp.getUrl(name)
             }
             try:
                 M.install(**kwargs)

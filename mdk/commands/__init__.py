@@ -35,6 +35,7 @@ commandsList = [
     'config',
     'create',
     'cron',
+    'docker',
     'doctor',
     'fix',
     'info',

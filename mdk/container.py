@@ -55,6 +55,11 @@ class Container(abc.ABC):
 
     @property
     @abc.abstractmethod
+    def wwwroot(self) -> str:
+        pass
+
+    @property
+    @abc.abstractmethod
     def behat_dataroot(self) -> Path:
         pass
 
@@ -120,6 +125,15 @@ class HostContainer(Container):
         if not self._dataroot:
             raise ValueError('Unknown dataroot.')
         return self._dataroot
+
+    @property
+    def wwwroot(self) -> str:
+        if not self._identifier:
+            raise ValueError('Instance identifier unknown.')
+        wwwroot = '%s://%s/' % (C.get('scheme'), C.get('host'))
+        if C.get('path'):
+            wwwroot = wwwroot + C.get('path') + '/'
+        return wwwroot + self._identifier
 
     @property
     def behat_dataroot(self) -> Path:
@@ -189,6 +203,22 @@ class DockerContainer(Container):
     @property
     def dataroot(self) -> Path:
         return Path('/var/www/moodledata')
+
+    @property
+    def wwwroot(self) -> str:
+        wwwroot = '%s://%s' % (C.get('scheme'), C.get('host'))
+
+        r, output, _ = process(['docker', 'port', self._name, '80'])
+        if r != 0:
+            raise Exception(f'Could not get the port for {self._name}.')
+
+        port = None
+        try:
+            port = output.splitlines()[0].split(':', 1)[-1]
+        except ValueError:
+            raise ValueError(f'Could not resolve the port of {self._name}.')
+
+        return wwwroot + ':' + port
 
     @property
     def behat_dataroot(self) -> Path:

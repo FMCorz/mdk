@@ -88,7 +88,7 @@ class InstallCommand(Command):
         if not os.path.isdir(dataDir):
             mkdir(dataDir, 0o777)
 
-        kwargs = {'dbprofile': dbprofile, 'fullname': fullname, 'dataDir': dataDir, 'wwwroot': self.Wp.getUrl(name)}
+        kwargs = {'dbprofile': dbprofile, 'fullname': fullname, 'dataDir': dataDir}
         M.install(**kwargs)
 
         # Running scripts

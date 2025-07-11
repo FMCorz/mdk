@@ -209,8 +209,11 @@ class Workplace(object):
         # Instantiating the object also checks if it exists
         M = self.get(name)
 
-        # Deleting the whole thing
-        shutil.rmtree(os.path.join(self.path, name))
+        # Delete DB.
+        DB = M.dbo()
+        dbname = M.get('dbname')
+        if DB and dbname and DB.dbexists(dbname):
+            DB.dropdb(dbname)
 
         # Deleting the possible symlink
         link = os.path.join(self.www, name)
@@ -228,11 +231,8 @@ class Workplace(object):
             except Exception:
                 pass
 
-        # Delete db
-        DB = M.dbo()
-        dbname = M.get('dbname')
-        if DB and dbname and DB.dbexists(dbname):
-            DB.dropdb(dbname)
+        # Deleting the whole thing
+        shutil.rmtree(os.path.join(self.path, name))
 
     def generateInstanceName(self, version, integration=False, suffix='', identifier=None):
         """Creates a name (identifier) from arguments"""

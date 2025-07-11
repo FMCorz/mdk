@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -39,85 +38,75 @@ class DoctorCommand(Command):
             {
                 'action': 'store_true',
                 'help': 'Automatically fix all the identified problems'
-            }
-        ),
-        (
+            },
+        ), (
             ['--all'],
             {
                 'action': 'store_true',
                 'help': 'Enable all the checks'
-            }
-        ),
-        (
+            },
+        ), (
             ['--branch'],
             {
                 'action': 'store_true',
                 'help': 'Check the branch checked out on your integration instances'
-            }
-        ),
-        (
+            },
+        ), (
             ['--cached'],
             {
                 'action': 'store_true',
                 'help': 'Check the cached repositories'
-            }
-        ),
-        (
+            },
+        ), (
             ['--dependencies'],
             {
                 'action': 'store_true',
                 'help': 'Check various dependencies'
-            }
-        ),
-        (
+            },
+        ), (
             ['--directories'],
             {
                 'action': 'store_true',
                 'help': 'Check the directories set in the config file'
-            }
-        ),
-        (
+            },
+        ), (
             ['--hi'],
             {
                 'action': 'store_true',
                 'help': 'What you see it totally unrelated to what you get',
                 'silent': True
-            }
-        ),
-        (
+            },
+        ), (
             ['--mainbranch'],
             {
                 'action': 'store_true',
                 'help': 'Check the status of the main branch'
-            }
+            },
         ),
         (
             ['--masterbranch'],
             {
                 'action': 'store_true',
                 'help': 'With the removal of the master branch in Moodle, this is now just an alias for the `--mainbranch` argument'
-            }
-        ),
-        (
+            },
+        ), (
             ['--remotes'],
             {
                 'action': 'store_true',
                 'help': 'Check the remotes of your instances'
-            }
-        ),
-        (
+            },
+        ), (
             ['--symlink'],
             {
                 'action': 'store_true',
                 'help': 'Check the symlinks of the instances'
-            }
-        ),
-        (
+            },
+        ), (
             ['--wwwroot'],
             {
                 'action': 'store_true',
                 'help': 'Check the $CFG->wwwroot of your instances'
-            }
+            },
         )
     ]
     _description = 'Perform several checks on your current installation'
@@ -163,9 +152,11 @@ class DoctorCommand(Command):
         # Check the main branch
         if args.mainbranch or args.masterbranch or allChecks:
             if args.masterbranch:
-                print('With the removal of the master branch in the Moodle repository, the `--masterbranch` argument '
-                      'is now an alias for the `--mainbranch` argument and may be removed soon from MDK as well. '
-                      'In the future, please use `--mainbranch` argument instead.')
+                print(
+                    'With the removal of the master branch in the Moodle repository, the `--masterbranch` argument '
+                    'is now an alias for the `--mainbranch` argument and may be removed soon from MDK as well. '
+                    'In the future, please use `--mainbranch` argument instead.'
+                )
             self.masterbranch(args)
 
         # Check what you see is what you get
@@ -336,7 +327,6 @@ class DoctorCommand(Command):
                 print('    Setting masterBranch to %d' % (latestBranch))
                 self.C.set('masterBranch', latestBranch)
 
-
     def hi(self, args):
         """I wonder what is the purpose of this...
 
@@ -374,7 +364,6 @@ class DoctorCommand(Command):
                     print('    Creating extra symlink for %s' % (identifier))
                     os.symlink(self.Wp.getPath(identifier, 'extra'), extraLink)
 
-
     def remotes(self, args):
         """Check that the correct remotes are used"""
 
@@ -384,9 +373,12 @@ class DoctorCommand(Command):
             return
 
         remotes = {
-            'mine': self.C.get('remotes.mine'),
-            'stable': self.Wp.getCachedRemote() if self.C.get('useCacheAsUpstreamRemote') else self.C.get('remotes.stable'),
-            'integration': self.Wp.getCachedRemote(True) if self.C.get('useCacheAsUpstreamRemote') else self.C.get('remotes.integration')
+            'mine':
+                self.C.get('remotes.mine'),
+            'stable':
+                self.Wp.getCachedRemote() if self.C.get('useCacheAsUpstreamRemote') else self.C.get('remotes.stable'),
+            'integration':
+                self.Wp.getCachedRemote(True) if self.C.get('useCacheAsUpstreamRemote') else self.C.get('remotes.integration')
         }
         myRemote = self.C.get('myRemote')
         upstreamRemote = self.C.get('upstreamRemote')
@@ -420,13 +412,12 @@ class DoctorCommand(Command):
 
         instances = self.Wp.resolveMultiple(self.Wp.list())
 
-
         for M in instances:
             if not M.isInstalled():
                 continue
             else:
                 actual = M.get('wwwroot')
-                expected = self.Wp.getUrl(M.get('identifier'))
+                expected = M.container.wwwroot
                 if actual != expected:
                     print('  %s: Found %s, not %s' % (M.get('identifier'), actual, expected))
                     if args.fix:
