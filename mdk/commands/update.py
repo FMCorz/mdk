@@ -127,7 +127,7 @@ class UpdateCommand(Command):
 
         if errors and len(Mlist) > 1:
             logging.info('')
-            logging.warning('/!\ Some errors occurred on the following instances:')
+            logging.warning('⚠️ Some errors occurred on the following instances:')
             for M in errors:
                 logging.warning('- %s' % M.get('identifier'))
             # Remove sys.exit and handle error code

@@ -127,7 +127,7 @@ class UpgradeCommand(Command):
 
         if errors and len(Mlist) > 1:
             logging.info('')
-            logging.warning('/!\ Some errors occurred on the following instances:')
+            logging.warning('⚠️ Some errors occurred on the following instances:')
             for M in errors:
                 logging.warning('- %s' % M.get('identifier'))
             # TODO Do not use sys.exit() but handle error code
