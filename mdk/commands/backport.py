@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -23,7 +22,7 @@ http://github.com/FMCorz/mdk
 """
 
 import logging
-from .. import tools, css, jira
+from .. import tools, jira
 from ..command import Command
 from ..tools import yesOrNo, version_options
 
@@ -39,46 +38,46 @@ class BackportCommand(Command):
                 ['-b', '--branch'],
                 {
                     'help': 'the branch to backport if not the current one. If omitted, guessed from instance name.',
-                    'metavar': 'branch'
-                }
-            ),
-            (
+                    'metavar': 'branch',
+                },
+            ), (
                 ['-f', '--force-push'],
                 {
                     'action': 'store_true',
                     'dest': 'forcepush',
-                    'help': 'force the push'
-                }
-            ),
-            (
+                    'help': 'force the push',
+                },
+            ), (
                 ['-i', '--integration'],
                 {
                     'action': 'store_true',
-                    'help': 'backport to integration instances'
-                }
-            ),
-            (
+                    'help': 'backport to integration instances',
+                },
+            ), (
                 ['-p', '--push'],
                 {
                     'action': 'store_true',
-                    'help': 'push the branch after successful backport'
-                }
+                    'help': 'push the branch after successful backport',
+                },
             ),
             (
                 ['--push-to'],
                 {
                     'dest': 'pushremote',
                     'help': 'the remote to push the branch to. Default is %s.' % self.C.get('myRemote'),
-                    'metavar': 'remote'
-                }
+                    'metavar': 'remote',
+                },
             ),
             (
                 ['--patch'],
                 {
-                    'action': 'store_true',
-                    'dest': 'patch',
-                    'help': 'instead of pushing to a remote, this will upload a patch file to the tracker. Security issues use this by default if --push is set. This option discards most other flags.',
-                }
+                    'action':
+                        'store_true',
+                    'dest':
+                        'patch',
+                    'help':
+                        'instead of pushing to a remote, this will upload a patch file to the tracker. Security issues use this by default if --push is set. This option discards most other flags.',
+                },
             ),
             (
                 ['-t', '--update-tracker'],
@@ -87,8 +86,8 @@ class BackportCommand(Command):
                     'dest': 'updatetracker',
                     'help': 'to use with --push, also add the diff information to the tracker issue',
                     'metavar': 'gitref',
-                    'nargs': '?'
-                }
+                    'nargs': '?',
+                },
             ),
             (
                 ['-v', '--versions'],
@@ -97,8 +96,8 @@ class BackportCommand(Command):
                     'help': 'versions to backport to',
                     'metavar': 'version',
                     'nargs': '+',
-                    'required': True
-                }
+                    'required': True,
+                },
             ),
             (
                 ['name'],
@@ -106,8 +105,8 @@ class BackportCommand(Command):
                     'default': None,
                     'help': 'name of the instance to backport from. Can be omitted if branch is specified.',
                     'metavar': 'name',
-                    'nargs': '?'
-                }
+                    'nargs': '?',
+                },
             )
         ]
 
@@ -207,40 +206,16 @@ class BackportCommand(Command):
             logging.info('Cherry-picking %s' % (cherry))
             result = M2.git().pick(hashes)
             if result[0] != 0:
-
-                # Try to resolve the conflicts if any.
-                resolveConflicts = True
-                conflictsResolved = False
-                while resolveConflicts:
-
-                    # Check the list of possible conflicting files.
-                    conflictingFiles = M2.git().conflictingFiles()
-                    if conflictingFiles and len(conflictingFiles) == 1 and 'theme/bootstrapbase/style/moodle.css' in conflictingFiles:
-                        logging.info('Conflicts found in bootstrapbase moodle CSS, trying to auto resolve...')
-                        cssCompiler = css.Css(M2)
-                        if cssCompiler.compile(theme='bootstrapbase', sheets=['moodle']):
-                            M2.git().add('theme/bootstrapbase/style/moodle.css')
-                            # We need to commit manually to prevent the editor to open.
-                            M2.git().commit(filepath='.git/MERGE_MSG')
-                            result = M2.git().pick(continu=True)
-                            if result[0] == 0:
-                                resolveConflicts = False
-                                conflictsResolved = True
+                logging.error('Error while cherry-picking %s in %s.' % (cherry, name))
+                logging.debug(result[2])
+                if yesOrNo('The cherry-pick might still be in progress, would you like to abort it?'):
+                    result = M2.git().pick(abort=True)
+                    if result[0] > 0 and result[0] != 128:
+                        logging.error('Could not abort the cherry-pick!')
                     else:
-                        resolveConflicts = False
-
-                # We still have a dirty repository.
-                if not conflictsResolved:
-                    logging.error('Error while cherry-picking %s in %s.' % (cherry, name))
-                    logging.debug(result[2])
-                    if yesOrNo('The cherry-pick might still be in progress, would you like to abort it?'):
-                        result = M2.git().pick(abort=True)
-                        if result[0] > 0 and result[0] != 128:
-                            logging.error('Could not abort the cherry-pick!')
-                        else:
-                            stashPop(stash)
-                    logging.info('')
-                    continue
+                        stashPop(stash)
+                logging.info('')
+                return
 
             # Pushing branch
             if args.push:

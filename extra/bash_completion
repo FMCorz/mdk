@@ -49,7 +49,7 @@ function _mdk() {
     if [[ "${COMP_CWORD}" == 1 ]]; then
         # List the commands and aliases.
         # Ignoring these commands on purpose: init
-        OPTS="alias backport backup behat config create css doctor fix info install js phpunit plugin precheck purge pull push rebase remove run tracker uninstall update upgrade"
+        OPTS="alias backport behat config create doctor fix info install phpunit plugin precheck purge pull push rebase remove run tracker uninstall update upgrade"
         OPTS="$OPTS $($BIN alias list 2> /dev/null | cut -d ':' -f 1)"
     else
         # List of options according to the command.
@@ -68,14 +68,6 @@ function _mdk() {
                     OPTS="--branch --remote --integration --dont-push --dont-fetch --patch --push --push-to --force-push --versions --update-tracker"
                 else
                     OPTS="-- $(_list_instances)"
-                fi
-                ;;
-            backup)
-                OPTS="--list --info --restore"
-                if [[ "${COMP_CWORD}" == 3 && ("${PREV}" == "--restore" || "${PREV}" == "--info") ]]; then
-                    OPTS="$($BIN backup --list 2> /dev/null | cut -d ' ' -f 1)"
-                elif [[ "${COMP_CWORD}" == 2 && "$CUR"  != -* ]]; then
-                    OPTS="$OPTS $(_list_instances)"
                 fi
                 ;;
             behat)
@@ -103,9 +95,6 @@ function _mdk() {
                 elif [[ "$PREV" == "--run" ]]; then
                     OPTS="$(_list_scripts)"
                 fi
-                ;;
-            css)
-                OPTS="--compile --debug --sheets --theme --watch"
                 ;;
             doctor)
                 OPTS="--all --branch --cached --dependencies --directories --masterbranch --remotes --symlink --wwwroot"
@@ -139,22 +128,6 @@ function _mdk() {
                             OPTS="$OPTS $(_list_instances)"
                         fi
                     ;;
-                esac
-                ;;
-            js)
-                OPTS="--plugin --module"
-                case "$PREV" in
-                    js)
-                        OPTS="doc shift"
-                        ;;
-                    doc)
-                        OPTS="$(_list_instances)"
-                        ;;
-                    *)
-                        if [[ "$CUR" != -* ]]; then
-                            OPTS="$OPTS $(_list_instances)"
-                        fi
-                        ;;
                 esac
                 ;;
             plugin)
