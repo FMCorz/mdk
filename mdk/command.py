@@ -69,6 +69,39 @@ class Command(object):
     def run(self, args):
         return True
 
+    def parse_args(self, parser: 'CommandArgumentParser', sysargs):
+        """Parse the command arguments."""
+        return parser.parse_args(sysargs)
+
+    def setup_args(self, parser: 'CommandArgumentParser'):
+        """Setup the command arguments
+
+        The default implementation uses the _arguments.
+        """
+        for argument in self.arguments:
+            args = argument[0]
+            kwargs = argument[1]
+            if 'sub-commands' in kwargs:
+                subs = kwargs['sub-commands']
+                del kwargs['sub-commands']
+                subparsers = parser.add_subparsers(**kwargs)
+                for name, sub in list(subs.items()):
+                    subparser = subparsers.add_parser(name, **sub[0])
+                    defaults = {args[0]: name}
+                    subparser.set_defaults(**defaults)
+                    for subargument in sub[1]:
+                        sargs = subargument[0]
+                        skwargs = subargument[1]
+                        if 'silent' in skwargs:
+                            del skwargs['silent']
+                            skwargs['help'] = argparse.SUPPRESS
+                        subparser.add_argument(*sargs, **skwargs)
+            else:
+                if 'silent' in kwargs:
+                    del kwargs['silent']
+                    kwargs['help'] = argparse.SUPPRESS
+                parser.add_argument(*args, **kwargs)
+
     @property
     def Wp(self):
         if not self.__Wp:
@@ -116,34 +149,8 @@ class CommandRunner(object):
 
     def run(self, sysargs=sys.argv, prog=None):
         parser = CommandArgumentParser(description=self.command.description, prog=prog, formatter_class=CommandArgumentFormatter)
-        for argument in self.command.arguments:
-            args = argument[0]
-            kwargs = argument[1]
-            if 'sub-commands' in kwargs:
-                subs = kwargs['sub-commands']
-                del kwargs['sub-commands']
-                subparsers = parser.add_subparsers(**kwargs)
-                for name, sub in list(subs.items()):
-                    subparser = subparsers.add_parser(name, **sub[0])
-                    defaults = {args[0]: name}
-                    subparser.set_defaults(**defaults)
-                    for subargument in sub[1]:
-                        sargs = subargument[0]
-                        skwargs = subargument[1]
-                        if 'silent' in skwargs:
-                            del skwargs['silent']
-                            skwargs['help'] = argparse.SUPPRESS
-                        subparser.add_argument(*sargs, **skwargs)
-            else:
-                if 'silent' in kwargs:
-                    del kwargs['silent']
-                    kwargs['help'] = argparse.SUPPRESS
-                parser.add_argument(*args, **kwargs)
-
-        if hasattr(self.command, 'parse_args'):
-            args = self.command.parse_args(parser, sysargs)
-        else:
-            args = parser.parse_args(sysargs)
+        self.command.setup_args(parser)
+        args = self.command.parse_args(parser, sysargs)
 
         try:
             self.command.run(args)
