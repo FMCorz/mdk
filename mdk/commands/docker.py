@@ -77,6 +77,33 @@ class DockerCommand(Command):
         engines = [k for k, v in self.C.get('db').items() if type(v) is dict and v.get('dockername')]
         updbparser.add_argument('name', help='the name of the database profile', choices=engines)
 
+        # Selenium.
+        seleniumparser = subparser.add_parser('selenium', help='manage the Selenium container')
+        subseleniumparser = seleniumparser.add_subparsers(
+            dest='subaction',
+            metavar='action',
+            help='the Selenium action to perform',
+            required=True,
+        )
+        upseleniumparser = subseleniumparser.add_parser('up', parents=[parent], help='create and start the Selenium container')
+        upseleniumparser.add_argument(
+            '-t',
+            '--variant',
+            metavar='variant',
+            choices=['firefox', 'chrome', 'chromium'],
+            default='firefox',
+            help='the browser variant to use'
+        )
+        downseleniumparser = subseleniumparser.add_parser('down', parents=[parent], help='stop and remove the container')
+        downseleniumparser.add_argument(
+            '-t',
+            '--variant',
+            metavar='variant',
+            choices=['firefox', 'chrome', 'chromium'],
+            default='firefox',
+            help='the browser variant to use'
+        )
+
     def run(self, args):
         fnname = f'run_{args.action}' if 'subaction' not in args else f'run_{args.action}_{args.subaction}'
         fn = getattr(self, fnname, None)
@@ -248,6 +275,53 @@ class DockerCommand(Command):
             raise Exception('Failed to start the database container.')
 
         print(f'The database container "{dockername}" has been started.')
+
+    def run_selenium_up(self, args: argparse.Namespace):
+        instance = self.Wp.resolve(args.instance)
+
+        dockernet = self.C.get('docker.network')
+        imagename = f'selenium/standalone-{args.variant}:3'
+        dockername = f'selenium-{args.variant}'
+
+        if is_docker_container_running(dockername):
+            logging.info(f'The Selenium container "{dockername}" is already running.')
+            return
+
+        elif docker_container_exists(dockername):
+            raise Exception(f'The container "{dockername}" already exists. Please remove it first.')
+
+        ensure_docker_network_exists(dockernet)
+
+        r, _, _ = process(
+            [
+                'docker',
+                'run',
+                '--rm',  # Delete when stopped.
+                '-d',
+                '--name',
+                dockername,
+                '--network',
+                dockernet,
+            ] + ([
+                '--volume',
+                f'{instance.path}:/var/www/html',
+            ] if instance else []) + [
+                '-e',
+                f'MDK_DOCKER_NAME={dockername}',
+                imagename,
+            ],
+            stdout=None,
+            stderr=None,
+        )
+
+        if r != 0:
+            raise Exception('Failed to start the Selenium container.')
+
+        print(f'The Selenium container "{dockername}" has been started.')
+
+    def run_selenium_down(self, args: argparse.Namespace):
+        dockername = f'selenium-{args.variant}'
+        self._stop(dockername)
 
     def _rm(self, name) -> bool:
         if not is_mdk_container(name):
