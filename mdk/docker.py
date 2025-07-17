@@ -32,7 +32,7 @@ def create_docker_network(name: str) -> bool:
 
 def docker_container_exists(name: str) -> bool:
     """Check if a Docker container exists."""
-    r, out, _ = process(['docker', 'ps', '-a', '--filter', f'name={name}', '-q'])
+    r, out, _ = process(['docker', 'ps', '-a', '--filter', f'name=^{name}$', '-q'])
     return r == 0 and out.strip() != ''
 
 
