@@ -33,10 +33,15 @@ import getpass
 import logging
 import hashlib
 import tempfile
+from webbrowser import open_new_tab
 from typing import Optional
 from .config import Conf
 
 C = Conf()
+
+
+def open_in_browser(url):
+    open_new_tab(url)
 
 
 def yesOrNo(q):

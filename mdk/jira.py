@@ -23,7 +23,7 @@ http://github.com/FMCorz/mdk
 """
 
 import json
-from .tools import question
+from .tools import open_in_browser, question
 from .config import Conf
 from urllib.parse import urlparse
 from datetime import datetime
@@ -31,7 +31,6 @@ import re
 import logging
 import os
 import requests
-import webbrowser
 import mimetypes
 try:
     import keyring
@@ -416,7 +415,7 @@ class Jira(object):
     def openInBrowser(key):
         jiraurl = C.get('tracker.url').rstrip('/')
         url = "{0}/browse/{1}".format(jiraurl, key)
-        webbrowser.open_new_tab(url)
+        open_in_browser(url)
 
 class JiraException(Exception):
     pass

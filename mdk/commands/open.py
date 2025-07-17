@@ -19,8 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-from webbrowser import open_new_tab
 import logging
+
+from mdk.tools import open_in_browser
 
 from ..command import Command
 
@@ -39,4 +40,4 @@ class OpenCommand(Command):
         if not M.isInstalled():
             raise Exception(f'Moodle instance {M.get("identifier")} is not installed.')
         wwwroot = M.get('wwwroot')
-        open_new_tab(wwwroot)
+        open_in_browser(wwwroot)

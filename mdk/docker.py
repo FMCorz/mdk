@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
+import re
+from typing import Optional
 from mdk.tools import process
 
 
@@ -30,8 +32,8 @@ def create_docker_network(name: str) -> bool:
 
 def docker_container_exists(name: str) -> bool:
     """Check if a Docker container exists."""
-    r, _, _ = process(['docker', 'inspect', '--format', '{{.Id}}', name])
-    return r == 0
+    r, out, _ = process(['docker', 'ps', '-a', '--filter', f'name={name}', '-q'])
+    return r == 0 and out.strip() != ''
 
 
 def docker_network_exists(name: str) -> bool:
@@ -52,3 +54,14 @@ def ensure_docker_network_exists(name: str):
         return
     if not create_docker_network(name):
         raise Exception(f'Could not create the Docker network "{name}".')
+
+
+def get_local_docker_port(name: str, destpost: int) -> Optional[int]:
+    """Get the local port for a Docker container."""
+    r, out, _ = process(['docker', 'port', name, str(destpost)])
+    if r != 0:
+        return None
+    match = re.search(r':(\d+)$', out)
+    if match:
+        return int(match.group(1))
+    return None

@@ -22,15 +22,15 @@ http://github.com/FMCorz/mdk
 import argparse
 import json
 import logging
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Optional
+from urllib.parse import urlencode
 
-from mdk.docker import docker_container_exists, ensure_docker_network_exists, is_docker_container_running
+from mdk.command import Command
+from mdk.docker import (docker_container_exists, ensure_docker_network_exists, get_local_docker_port, is_docker_container_running)
 from mdk.moodle import Moodle
-
-from ..command import Command
-from ..tools import get_major_version_from_release, process
+from mdk.tools import get_major_version_from_release, open_in_browser, process
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +77,34 @@ class DockerCommand(Command):
         engines = [k for k, v in self.C.get('db').items() if type(v) is dict and v.get('dockername')]
         updbparser.add_argument('name', help='the name of the database profile', choices=engines)
 
+        # Adminer.
+        adminerparser = subparser.add_parser('adminer', help='manage the Adminer container')
+        subadminerparser = adminerparser.add_subparsers(
+            dest='subaction',
+            metavar='action',
+            help='the Adminer action to perform',
+            required=True,
+        )
+        upadminerparser = subadminerparser.add_parser('up', parents=[parent], help='create and start the Adminer container')
+        upadminerparser.add_argument(
+            '-o',
+            '--open',
+            action='store_true',
+            help='open the Adminer URL in the browser',
+        )
+        upadminerparser.add_argument(
+            '-t',
+            '--table',
+            help='the table to open (prefix optional)',
+        )
+        downadminerparser = subadminerparser.add_parser('down', help='stop and remove the container')
+        openadminerparser = subadminerparser.add_parser('open', parents=[parent], help='open the Adminer URL in the browser')
+        openadminerparser.add_argument(
+            '-t',
+            '--table',
+            help='the table to open (prefix optional)',
+        )
+
         # Selenium.
         seleniumparser = subparser.add_parser('selenium', help='manage the Selenium container')
         subseleniumparser = seleniumparser.add_subparsers(
@@ -108,7 +136,7 @@ class DockerCommand(Command):
         fnname = f'run_{args.action}' if 'subaction' not in args else f'run_{args.action}_{args.subaction}'
         fn = getattr(self, fnname, None)
         if not fn:
-            raise NotImplementedError(f'Action "{args.action}" is not implemented.')
+            raise NotImplementedError(f'Method "{fnname}" is not implemented.')
         fn(args)
 
     def run_up(self, args: argparse.Namespace):
@@ -187,7 +215,7 @@ class DockerCommand(Command):
         if r != 0:
             raise Exception('Failed to start the container.')
 
-        print(f'The container "{dockername}" has been started on port {port}.')
+        logging.info(f'The container "{dockername}" has been started on port {port}.')
 
     def run_down(self, args: argparse.Namespace):
         M = self.Wp.resolve(args.instance, raise_exception=True)
@@ -274,7 +302,66 @@ class DockerCommand(Command):
         if r != 0:
             raise Exception('Failed to start the database container.')
 
-        print(f'The database container "{dockername}" has been started.')
+        logging.info(f'The database container "{dockername}" has been started.')
+
+    def run_adminer_up(self, args: argparse.Namespace):
+        instance = self.Wp.resolve(args.instance)
+
+        dockernet = self.C.get('docker.network')
+        imagename = self.C.get('adminer.image')
+        dockername = self.C.get('adminer.name')
+        port = self.C.get('adminer.port')
+
+        if not docker_container_exists(dockername):
+            ensure_docker_network_exists(dockernet)
+
+            r, _, _ = process(
+                [
+                    'docker',
+                    'run',
+                    '-d',
+                    '--restart',
+                    'unless-stopped',
+                    '--name',
+                    dockername,
+                    '--network',
+                    dockernet,
+                    '-p',
+                    f'{port}:8080',
+                    '-e',
+                    f'MDK_DOCKER_NAME={dockername}',
+                    imagename,
+                ],
+                stdout=None,
+                stderr=None,
+            )
+
+            if r != 0:
+                raise Exception('Failed to start the container.')
+
+            logging.info(f'The container "{dockername}" has been started.')
+
+        elif not is_docker_container_running(dockername):
+            logging.info(f'The container "{dockername}" already exists, starting...')
+            r, _, _ = process(['docker', 'start', dockername], stdout=None, stderr=None)
+            if r != 0:
+                raise Exception('Failed to start the container.')
+
+        else:
+            logging.info(f'The container "{dockername}" is already running.')
+
+        if args.open:
+            adminer_open(self.C.get('adminer.port'), instance, args.table)
+
+    def run_adminer_down(self, args: argparse.Namespace):
+        self._stop(self.C.get('adminer.name'))
+        self._rm(self.C.get('adminer.name'))
+
+    def run_adminer_open(self, args: argparse.Namespace):
+        if not is_docker_container_running(self.C.get('adminer.name')):
+            raise Exception(f'The container is not running, see the up command.')
+        instance = self.Wp.resolve(args.instance)
+        adminer_open(self.C.get('adminer.port'), instance, args.table)
 
     def run_selenium_up(self, args: argparse.Namespace):
         instance = self.Wp.resolve(args.instance)
@@ -317,7 +404,7 @@ class DockerCommand(Command):
         if r != 0:
             raise Exception('Failed to start the Selenium container.')
 
-        print(f'The Selenium container "{dockername}" has been started.')
+        logging.info(f'The Selenium container "{dockername}" has been started.')
 
     def run_selenium_down(self, args: argparse.Namespace):
         dockername = f'selenium-{args.variant}'
@@ -397,3 +484,21 @@ def is_port_in_use(port: int) -> bool:
     import socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(('localhost', port)) == 0
+
+
+def adminer_open(port: int, M: Optional[Moodle], table: Optional[str] = None):
+    url = f'http://localhost:{port:d}'
+    qs = {}
+    if M and M.get('dbtype') == 'pgsql':
+        qs['pgsql'] = M.get('dbhost')
+        qs['db'] = M.get('dbname')
+        qs['username'] = M.get('dbuser')
+        qs['password'] = M.get('dbpass')
+        qs['ns'] = 'public'
+        if table:
+            if not table.startswith(M.get('prefix')):
+                table = M.get('prefix') + table
+            qs['select'] = table
+        url += '?' + urlencode(qs)
+
+    open_in_browser(url)

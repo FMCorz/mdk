@@ -303,6 +303,19 @@
         "network": "moodle"
     },
 
+    // Adminer settings.
+    "adminer": {
+
+        // The local port to use.
+        "port": 9100,
+
+        // The Docker image.
+        "image": "adminer:latest",
+
+        // The container name.
+        "name": "adminer"
+    },
+
     // Aliases for MDK commands.
     // An alias starting with a ! will be executed through the command line. Those also
     // can use placeholders for arguments: $1, $2, ...
