@@ -46,6 +46,7 @@ class DockerCommand(Command):
 
         subparser = parser.add_subparsers(dest='action', metavar='action', help='the action to perform', required=True)
 
+        # Up, down, rm, stop.
         upparser = subparser.add_parser('up', parents=[parent], help='create and start Moodle in a container')
         upparser.add_argument('-p', '--port', metavar='port', type=int, help='the local port to use')
         upparser.add_argument(
@@ -57,11 +58,13 @@ class DockerCommand(Command):
             help='the PHP version to use',
         )
         upparser.add_argument('-N', '--no-create', action='store_true', help='do not create the container if it does not exist')
+        upparser.add_argument('--xdebug', action='store_true', help='enable the Xdebug extension in the container')
 
         downparser = subparser.add_parser('down', parents=[parent], help='stop and remove the Moodle container')
         rmparser = subparser.add_parser('rm', parents=[parent], help='remove the Moodle container')
         stopparser = subparser.add_parser('stop', parents=[parent], help='stop the Moodle container')
 
+        # Database.
         dbparser = subparser.add_parser('db', help='manage the database containers')
         subdbparser = dbparser.add_subparsers(
             dest='subaction',
@@ -118,6 +121,16 @@ class DockerCommand(Command):
         behatfaildumps = self.Wp.getExtraDir(M.identifier, 'behat')
 
         ensure_docker_network_exists(dockernet)
+
+        envvars = {
+            'MDK_DOCKER_NAME': dockername,
+        }
+        if args.xdebug:
+            envvars['PHP_EXTENSION_xdebug'] = '1'
+            envvars['PHP_INI-xdebug.client_host'] = 'host.docker.internal'
+            envvars['PHP_INI-xdebug.mode'] = 'develop,debug'
+            envvars['PHP_INI-xdebug.start_with_request'] = 'yes'
+
         r, _, _ = process(
             [
                 'docker',
@@ -133,10 +146,11 @@ class DockerCommand(Command):
                 f'{dataroot}:/var/www/moodledata',
                 '--volume',
                 f'{behatfaildumps}:/var/www/behatfaildumps',
-                '-e',
-                f'MDK_DOCKER_NAME={dockername}',
+                *[item for k, v in envvars.items() for item in ['-e', f'{k}={v}']],
                 '-p',
                 f'{port}:80',
+                '--add-host',
+                'host.docker.internal:host-gateway',
                 f'moodlehq/moodle-php-apache:{phpversion}',
             ],
             stdout=None,
