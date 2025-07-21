@@ -3,12 +3,7 @@
 define('CLI_SCRIPT', true);
 require(dirname(__FILE__).'/config.php');
 require_once($CFG->libdir.'/clilib.php');
-
-if (property_exists($CFG, 'root')) {
-    require($CFG->root.'/version.php');
-} else {
-    require("$CFG->dirroot/version.php");
-}
+require("$CFG->dirroot/version.php");
 
 cli_separator();
 cli_heading('Resetting all version numbers');
