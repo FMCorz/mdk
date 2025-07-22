@@ -1,6 +1,16 @@
 Changelog
 =========
 
+v2.1.5
+-----
+
+- Support for scripts affected by the code restructure for 5.1 and up (MDL-83424). - Andrew Lyons
+- New `docker` commands to manage docker containers.
+- Remove unused nginx conf file.
+- Update dev install instructions.
+- Use emoji to avoid escaping issues due to slashes.
+- New `open` command to open an instance on the browser.
+
 v2.1.4
 -----
 
