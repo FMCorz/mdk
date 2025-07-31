@@ -24,6 +24,7 @@ import json
 import logging
 import re
 from pathlib import Path
+import subprocess
 from typing import Optional
 from urllib.parse import urlencode
 
@@ -63,6 +64,13 @@ class DockerCommand(Command):
         downparser = subparser.add_parser('down', parents=[parent], help='stop and remove the Moodle container')
         rmparser = subparser.add_parser('rm', parents=[parent], help='remove the Moodle container')
         stopparser = subparser.add_parser('stop', parents=[parent], help='stop the Moodle container')
+        logsparser = subparser.add_parser('logs', parents=[parent], help='explore the logs of the container')
+        logsparser.add_argument(
+            '-f',
+            '--follow',
+            action='store_true',
+            help='follow the logs',
+        )
 
         # Database.
         dbparser = subparser.add_parser('db', help='manage the database containers')
@@ -223,6 +231,22 @@ class DockerCommand(Command):
         if is_docker_container_running(dockername) and not self._stop(dockername):
             return
         self._rm(dockername)
+
+    def run_logs(self, args: argparse.Namespace):
+        M = self.Wp.resolve(args.instance, raise_exception=True)
+        dockername = M.identifier
+
+        if not is_docker_container_running(dockername):
+            raise Exception(f'The container "{dockername}" is not running.')
+
+        try:
+            r, stdout, stderr = process(
+                ['docker', 'logs', dockername] + (['-f'] if args.follow else []),
+                stdout=subprocess.DEVNULL,
+                stderr=None,
+            )
+        except KeyboardInterrupt:
+            pass
 
     def run_rm(self, args: argparse.Namespace):
         M = self.Wp.resolve(args.instance, raise_exception=True)
