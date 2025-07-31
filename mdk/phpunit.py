@@ -23,6 +23,7 @@ http://github.com/FMCorz/mdk
 
 import logging
 import os
+from typing import List, Literal, Optional
 
 from mdk.moodle import Moodle
 
@@ -42,7 +43,25 @@ class PHPUnit(object):
         self._Wp = Wp
         self._M = M
 
-    def getCommand(self, testcase=None, unittest=None, filter=None, coverage=None, testsuite=None, stopon=None, repeat=None):
+    def getCommand(
+        self,
+        testcase=None,
+        unittest=None,
+        filter=None,
+        coverage=None,
+        testsuite=None,
+        stopon=None,
+        repeat=None,
+        display: Optional[List[Literal[
+            'incomplete',
+            'skipped',
+            'deprecations',
+            'phpunit-deprecations',
+            'errors',
+            'notices',
+            'warnings',
+        ]]] = None
+    ):
         """Get the PHPUnit command"""
         cmd = []
         if self.usesComposer():
@@ -70,6 +89,10 @@ class PHPUnit(object):
         elif testsuite:
             cmd.append('--testsuite')
             cmd.append(testsuite)
+
+        if type(display) is list:
+            for d in display:
+                cmd.append('--display-%s' % d)
 
         return cmd
 

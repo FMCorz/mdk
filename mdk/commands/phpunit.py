@@ -88,6 +88,14 @@ class PhpunitCommand(Command):
             },
         ),
         (
+            ['-w', '--display-warnings'],
+            {
+                'action': 'store_true',
+                'dest': 'displaywarnings',
+                'help': 'display details on tests that triggered warnings'
+            },
+        ),
+        (
             ['-c', '--coverage'],
             {
                 'action': 'store_true',
@@ -164,7 +172,8 @@ class PhpunitCommand(Command):
             'testsuite': testsuite,
             'unittest': args.unittest,
             'stopon': [] if not args.stoponfailure else ['failure'],
-            'repeat': repeat
+            'repeat': repeat,
+            'display': ['warnings'] if args.displaywarnings else None
         }
 
         if args.run:
