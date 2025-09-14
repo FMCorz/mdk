@@ -165,7 +165,7 @@ class DockerCommand(Command):
             raise Exception(f'The container "{dockername}" does not exist, creation not allowed.')
 
         port = args.port
-        if not port:
+        if not port and M.isInstalled():
             portmatch = re.search(r'^https?://.*:(\d+)(/.*)?$', M.get('wwwroot'))
             port = int(portmatch.group(1)) if portmatch else 8800
 
