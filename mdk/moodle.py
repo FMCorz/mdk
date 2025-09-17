@@ -581,6 +581,10 @@ class Moodle(object):
         raise Exception('This does not appear to be a Moodle instance')
 
     @staticmethod
+    def getRootPath(path):
+        return os.path.dirname(Moodle.getVersionPath(path))
+
+    @staticmethod
     def isInstance(path):
         """Check whether the path is a Moodle web directory"""
         version = Moodle.getVersionPath(path)

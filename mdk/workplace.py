@@ -154,13 +154,15 @@ class Workplace(object):
             f'{"--shared" if cloneAsShared else ""} {repository} {wwwDir}'
         )
 
+        linkSource = moodle.Moodle.getRootPath(wwwDir)
+
         # Symbolic link
         if os.path.islink(linkDir):
             os.remove(linkDir)
         if os.path.isfile(linkDir) or os.path.isdir(linkDir):  # No elif!
-            logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (wwwDir, linkDir))
+            logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (linkSource, linkDir))
         else:
-            os.symlink(wwwDir, linkDir)
+            os.symlink(linkSource, linkDir)
 
         # Symlink to extra.
         if os.path.isfile(extraLinkDir) or os.path.isdir(extraLinkDir):
