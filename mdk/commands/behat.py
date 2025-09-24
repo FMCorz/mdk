@@ -273,10 +273,7 @@ class BehatCommand(Command):
 
             # Checking feature argument. Assume either a path relative to the dirroot, or absolute within dirroot.
             if args.feature:
-                featurepath = Path(args.feature).resolve()
-                if featurepath.is_absolute() and not featurepath.exists():
-                    featurepath = Path(M.get('path')) / Path(args.feature.lstrip('/'))
-                cmd.append(featurepath.relative_to(Path(M.get('path'))).as_posix())
+                cmd.append(M.get_file_path(args.feature).as_posix())
 
             seleniumCommand = None
             if seleniumPath:

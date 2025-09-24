@@ -468,7 +468,7 @@ def docker_get_container_env(name: str) -> dict:
 
 
 def guess_php_version(M: Moodle) -> Optional[str]:
-    envfile = Path(M.path) / Path('admin/environment.xml')
+    envfile = Path(M.path) / M.get_file_path('public/admin/environment.xml')
     if not envfile.exists():
         raise Exception('The environment file does not exist in the container.')
 

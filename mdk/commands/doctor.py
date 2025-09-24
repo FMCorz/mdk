@@ -307,7 +307,7 @@ class DoctorCommand(Command):
             return
 
         repo = git.Git(repoPath, self.C.get('git'))
-        result = repo.execute(['show', 'main:version.php'])
+        result = repo.execute(['show', 'main:public/version.php'])
         if result[0] != 0:
             print('  Could not read the main version.php')
             return

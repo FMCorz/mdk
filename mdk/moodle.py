@@ -28,6 +28,7 @@ from pathlib import Path
 import re
 import shlex
 import subprocess
+from typing import Union
 import urllib
 import json
 from tempfile import gettempdir
@@ -51,8 +52,8 @@ RE_CFG_PARSE = re.compile(
 
 class Moodle(object):
 
+    path: str
     identifier = None
-    path = None
     installed = False
     version = None
     config = None
@@ -191,32 +192,15 @@ class Moodle(object):
     def cli(self, cli, args=None, **kwargs):
         """Executes a PHP CLI script relative to the Moodle directory."""
 
-        # Ensure path is relative.
-        if cli.startswith(self.path):
-            cli = cli[len(self.path):]
-
-        cli = cli.lstrip('/')
-
-        branch = self.get('branch')
-
-        if self.branch_compare(501, '>='):
-            # From Moodle 5.1 onwards, Moodle moves to a public directory.
-            # Initially all content is moved there, but it will gradually move out.
-            if not self.container.exists(Path(cli)):
-                if not cli.startswith('public') and self.container.exists(Path('public/version.php')):
-                    if self.container.exists(Path('public', cli)):
-                        # If the version.php is in the public directory, we need to run the script from there.
-                        cli = os.path.join('public', cli)
-
-        if not self.container.exists(Path(cli)):
-            # If the version.php is in the public directory, we need to run the script from there.
+        cli = self.get_file_path(cli)
+        if not self.container.exists(cli):
             raise Exception('Could not find script to call')
 
         args = args or []
         if type(args) is not list:
             raise Exception('List expected for command arguments')
 
-        cmd = [cli, *args]
+        cmd = [str(cli), *args]
         return self.php(cmd, **kwargs)
 
     @property
@@ -312,6 +296,52 @@ class Moodle(object):
             return info[param]
         except:
             return default
+
+    def get_file_path(self, relpath: Union[Path, str]) -> Path:
+        """
+        Get the relative path to a file.
+
+        This attempts to resolve files since the introduction of the public/ directory
+        in Moodle 5.1. This method does not guarantee that the file exists, it will
+        try to best guess what the path to a file should be based on the branch. In
+        some cases, it may check if the file exists or not, but this must not be assumed.
+
+        We should update the logic of this method as files are gradually moved out of the
+        public directory.
+        """
+        rootpath = Path(self.path)
+        relpath = Path(relpath)
+        ispre501 = self.branch_compare(501, '<')
+
+        # Always make the path relative to the root.
+        if relpath.is_absolute():
+            if relpath.is_relative_to(rootpath):
+                relpath = relpath.relative_to(rootpath)
+            else:
+                # It's likely that the file path starts with / but is relative.
+                relpath = relpath.relative_to('/')
+
+        # If the file is in public, we return as is unless it's before Moodle 5.1 where public did not exist.
+        if relpath.is_relative_to(Path('public')):
+            if ispre501:
+                return relpath.relative_to(Path('public'))
+            return relpath
+
+        # If we're on an older branch, return as is.
+        if ispre501:
+            return relpath
+
+        # Those were not moved to public.
+        if relpath.is_relative_to(Path('admin/cli')):
+            return relpath
+
+        # We're on 5.1 or newer, and the file is clearly in public. We must check if
+        # it exists, and if not we will assume it is in the public directory.
+        abspath = rootpath / relpath
+        if not abspath.exists():
+            return Path('public') / relpath
+
+        return relpath
 
     def git(self):
         """Returns a Git object"""
