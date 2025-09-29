@@ -210,10 +210,11 @@ class Workplace(object):
         M = self.get(name)
 
         # Delete DB.
-        DB = M.dbo()
         dbname = M.get('dbname')
-        if DB and dbname and DB.dbexists(dbname):
-            DB.dropdb(dbname)
+        if dbname:
+            DB = M.dbo()
+            if DB.dbexists(dbname):
+                DB.dropdb(dbname)
 
         # Deleting the possible symlink
         link = os.path.join(self.www, name)
