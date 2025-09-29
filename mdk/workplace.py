@@ -22,6 +22,7 @@ http://github.com/FMCorz/mdk
 """
 
 import os
+from pathlib import Path
 import shutil
 import logging
 from typing import Optional
@@ -157,10 +158,13 @@ class Workplace(object):
         # Symbolic link
         if os.path.islink(linkDir):
             os.remove(linkDir)
-        if os.path.isfile(linkDir) or os.path.isdir(linkDir):  # No elif!
-            logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (wwwDir, linkDir))
+
+        wwwlinktarget = Path(wwwDir) / 'public'
+        wwwlinktarget = wwwlinktarget if wwwlinktarget.exists() else Path(wwwDir)
+        if os.path.isfile(linkDir) or os.path.isdir(linkDir):
+            logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (wwwlinktarget, linkDir))
         else:
-            os.symlink(wwwDir, linkDir)
+            os.symlink(wwwlinktarget, linkDir)
 
         # Symlink to extra.
         if os.path.isfile(extraLinkDir) or os.path.isdir(extraLinkDir):
