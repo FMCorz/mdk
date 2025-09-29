@@ -23,12 +23,44 @@
 #
 # To install on Ubuntu, link it into ~/.config/fish/functions/
 #
+# Usage:
+#   gt <instance> [component/subsystem]
+#   gtd <instance>
+
+#   gt sm block_xp
+#   gt sm core_ai
+#
 
 function gt -d "Go to the folder of a Moodle instance"
     if test (count $argv) -gt 0
         set DIR (mdk config show dirs.storage)
         set WWWDIR (mdk config show wwwDir)
-        cd "$DIR/$argv[1]/$WWWDIR"
+        set COMPONENT $argv[2]
+        set ROOTDIR "$DIR/$argv[1]"
+        set COMPONENTSFILE "$ROOTDIR/$WWWDIR/lib/components.json"
+        set RELPATH ""
+
+        if test -n "$COMPONENT"; and string match -q "*_*" "$COMPONENT"; and test -f "$COMPONENTSFILE"
+            set PARTS (string split -f 1,2 -m 1 "_" "$COMPONENT")
+            set TYPE $PARTS[1]
+            set NAME $PARTS[2]
+            set COMPPATH ""
+
+            if test "$TYPE" = core
+                set COMPPATH (cat $COMPONENTSFILE | jq -r ".subsystems.$NAME")
+                if test -n "$COMPPATH"; and test "$COMPPATH" != null
+                    set RELPATH "$COMPPATH"
+                end
+            else
+                set COMPPATH (cat $COMPONENTSFILE | jq -r ".plugintypes.$TYPE")
+                if test -n "$COMPPATH"; and test "$COMPPATH" != null
+                    set RELPATH "$COMPPATH/$NAME"
+                end
+            end
+
+        end
+        cd "$ROOTDIR/$WWWDIR/$RELPATH"
+
     else
         echo "Could not resolve instance path"
     end
