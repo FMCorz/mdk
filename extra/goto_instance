@@ -36,7 +36,8 @@
 # Go to instance directory.
 function gt() {
     DIR=`mdk config show dirs.storage`
-    eval DIR="$DIR/$1/moodle"
+    WWWDIR=`mdk config show wwwDir`
+    eval DIR="$DIR/$1/$WWWDIR"
     if [[ ! -d $DIR ]]; then
         echo "Could not resolve path"
         return
