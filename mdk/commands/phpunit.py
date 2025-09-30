@@ -92,7 +92,7 @@ class PhpunitCommand(Command):
             {
                 'action': 'store_true',
                 'dest': 'displaywarnings',
-                'help': 'display details on tests that triggered warnings'
+                'help': 'display details on tests that triggered warnings (From 5.0)'
             },
         ),
         (
@@ -173,7 +173,7 @@ class PhpunitCommand(Command):
             'unittest': args.unittest,
             'stopon': [] if not args.stoponfailure else ['failure'],
             'repeat': repeat,
-            'display': ['warnings'] if args.displaywarnings else None
+            'display': ['warnings'] if args.displaywarnings and M.branch_compare(500) else None
         }
 
         if args.run:
