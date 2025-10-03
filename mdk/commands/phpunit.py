@@ -170,7 +170,7 @@ class PhpunitCommand(Command):
             'filter': args.filter,
             'testcase': args.testcase,
             'testsuite': testsuite,
-            'unittest': args.unittest,
+            'unittest': str(M.get_file_path(args.unittest)) if args.unittest else None,
             'stopon': [] if not args.stoponfailure else ['failure'],
             'repeat': repeat,
             'display': ['warnings'] if args.displaywarnings and M.branch_compare(500) else None
