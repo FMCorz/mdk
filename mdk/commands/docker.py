@@ -391,7 +391,7 @@ class DockerCommand(Command):
         instance = self.Wp.resolve(args.instance)
 
         dockernet = self.C.get('docker.network')
-        imagename = f'selenium/standalone-{args.variant}:3'
+        imagename = f'selenium/standalone-{args.variant}:4'
         dockername = f'selenium-{args.variant}'
 
         if is_docker_container_running(dockername):
@@ -409,6 +409,8 @@ class DockerCommand(Command):
                 'run',
                 '--rm',  # Delete when stopped.
                 '-d',
+                '--shm-size',
+                "2g",
                 '--name',
                 dockername,
                 '--network',
