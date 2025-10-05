@@ -4,10 +4,17 @@ Changelog
 v2.1.6
 -----
 
-- More `docker` command improvements
-- `phpunit` option to display warning details for 5.0 and up
-- Better `public` directory support for 5.1 and onwards - Andrew Lyons
-- Update config for Moodle 5.2 development - Jun Pataleta
+- `phpunit` command supports native `--display-warnings` argument
+- `docker logs` supports following the logs of an instance
+- Improved and fixed file path resolution accounting for new `public/` folder
+- Fixed a bug where `docker up` wrongly assumed an instance was installed
+- Fixed a bug where deleting an instance expected it to be installed first
+- Symbolic links now target the `public/` folder if it exists
+- Updated `gt` command to correctly navigate to the root folder
+- Added `gt` and `gtd` shortcuts for Fish shell
+- `gt` command for Fish can navigate directly to a specified component folder
+- Upgraded `docker selenium` to use images version 4 and recommended shared memory
+- Support for Moodle 5.2 development
 
 v2.1.5
 -----
