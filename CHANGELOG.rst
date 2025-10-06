@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v2.1.6
+-----
+
+- More `docker` command improvements
+- `phpunit` option to display warning details for 5.0 and up
+- Better `public` directory support for 5.1 and onwards - Andrew Lyons
+- Update config for Moodle 5.2 development - Jun Pataleta
+
 v2.1.5
 -----
 
