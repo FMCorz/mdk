@@ -613,7 +613,10 @@ class Moodle(object):
     @staticmethod
     def isInstance(path):
         """Check whether the path is a Moodle web directory"""
-        version = Moodle.getVersionPath(path)
+        try:
+            version = Moodle.getVersionPath(path)
+        except:
+            return False
         try:
             f = open(version, 'r')
             lines = f.readlines()
