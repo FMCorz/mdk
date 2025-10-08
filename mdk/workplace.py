@@ -120,7 +120,7 @@ class Workplace(object):
             raise Exception('A Moodle instance cannot be called \'%s\', this is a reserved word.' % self.mdkDir)
 
         installDir = self.getPath(name)
-        wwwDir = self.getPath(name, 'www')
+        sourceDir = self.getPath(name, 'source')
         dataDir = self.getPath(name, 'data')
         extraDir = self.getPath(name, 'extra')
         linkDir = os.path.join(self.www, name)
@@ -142,7 +142,7 @@ class Workplace(object):
             raise CreateException('Installation path exists: %s' % installDir)
 
         mkdir(installDir, 0o755)
-        mkdir(wwwDir, 0o755)
+        mkdir(sourceDir, 0o755)
         mkdir(dataDir, 0o777)
         mkdir(extraDir, 0o777)
 
@@ -152,7 +152,7 @@ class Workplace(object):
         logging.info('Cloning repository...')
         process(
             f'{C.get("git")} clone --branch {branch} --single-branch '
-            f'{"--shared" if cloneAsShared else ""} {repository} {wwwDir}'
+            f'{"--shared" if cloneAsShared else ""} {repository} {sourceDir}'
         )
 
         # Symbolic link
@@ -172,14 +172,14 @@ class Workplace(object):
         else:
             os.symlink(extraDir, extraLinkDir)
 
-        # Symlink to dataDir in wwwDir
+        # Symlink to dataDir in sourceDir
         if type(C.get('symlinkToData')) == str:
-            linkDataDir = os.path.join(wwwDir, C.get('symlinkToData'))
+            linkDataDir = os.path.join(sourceDir, C.get('symlinkToData'))
             if not os.path.isfile(linkDataDir) and not os.path.isdir(linkDataDir) and not os.path.islink(linkDataDir):
                 os.symlink(dataDir, linkDataDir)
 
         logging.info('Checking out branch...')
-        repo = git.Git(wwwDir, C.get('git'))
+        repo = git.Git(sourceDir, C.get('git'))
 
         # Removing the default remote origin coming from the clone
         repo.delRemote('origin')
@@ -327,8 +327,18 @@ class Workplace(object):
     def getPath(self, name, mode=None):
         """Returns the path of an instance base on its name"""
         base = os.path.join(self.path, name)
-        if mode == 'www':
+        if mode == 'source':
             return os.path.join(base, self.wwwDir)
+        if mode == 'public':
+            M = self.resolve(name)
+
+            sourceDir = self.getPath(name, 'source')
+            publicPath = Path(os.path.join(sourceDir, M.get_file_path('public')))
+
+            if publicPath.exists():
+                return str(publicPath)
+
+            return sourceDir
         elif mode == 'data':
             return os.path.join(base, self.dataDir)
         elif mode == 'extra':

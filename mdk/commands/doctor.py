@@ -352,7 +352,7 @@ class DoctorCommand(Command):
         for identifier in instances:
 
             wwwLink = os.path.join(self.Wp.www, identifier)
-            targetWwwLink = self.Wp.getPath(identifier, 'www')
+            targetWwwLink = self.Wp.getPath(identifier, 'public')
 
             if not os.path.exists(wwwLink):
                 print('  Missing link to www for %s' % (identifier))
