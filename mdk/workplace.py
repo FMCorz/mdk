@@ -159,8 +159,7 @@ class Workplace(object):
         if os.path.islink(linkDir):
             os.remove(linkDir)
 
-        wwwlinktarget = Path(wwwDir) / 'public'
-        wwwlinktarget = wwwlinktarget if wwwlinktarget.exists() else Path(wwwDir)
+        wwwlinktarget = self.getPath(name, 'public')
         if os.path.isfile(linkDir) or os.path.isdir(linkDir):
             logging.warning('Could not create symbolic link. Please manually create: ln -s %s %s' % (wwwlinktarget, linkDir))
         else:
