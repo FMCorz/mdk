@@ -25,6 +25,7 @@ import os
 import re
 import shutil
 import subprocess
+from pathlib import Path
 from .. import git
 from ..command import Command
 from ..tools import mkdir, resolveEditor
@@ -351,11 +352,24 @@ class DoctorCommand(Command):
         for identifier in instances:
 
             wwwLink = os.path.join(self.Wp.www, identifier)
+            targetWwwLink = self.Wp.getPath(identifier, 'www')
+
             if not os.path.exists(wwwLink):
                 print('  Missing link to www for %s' % (identifier))
                 if args.fix:
                     print('    Creating www symlink for %s' % (identifier))
-                    os.symlink(self.Wp.getPath(identifier, 'www'), wwwLink)
+                    os.symlink(targetWwwLink, wwwLink)
+            elif not Path(wwwLink).is_symlink():
+                print('  %s is not a symlink' % (wwwLink))
+                if args.fix:
+                    print('    Unable to automatically fix %s' % (identifier))
+            else:
+                if not Path(wwwLink).samefile(targetWwwLink):
+                    print('Symlink %s points to %s and should point to %s' % (wwwLink, os.path.realpath(wwwLink), targetWwwLink))
+                    if args.fix:
+                        print('    Recreating www symlink for %s' % (identifier))
+                        os.remove(wwwLink)
+                        os.symlink(targetWwwLink, wwwLink)
 
             extraLink = os.path.join(self.Wp.getMdkWebDir(), identifier)
             if not os.path.exists(extraLink):
