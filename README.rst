@@ -217,6 +217,7 @@ Command list
 * `phpunit`_
 * `plugin`_
 * `precheck`_
+* `protocol`_
 * `purge`_
 * `pull`_
 * `push`_
@@ -411,6 +412,18 @@ Pre-checks a patch on the CI server.
 ::
 
     mdk precheck
+
+
+protocol
+--------
+
+Allows user to toggle between http and https for an instance.
+
+**Example**
+
+::
+
+    mdk protocol https
 
 
 purge
