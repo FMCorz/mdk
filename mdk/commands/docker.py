@@ -49,6 +49,7 @@ class DockerCommand(Command):
 
         # Up, down, rm, stop.
         upparser = subparser.add_parser('up', parents=[parent], help='create and start Moodle in a container')
+        upparser.add_argument('-o', '--open', action='store_true', help='open the instance in the browser')
         upparser.add_argument('-p', '--port', metavar='port', type=int, help='the local port to use')
         upparser.add_argument(
             '-v',
@@ -152,13 +153,21 @@ class DockerCommand(Command):
         dockername = M.identifier
         dockernet = self.C.get('docker.network')
 
+        def open_instance_in_browser_if_needed():
+            if not args.open:
+                return
+            M = self.Wp.resolve(args.instance, raise_exception=True)
+            open_in_browser(M.get('wwwroot'))
+
         if is_docker_container_running(dockername):
             logging.info(f'The container "{dockername}" is already running.')
+            open_instance_in_browser_if_needed()
             return
 
         elif docker_container_exists(dockername):
             logging.info(f'Starting existing container "{dockername}".')
             process(['docker', 'start', dockername])
+            open_instance_in_browser_if_needed()
             return
 
         elif args.no_create:
@@ -224,6 +233,7 @@ class DockerCommand(Command):
             raise Exception('Failed to start the container.')
 
         logging.info(f'The container "{dockername}" has been started on port {port}.')
+        open_instance_in_browser_if_needed()
 
     def run_down(self, args: argparse.Namespace):
         M = self.Wp.resolve(args.instance, raise_exception=True)
