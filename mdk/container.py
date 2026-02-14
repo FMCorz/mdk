@@ -2,6 +2,7 @@ import abc
 import os
 from pathlib import Path
 import shutil
+import sys
 from typing import Dict, List, Optional
 from mdk.config import Conf
 
@@ -180,7 +181,18 @@ class DockerContainer(Container):
 
     def exec(self, command: List[str], **kwargs):
         # We surely will want to customise the user, but for simplicity at the moment all is done by root.
-        hostcommand = ['docker', 'exec', '-w', self.path.as_posix(), '-u', '0:0', '-it', self._name, *command]
+        isttyok = sys.stdin.isatty() and sys.stdout.isatty()
+        hostcommand = [
+            'docker',
+            'exec',
+            '-w',
+            self.path.as_posix(),
+            '-u',
+            '0:0',
+            *(['-it'] if isttyok else []),
+            self._name,
+            *command,
+        ]
         return process(hostcommand, cwd=self._hostpath, **kwargs)
 
     def isdir(self, path: Path) -> bool:
