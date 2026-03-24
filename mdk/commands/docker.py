@@ -61,6 +61,7 @@ class DockerCommand(Command):
         )
         upparser.add_argument('-N', '--no-create', action='store_true', help='do not create the container if it does not exist')
         upparser.add_argument('--xdebug', action='store_true', help='enable the Xdebug extension in the container')
+        upparser.add_argument('--xhprof', action='store_true', help='enable the Xhprof extension in the container')
 
         downparser = subparser.add_parser('down', parents=[parent], help='stop and remove the Moodle container')
         rmparser = subparser.add_parser('rm', parents=[parent], help='remove the Moodle container')
@@ -202,6 +203,9 @@ class DockerCommand(Command):
             envvars['PHP_INI-xdebug.client_host'] = 'host.docker.internal'
             envvars['PHP_INI-xdebug.mode'] = 'develop,debug'
             envvars['PHP_INI-xdebug.start_with_request'] = 'yes'
+        if args.xhprof:
+            envvars['PHP_EXTENSION_xhprof'] = '1'
+            envvars['PHP_INI-xhprof.output_dir'] = '/var/www/moodledata/xhprof'
 
         r, _, _ = process(
             [
