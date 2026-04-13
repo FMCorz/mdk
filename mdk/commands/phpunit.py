@@ -96,6 +96,14 @@ class PhpunitCommand(Command):
             },
         ),
         (
+            ['-n', '--display-notices'],
+            {
+                'action': 'store_true',
+                'dest': 'displaynotices',
+                'help': 'display details on tests that triggered notices (From 5.0)'
+            },
+        ),
+        (
             ['-c', '--coverage'],
             {
                 'action': 'store_true',
@@ -166,14 +174,21 @@ class PhpunitCommand(Command):
                 repeat = None
 
         kwargs = {
-            'coverage': args.coverage,
-            'filter': args.filter,
-            'testcase': args.testcase,
-            'testsuite': testsuite,
-            'unittest': str(M.get_file_path(args.unittest)) if args.unittest else None,
+            'coverage':
+                args.coverage,
+            'filter':
+                args.filter,
+            'testcase':
+                args.testcase,
+            'testsuite':
+                testsuite,
+            'unittest':
+                str(M.get_file_path(args.unittest)) if args.unittest else None,
             'stopon': [] if not args.stoponfailure else ['failure'],
-            'repeat': repeat,
-            'display': ['warnings'] if args.displaywarnings and M.branch_compare(500) else None
+            'repeat':
+                repeat,
+            'display': (['warnings'] if args.displaywarnings and M.branch_compare(500) else []) +
+                       (['notices'] if args.displaynotices and M.branch_compare(500) else [])
         }
 
         if args.run:
