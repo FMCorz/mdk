@@ -13,7 +13,8 @@ $tasks = [
     '\core\task\registration_cron_task',
     '\core\task\search_index_task',
     '\core\task\search_optimize_task',
-    '\core\task\stats_cron_task'
+    '\core\task\stats_cron_task',
+    '\tool_mobile\task\refresh_subscription_cache',
 ];
 
 $componentstodisable = [
