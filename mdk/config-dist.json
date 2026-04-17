@@ -146,6 +146,10 @@
                 "branch" : "Pull 5.1 Branch",
                 "diffurl" : "Pull 5.1 Diff URL"
             },
+            "502" : {
+                "branch" : "Pull 5.2 Branch",
+                "diffurl" : "Pull 5.2 Diff URL"
+            },
             "main" : {
                 "branch" : "Pull Main Branch",
                 "diffurl" : "Pull Main Diff URL"
@@ -293,7 +297,7 @@
     "useCacheAsSharedClone": false,
 
     // You should not edit this, this is the branch that is considered as master by developers.
-    "masterBranch": 502,
+    "masterBranch": 503,
 
     // Docker-related settings.
     "docker": {
