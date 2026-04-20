@@ -34,6 +34,9 @@ sort($tasks);
 foreach ($tasks as $task) {
     mtrace('Disabling task ' . $task);
     $task = \core\task\manager::get_scheduled_task($task);
+    if (!$task) {
+        continue;
+    }
     $task->set_disabled(true);
     \core\task\manager::configure_scheduled_task($task);
 }
