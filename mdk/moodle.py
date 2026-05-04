@@ -98,6 +98,8 @@ class Moodle(object):
             value = 'true' if value else 'false'
         elif type(value) in (dict, list):
             value = "json_decode('" + json.dumps(value) + "', true)"
+        elif type(value) == str and value.startswith('json_decode'):
+            pass
         elif type(value) != int:
             value = "'" + str(value) + "'"
         value = str(value)
