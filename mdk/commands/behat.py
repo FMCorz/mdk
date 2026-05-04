@@ -123,7 +123,7 @@ class BehatCommand(Command):
             },
         ),
         (
-            ['-S, --no-selenium'],
+            ['-S', '--no-selenium'],
             {
                 'action': 'store_true',
                 'dest': 'noselenium',
