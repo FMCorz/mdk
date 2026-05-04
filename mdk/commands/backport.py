@@ -24,7 +24,7 @@ http://github.com/FMCorz/mdk
 import logging
 from .. import tools, jira
 from ..command import Command
-from ..tools import yesOrNo, version_options
+from ..tools import version_argument_help, version_options, yesOrNo
 
 
 class BackportCommand(Command):
@@ -93,7 +93,7 @@ class BackportCommand(Command):
                 ['-v', '--versions'],
                 {
                     'choices': version_options(),
-                    'help': 'versions to backport to',
+                    'help': version_argument_help('versions to backport to'),
                     'metavar': 'version',
                     'nargs': '+',
                     'required': True,

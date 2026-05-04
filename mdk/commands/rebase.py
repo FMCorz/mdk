@@ -23,7 +23,7 @@ http://github.com/FMCorz/mdk
 
 import logging
 from ..command import Command
-from ..tools import version_options, yesOrNo
+from ..tools import version_argument_help, version_options, yesOrNo
 
 
 class RebaseCommand(Command):
@@ -53,7 +53,7 @@ class RebaseCommand(Command):
                 ['-v', '--versions'],
                 {
                     'choices': version_options(),
-                    'help': 'versions to rebase the issues on. Ignored if names is set.',
+                    'help': version_argument_help('versions to rebase the issues on. Ignored if names is set.'),
                     'metavar': 'version',
                     'nargs': '+',
                 },

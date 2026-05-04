@@ -28,7 +28,7 @@ from mdk.config import Conf
 
 from ..db import DB, get_dbo_from_profile
 from ..command import Command
-from ..tools import yesOrNo, version_options
+from ..tools import version_argument_help, version_options, yesOrNo
 from ..exceptions import CreateException, InstallException
 
 C = Conf()
@@ -104,7 +104,7 @@ class CreateCommand(Command):
                 {
                     'choices': version_options(),
                     'default': ['main'],
-                    'help': 'version of Moodle',
+                    'help': version_argument_help('version of Moodle'),
                     'metavar': 'version',
                     'nargs': '*',
                 },

@@ -247,9 +247,37 @@ def stableBranch(version, git=None):
     return 'MOODLE_%d_STABLE' % int(version)
 
 
+def version_argument_help(intro):
+    """
+    Text for version argument help: argparse only shows choices when
+    the help string includes %(choices)s, and a long list is hard to read.
+    """
+    opts = version_options()
+    max_inline = 8
+    if len(opts) <= max_inline:
+        return intro + ' (%(choices)s)'
+    tail_n = 7
+    examples = ', '.join([o for o in opts[-tail_n:] if o not in ['master']][::-1]) + ', …'
+    return intro + ' (e.g. %s)' % (examples)
+
+
 def version_options():
-    return ([str(x) for x in range(13, 40)] + [str(x) for x in range(310, 312)] +
-            [str(x) for x in range(400, C.get('masterBranch'))] + ['master', 'main'])
+    opts = [str(x) for x in range(13, 40)] + \
+           [str(x) for x in range(310, 312)] + \
+           [str(x) for x in range(400, 406)]
+
+    # Add versions from 500 onwards with x.0, x.1, x.2, x.3 as options.
+    mb = int(C.get('masterBranch'))
+    if mb >= 500 and mb < 1000:
+        for major in range(5, min(9, mb // 100) + 1):
+            for minor in range(0, 4):
+                version = major * 100 + minor
+                if version > mb:
+                    break
+                opts.append(str(version))
+
+    opts += ['master', 'main']
+    return opts
 
 
 class ProcessInThread(threading.Thread):
