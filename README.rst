@@ -213,6 +213,7 @@ Command list
 * `fix`_
 * `info`_
 * `install`_
+* `path`_
 * `php`_
 * `phpunit`_
 * `plugin`_
@@ -364,6 +365,20 @@ Run the command line installation script with all parameters set on an existing 
 
     mdk install --engine mysqli stable_main
 
+
+path
+----
+
+Resolve paths to and inside a Moodle instance.
+
+**Examples**
+
+::
+
+    mdk path
+    mdk path --component mod_assign
+    mdk path --class \\core\\event\\course_module_updated
+    mdk path --subpath foo/bar/example.php --exists
 
 
 php

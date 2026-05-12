@@ -14,7 +14,7 @@ Help the user work with **MDK**, Moodle’s developer CLI (`mdk`, installed as `
 
 ## Agent preferences
 
-1. **Prefer instance-scoped work:** Prefer `cd` to the target Moodle root (`version.php`) so the active instance is unambiguous. If you need the path first, use `mdk info -v path <identifier>`, then `cd`.
+1. **Prefer instance-scoped work:** Prefer `cd` to the target Moodle root (`version.php`) so the active instance is unambiguous. If you need the path first, use `mdk path <identifier>`, then `cd`.
 2. **MDK settings:** Prefer `mdk config` over reading or manipulating MDK config files directly.
 3. **Docker detection:** Only infer Docker vs host when the workflow depends on it and the user has not said. Prefer MDK-native signals such as `mdk config show docker.automaticContainerLookup`, `MDK_DOCKER_NAME`, or clearly MDK-managed containers over generic guesses.
 4. **Risky / destructive commands:** do not run `mdk remove` (or pass `remove`’s non-interactive flags) unless the user has **explicitly** confirmed they want that instance destroyed. See **Risky commands**.
@@ -46,6 +46,7 @@ Docker installed alone proves nothing.
 | Nuke instance | `mdk remove` (destructive—see **Risky commands**) |
 | Uninstall only | `mdk uninstall` |
 | Instance info | `mdk info`, `mdk info -l`, `mdk info -v <field> [<identifier>]` |
+| Paths in the tree | `mdk path`, `mdk path --component <component>` |
 | MDK settings | `mdk config …` |
 
 **Tracker / git (core)**
@@ -63,7 +64,7 @@ Docker installed alone proves nothing.
 Rough groups:
 
 - **Lifecycle:** `create`, `install`, `remove`, `uninstall`, `info`
-- **Day-to-day:** `php`, `run`, `upgrade`, `update`, `purge`, `cron`, `open`
+- **Day-to-day:** `path`, `php`, `run`, `upgrade`, `update`, `purge`, `cron`, `open`
 - **Tests:** `phpunit`, `behat`
 - **Docker:** `mdk docker` — subcommands include:
   - Moodle PHP container: `up`, `down`, `rm`, `stop`, `logs`
