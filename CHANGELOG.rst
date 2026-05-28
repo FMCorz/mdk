@@ -1,6 +1,22 @@
 Changelog
 =========
 
+v2.1.7
+-----
+
+- New `path` command to resolve paths to an instance, component, or class
+- Included the MDK skill for agents in the packaged files
+- `docker up` can open the instance in the browser
+- `docker up` supports enabling xhprof in the container
+- Docker commands avoid pseudo-TTY usage when it is not compatible
+- `phpunit` command supports native `--display-notices` argument
+- Config values can be set using `json_decode` values
+- Fixed the `behat` command argument definition for shorthand and full arguments
+- `mincron` handles unknown tasks and disables the mobile subscription refresh task
+- Fetching the list of instances is more fault resistant
+- Added doctor checks and fixes for symlinks targeting the correct `public/` folder
+- Support for Moodle 5.3 development
+
 v2.1.6
 -----
 
