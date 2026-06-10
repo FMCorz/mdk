@@ -47,6 +47,7 @@ commandsList = [
     'phpunit',
     'plugin',
     'precheck',
+    'protocol',
     'pull',
     'purge',
     'push',
