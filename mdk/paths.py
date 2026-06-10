@@ -60,9 +60,12 @@ class ComponentResolver():
         if not isinstance(data, dict):
             raise ValueError('Invalid lib/components.json structure')
 
-        self._plugintypes = {}
+        self._plugintypes: PLUGINTYPES_PATH = {}
         for t, p in data['plugintypes'].items():
-            self._plugintypes[str(t)] = self._path_from_json_literal(p)
+            pluginpath = self._path_from_json_literal(p)
+            if not pluginpath:
+                continue
+            self._plugintypes[str(t)] = pluginpath
 
         self._subsystems = {}
         for s, p in data['subsystems'].items():
@@ -83,31 +86,38 @@ class ComponentResolver():
                     continue
                 self._load_subplugintypes_from_plugin(typeroot / plugindir)
 
-    def _load_subplugintypes_from_plugin(self, pluginpath: Path) -> List[str]:
+    def _load_subplugintypes_from_plugin(self, pluginpath: Path) -> None:
         file = pluginpath / 'db/subplugins.json'
         if not file.is_file():
-            return []
+            return
 
         with open(file, 'r', encoding='utf-8') as f:
             subplugins = json.load(f)
         if not isinstance(subplugins, dict):
-            return []
+            return
 
         if 'subplugintypes' in subplugins:
             for subplugin, relpath in subplugins['subplugintypes'].items():
-                self._subplugintypes[subplugin] = pluginpath.relative_to(self._root) / self._path_from_json_literal(relpath)
+                subppluginpath = self._path_from_json_literal(relpath)
+                if not subppluginpath:
+                    continue
+                self._subplugintypes[subplugin] = pluginpath.relative_to(self._root) / subppluginpath
 
         elif 'plugintypes' in subplugins:
             inpublic = pluginpath.is_relative_to(self._root / 'public')
             for subplugin, relpath in subplugins['plugintypes'].items():
-                relpath = (Path('public') if inpublic else Path('')) / self._path_from_json_literal(relpath)
+                subppluginpath = self._path_from_json_literal(relpath)
+                if not subppluginpath:
+                    continue
+                relpath = (Path('public') if inpublic else Path('')) / subppluginpath
                 self._subplugintypes[subplugin] = relpath
 
     def get_component_directory(self, token: str) -> Union[Path, None]:
         ctype, cname = self.normalise_component(token)
 
         if ctype == 'core':
-            return self._root / (Path('lib') if not cname else self.get_subsystem_directory(cname))
+            path = (Path('lib') if not cname else self.get_subsystem_directory(cname))
+            return self._root / path if path else None
 
         relroot = None
         if ctype in self.core_plugintypes:
@@ -194,7 +204,8 @@ def get_file_path_from_classname(classname: str, resolver: ComponentResolver) ->
 
     candidates = []
     if '\\' in classname:
-        candidates.append(f'classes/{remainder.replace('\\', '/')}.php')
+        remainder = remainder.replace('\\', '/')
+        candidates.append(f'classes/{remainder}.php')
     else:
         candidates.append(f'classes/{remainder}.php')
         candidates.append(f'{remainder}.php')
