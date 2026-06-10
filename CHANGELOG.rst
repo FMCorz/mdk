@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v2.1.8
+------
+
+- Fix compatibility with Python older than 3.12 in `path` command related code
+
 v2.1.7
 -----
 
