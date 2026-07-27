@@ -179,6 +179,8 @@ class DockerCommand(Command):
             portmatch = re.search(r'^https?://.*:(\d+)(/.*)?$', M.get('wwwroot'))
             port = int(portmatch.group(1)) if portmatch else 8800
 
+        if port is None:
+            raise ValueError('A port must be specified using --port.')
         if is_port_in_use(port):
             raise Exception(f'The port {port} is already in use. Please choose another one.')
 
