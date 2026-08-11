@@ -78,7 +78,7 @@ class Moodle(object):
         'version',
     ]
 
-    def __init__(self, *, path, identifier=None):
+    def __init__(self, *, path, identifier):
         self.path = path
         self.identifier = identifier
         self.version = {}
@@ -209,9 +209,6 @@ class Moodle(object):
     @property
     def container(self) -> Container:
         """Returns the container for this instance."""
-        if self.identifier is None:
-            raise ValueError('The instance identifier cannot be unknown.')
-
         # Cheeky way to detect if we want to run something in a docker container. This is a
         # temporary solution. Ideally the container should be constructed elsewhere. It would
         # make sense for the Workplace to know about the default container for an instance.
