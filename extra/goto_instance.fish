@@ -33,36 +33,25 @@
 
 function gt -d "Go to the folder of a Moodle instance"
     if test (count $argv) -gt 0
-        set DIR (mdk config show dirs.storage)
-        set WWWDIR (mdk config show wwwDir)
-        set COMPONENT $argv[2]
-        set ROOTDIR "$DIR/$argv[1]"
-        set COMPONENTSFILE "$ROOTDIR/$WWWDIR/lib/components.json"
-        set RELPATH ""
+        set -l COMPONENT $argv[2]
+        set -l DIR
 
-        if test -n "$COMPONENT"; and string match -q "*_*" "$COMPONENT"; and test -f "$COMPONENTSFILE"
-            set PARTS (string split -f 1,2 -m 1 "_" "$COMPONENT")
-            set TYPE $PARTS[1]
-            set NAME $PARTS[2]
-            set COMPPATH ""
-
-            if test "$TYPE" = core
-                set COMPPATH (cat $COMPONENTSFILE | jq -r ".subsystems.$NAME")
-                if test -n "$COMPPATH"; and test "$COMPPATH" != null
-                    set RELPATH "$COMPPATH"
-                end
-            else
-                set COMPPATH (cat $COMPONENTSFILE | jq -r ".plugintypes.$TYPE")
-                if test -n "$COMPPATH"; and test "$COMPPATH" != null
-                    set RELPATH "$COMPPATH/$NAME"
-                end
-            end
-
+        if test -n "$COMPONENT"
+            set DIR (mdk path --component "$COMPONENT" --exists "$argv[1]" 2> /dev/null)
+        else
+            set DIR (mdk path --exists "$argv[1]" 2> /dev/null)
         end
-        cd "$ROOTDIR/$WWWDIR/$RELPATH"
+
+        if test -z "$DIR"; or not test -d "$DIR"
+            echo "Could not resolve instance path"
+            return 1
+        end
+
+        cd "$DIR"
 
     else
         echo "Could not resolve instance path"
+        return 1
     end
 end
 
@@ -76,5 +65,20 @@ function gtd -d "Go to the data folder of a Moodle instance"
     end
 end
 
-complete -f -c gt -a '(mdk list -n)'
-complete -f -c gtd -a '(mdk list -n)'
+function __gt_list_instances
+    mdk info -ln 2> /dev/null
+end
+
+function __gt_list_components
+    set -l cmd (commandline -opc)
+    set -l instance $cmd[2]
+    if test -z "$instance"
+        return
+    end
+
+    mdk path --list-components "$instance" 2> /dev/null | string replace -r ' .*' ''
+end
+
+complete -f -c gt -n 'test (count (commandline -opc)) -le 1' -a '(__gt_list_instances)'
+complete -f -c gt -n 'test (count (commandline -opc)) -eq 2' -a '(__gt_list_components)'
+complete -f -c gtd -a '(__gt_list_instances)'

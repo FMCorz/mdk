@@ -32,16 +32,31 @@
 #
 #   source ~/.bashrc
 #
+#
+# Usage:
+#   gt <instance> [component/subsystem]
+#   gtd <instance>
+#
 
 # Go to instance directory.
 function gt() {
-    DIR=`mdk config show dirs.storage`
-    WWWDIR=`mdk config show wwwDir`
-    eval DIR="$DIR/$1/$WWWDIR"
-    if [[ ! -d $DIR ]]; then
+    if [[ -z "$1" ]]; then
         echo "Could not resolve path"
-        return
+        return 1
     fi
+
+    local DIR
+    if [[ -n "$2" ]]; then
+        DIR=$(mdk path --component "$2" --exists "$1" 2> /dev/null)
+    else
+        DIR=$(mdk path --exists "$1" 2> /dev/null)
+    fi
+
+    if [[ -z "$DIR" || ! -d "$DIR" ]]; then
+        echo "Could not resolve path"
+        return 1
+    fi
+
     cd "$DIR"
 }
 
@@ -52,7 +67,7 @@ function gtd() {
     eval DIR="$DIR/$1/$DATADIR"
     if [[ ! -d $DIR ]]; then
         echo "Could not resolve path"
-        return
+        return 1
     fi
-    cd $DIR
+    cd "$DIR"
 }

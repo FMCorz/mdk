@@ -15,6 +15,7 @@ complete -c mdk -n __fish_use_subcommand -a doctor -d "Perform various checks"
 complete -c mdk -n __fish_use_subcommand -a fix -d "Creates a branch for an MDL"
 complete -c mdk -n __fish_use_subcommand -a info -d "Display information about instances"
 complete -c mdk -n __fish_use_subcommand -a install -d "Install an instance"
+complete -c mdk -n __fish_use_subcommand -a path -d "Resolve paths in an instance"
 complete -c mdk -n __fish_use_subcommand -a php -d "Invoke PHP commands"
 complete -c mdk -n __fish_use_subcommand -a phpunit -d "Run PHPUnit tests"
 complete -c mdk -n __fish_use_subcommand -a plugin -d "Plugin related commands"
@@ -70,6 +71,15 @@ complete -c mdk -n "__fish_seen_subcommand_from info" -s l -l list -d "List the 
 complete -c mdk -n "__fish_seen_subcommand_from info" -s n -l name-only -d "Used with --list, only display instances name"
 complete -c mdk -n "__fish_seen_subcommand_from info" -s s -l stable -d "Used with --list, only display stable instances"
 complete -c mdk -n "__fish_seen_subcommand_from info" -s v -l var -d "Variable to output or edit"
+
+# Path command options
+complete -c mdk -n "__fish_seen_subcommand_from path" -l class -r -d "PHP class name"
+complete -c mdk -n "__fish_seen_subcommand_from path" -l component -r -a "(__mdk_list_path_components)" -d "Component name"
+complete -c mdk -n "__fish_seen_subcommand_from path" -l list-components -d "List available components and their paths"
+complete -c mdk -n "__fish_seen_subcommand_from path" -l container -d "Resolve the path inside the container"
+complete -c mdk -n "__fish_seen_subcommand_from path" -l exists -d "Require the resolved path to exist"
+complete -c mdk -n "__fish_seen_subcommand_from path" -l relative -d "Return a path relative to the instance root"
+complete -c mdk -n "__fish_seen_subcommand_from path" -l subpath -r -d "Relative path to append"
 
 # Init command options
 complete -c mdk -n "__fish_seen_subcommand_from init" -s f -l force -d "Force the initialisation"
@@ -234,8 +244,44 @@ function __mdk_list_scripts
         command mdk run -l 2>/dev/null | cut -d ' ' -f 1
     end
 end
+
+# List components for the instance provided to `mdk path`, or the current instance.
+function __mdk_list_path_components
+    set -l tokens (commandline -opc)
+    set -l instance
+    set -l skip_next false
+
+    for token in $tokens[3..-1]
+        if test "$skip_next" = true
+            set skip_next false
+            continue
+        end
+
+        switch $token
+            case --class --component --subpath
+                set skip_next true
+            case '--*'
+            case '*'
+                set instance $token
+        end
+    end
+
+    if test -n "$instance"
+        command mdk path --list-components "$instance" 2>/dev/null | string replace -r ' .*' ''
+    else
+        command mdk path --list-components 2>/dev/null | string replace -r ' .*' ''
+    end
+end
+
+function __mdk_path_wants_instance
+    set -l tokens (commandline -opc)
+    set -l previous $tokens[-1]
+    not contains -- "$previous" --class --component --subpath
+end
+
 # Add instance name completion where appropriate
 complete -c mdk -n "__fish_seen_subcommand_from backport behat cron info install phpunit plugin purge remove uninstall update upgrade" -a "(__mdk_list_instances)" -d "Moodle instance"
+complete -c mdk -n "__fish_seen_subcommand_from path; and __mdk_path_wants_instance" -a "(__mdk_list_instances)" -d "Moodle instance"
 
 # Add feature file completion for behat command
 complete -c mdk -n "__fish_seen_subcommand_from behat; and __fish_contains_opt -s f feature" -a "(__mdk_list_behat_features)" -d "Feature file"

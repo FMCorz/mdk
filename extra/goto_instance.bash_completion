@@ -31,6 +31,8 @@ function _gt() {
     OPTS=""
     if [[ "${COMP_CWORD}" == 1 ]]; then
         OPTS=$($BIN info -ln 2> /dev/null)
+    elif [[ "${COMP_WORDS[0]}" == "gt" && "${COMP_CWORD}" == 2 ]]; then
+        OPTS=$($BIN path --list-components "${COMP_WORDS[1]}" 2> /dev/null | cut -d ' ' -f 1)
     fi
     COMPREPLY=( $(compgen -W "${OPTS}" -- ${CUR}) )
     return 0

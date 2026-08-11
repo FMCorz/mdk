@@ -46,10 +46,20 @@ function _mdk() {
         echo $INSTANCES
     }
 
+    # Helper to list the components available in an instance.
+    function _list_components() {
+        local INSTANCE="$1"
+        if [[ -n "$INSTANCE" ]]; then
+            $BIN path --list-components "$INSTANCE" 2> /dev/null | cut -d ' ' -f 1
+        else
+            $BIN path --list-components 2> /dev/null | cut -d ' ' -f 1
+        fi
+    }
+
     if [[ "${COMP_CWORD}" == 1 ]]; then
         # List the commands and aliases.
         # Ignoring these commands on purpose: init
-        OPTS="alias backport behat config create doctor fix info install phpunit plugin precheck purge pull push rebase remove run tracker uninstall update upgrade"
+        OPTS="alias backport behat config create doctor fix info install path phpunit plugin precheck purge pull push rebase remove run tracker uninstall update upgrade"
         OPTS="$OPTS $($BIN alias list 2> /dev/null | cut -d ':' -f 1)"
     else
         # List of options according to the command.
@@ -129,6 +139,34 @@ function _mdk() {
                         fi
                     ;;
                 esac
+                ;;
+            path)
+                if [[ "$PREV" == "--component" ]]; then
+                    local INSTANCE=""
+                    local i
+                    for ((i = 2; i < ${#COMP_WORDS[@]}; i++)); do
+                        if [[ "$i" == "$COMP_CWORD" ]]; then
+                            continue
+                        fi
+                        if [[ "${COMP_WORDS[i]}" == -* ]]; then
+                            continue
+                        fi
+                        case "${COMP_WORDS[i-1]}" in
+                            --class|--component|--subpath)
+                                continue
+                                ;;
+                        esac
+                        INSTANCE="${COMP_WORDS[i]}"
+                    done
+                    OPTS="$(_list_components "$INSTANCE")"
+                elif [[ "$PREV" == "--class" || "$PREV" == "--subpath" ]]; then
+                    OPTS=""
+                else
+                    OPTS="--class --component --list-components --container --exists --relative --subpath"
+                    if [[ "$CUR" != -* ]]; then
+                        OPTS="$OPTS $(_list_instances)"
+                    fi
+                fi
                 ;;
             plugin)
                 if [[ "${COMP_CWORD}" == 2 ]]; then
