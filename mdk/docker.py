@@ -65,3 +65,9 @@ def get_local_docker_port(name: str, destpost: int) -> Optional[int]:
     if match:
         return int(match.group(1))
     return None
+
+
+def start_docker_container(name: str) -> bool:
+    """Start a Docker container."""
+    r, _, _ = process(['docker', 'start', name])
+    return r == 0

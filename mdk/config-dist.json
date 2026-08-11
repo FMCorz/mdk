@@ -303,9 +303,13 @@
     "docker": {
 
         // When enabled, this will automatically attempt to find the container in which an instance
-        // is running based on the instance name, and the running containers. This will only apply
+        // is running based on the instance name, and the containers. This will only apply
         // when environment variable `MDK_DOCKER_NAME` is not set.
         "automaticContainerLookup": false,
+
+        // When enabled, if the resolved container (via automatic lookup, or `MDK_DOCKERNAME`) is
+        // not running, MDK will attempt to start the container automatically.
+        "automaticContainerStart": true,
 
         // The name of the Docker network to use.
         "network": "moodle"

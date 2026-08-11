@@ -33,7 +33,8 @@ import urllib
 import json
 from tempfile import gettempdir
 
-from mdk.container import Container, DockerContainer, HostContainer, is_docker_container_running
+from mdk.container import Container, DockerContainer, HostContainer
+from mdk.docker import docker_container_exists, is_docker_container_running, start_docker_container
 
 from .config import Conf
 from .db import DB, get_dbo_from_profile
@@ -208,28 +209,36 @@ class Moodle(object):
     @property
     def container(self) -> Container:
         """Returns the container for this instance."""
+        if self.identifier is None:
+            raise ValueError('The instance identifier cannot be unknown.')
+
         # Cheeky way to detect if we want to run something in a docker container. This is a
         # temporary solution. Ideally the container should be constructed elsewhere. It would
         # make sense for the Workplace to know about the default container for an instance.
         # And maybe we could have a common argument to all `mdk` commands to set the docker name.
         if not hasattr(self, '_container'):
-            checkisrunning = True
 
             # Resolve the docker name that we want, first env, then running containers.
             dockername = None
             if 'MDK_DOCKER_NAME' in os.environ:
                 dockername = os.environ.get('MDK_DOCKER_NAME', None)
-            elif C.get('docker.automaticContainerLookup') and is_docker_container_running(self.identifier):
-                checkisrunning = False
+            elif C.get('docker.automaticContainerLookup') and docker_container_exists(self.identifier):
                 dockername = self.identifier
 
             # From the name, we can construct the container.
             container = None
             if dockername:
-                if checkisrunning and not is_docker_container_running(dockername):
-                    logging.warn('Container %s is not running or does not exist, falling back on host.' % dockername)
-                else:
+                isrunning = is_docker_container_running(dockername)
+                if not isrunning and C.get('docker.automaticContainerStart'):
+                    if not start_docker_container(dockername):
+                        logging.debug('Failed to automatically start the container %s.' % dockername)
+                    else:
+                        isrunning = True
+
+                if isrunning:
                     container = DockerContainer(name=dockername, hostpath=Path(self.path))
+                else:
+                    logging.warning('Container %s is not running or does not exist, falling back on host.' % dockername)
 
             # Fallback on the host.
             if not container:
