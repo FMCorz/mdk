@@ -377,6 +377,7 @@ Resolve paths to and inside a Moodle instance.
 
     mdk path
     mdk path --component mod_assign
+    mdk path --list-components
     mdk path --class \\core\\event\\course_module_updated
     mdk path --subpath foo/bar/example.php --exists
 

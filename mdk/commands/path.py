@@ -53,6 +53,11 @@ class PathCommand(Command):
             help='component or plugin name (frankenstyle), plugintype, or subsystem',
         )
         parser.add_argument(
+            '--list-components',
+            action='store_true',
+            help='list available components (plugin name, type, or subsystem) and their paths',
+        )
+        parser.add_argument(
             '--container',
             action='store_true',
             dest='container',
@@ -85,6 +90,9 @@ class PathCommand(Command):
         )
 
     def run(self, args):
+        if args.list_components and any((args.classname, args.component, args.exists, args.subpath)):
+            raise CommandArgumentError('--list-components can only be used with --relative or --container')
+
         if args.classname and bool(args.component or args.subpath):
             raise CommandArgumentError('The argument --class cannot be used with --component or --subpath')
 
@@ -95,6 +103,28 @@ class PathCommand(Command):
         dirroot = Path(M.path).resolve()
         admin = M.get('admin', 'admin') or 'admin'
         resolver = ComponentResolver(dirroot, admin=admin)
+
+        def path_formatter(abspath: Path) -> str:
+            relpath = abspath.resolve().relative_to(dirroot)
+            if args.container:
+                abspath = get_absolute_path(relpath, M.container.path)
+            return str(abspath if not args.relative else relpath)
+
+        if args.list_components:
+            components = set(f'core_{name}' for name in resolver.subsystems)
+            for plugintype, relpath in resolver.plugintypes.items():
+                typeroot = dirroot / relpath
+                if not typeroot.is_dir():
+                    continue
+                components.add(plugintype)
+                components.update(f'{plugintype}_{path.name}' for path in typeroot.iterdir() if path.is_dir())
+
+            for component in sorted(components):
+                path = resolver.get_component_directory(component)
+                if not path:
+                    continue
+                print(f'{component} {path_formatter(path)}')
+            return
 
         path = dirroot
         if args.component:
@@ -115,8 +145,4 @@ class PathCommand(Command):
             logging.error('Path does not exist: %s', abspath)
             sys.exit(1)
 
-        relpath = abspath.relative_to(dirroot)
-        if args.container:
-            abspath = get_absolute_path(relpath, M.container.path)
-
-        print(abspath if not args.relative else relpath)
+        print(path_formatter(abspath))
