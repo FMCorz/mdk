@@ -116,8 +116,10 @@ class ComponentResolver():
         ctype, cname = self.normalise_component(token)
 
         if ctype == 'core':
-            path = (Path('lib') if not cname else self.get_subsystem_directory(cname))
-            return self._root / path if path else None
+            path = (self._root / Path('lib') if not cname else self.get_subsystem_directory(cname))
+            if not path:
+                return None
+            return path
 
         relroot = None
         if ctype in self.core_plugintypes:
@@ -131,10 +133,12 @@ class ComponentResolver():
         return self._root / relroot / (cname if cname else Path(''))
 
     def get_plugintype_directory(self, plugintype: str) -> Union[Path, None]:
-        return self.plugintypes.get(plugintype)
+        directory = self.plugintypes.get(plugintype)
+        return self._root / directory if directory else None
 
     def get_subsystem_directory(self, subsystem: str) -> Union[Path, None]:
-        return self.subsystems.get(subsystem)
+        directory = self.subsystems.get(subsystem)
+        return self._root / directory if directory else None
 
     def normalise_component(self, token: str) -> Tuple[str, Union[str, None]]:
         """

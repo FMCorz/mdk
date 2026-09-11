@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Moodle Development Kit
 
@@ -22,100 +21,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 http://github.com/FMCorz/mdk
 """
 
-import os
-import json
 import http.client
+import json
+import logging
+import os
+from pathlib import Path
+import shutil
+import zipfile
+from math import floor
+from tempfile import gettempdir
 from urllib.parse import urlencode
 from urllib.request import urlretrieve
-import logging
-import zipfile
-import re
-import shutil
-from tempfile import gettempdir
-from .config import Conf
+
 from . import tools
-from math import floor
+from .config import Conf
+from .moodle import Moodle
+from .paths import ComponentResolver
 
 C = Conf()
 
 
+def get_component_resolver(M: Moodle) -> ComponentResolver:
+    dirroot = Path(M.path).resolve()
+    admin = M.get('admin', 'admin') or 'admin'
+    return ComponentResolver(dirroot, admin=admin)
+
+
 class PluginManager(object):
-
-    _subSystems = {
-        'admin': '/{admin}',
-        'auth': '/auth',
-        'availability': '/availability',
-        'backup': '/backup/util/ui',
-        'badges': '/badges',
-        'block': '/blocks',
-        'blog': '/blog',
-        'cache': '/cache',
-        'calendar': '/calendar',
-        'cohort': '/cohort',
-        'competency': '/competency',
-        'course': '/course',
-        'editor': '/lib/editor',
-        'enrol': '/enrol',
-        'files': '/files',
-        'form': '/lib/form',
-        'grades': '/grade',
-        'grading': '/grade/grading',
-        'group': '/group',
-        'message': '/message',
-        'mnet': '/mnet',
-        'my': '/my',
-        'notes': '/notes',
-        'plagiarism': '/plagiarism',
-        'portfolio': '/portfolio',
-        'publish': '/course/publish',
-        'question': '/question',
-        'rating': '/rating',
-        'register': '/{admin}/registration',
-        'repository': '/repository',
-        'rss': '/rss',
-        'role': '/{admin}/roles',
-        'search': '/search',
-        'tag': '/tag',
-        'user': '/user',
-        'webservice': '/webservice'
-    }
-
-    _pluginTypesPath = {
-        'antivirus': '/lib/antivirus',
-        'availability': '/availability/condition',
-        'qtype': '/question/type',
-        'mod': '/mod',
-        'auth': '/auth',
-        'calendartype': '/calendar/type',
-        'enrol': '/enrol',
-        'message': '/message/output',
-        'block': '/blocks',
-        'filter': '/filter',
-        'editor': '/lib/editor',
-        'format': '/course/format',
-        'profilefield': '/user/profile/field',
-        'report': '/report',
-        'coursereport': '/course/report',  # Must be after system reports.
-        'gradeexport': '/grade/export',
-        'gradeimport': '/grade/import',
-        'gradereport': '/grade/report',
-        'gradingform': '/grade/grading/form',
-        'mnetservice': '/mnet/service',
-        'webservice': '/webservice',
-        'repository': '/repository',
-        'portfolio': '/portfolio',
-        'search': '/search/engine',
-        'qbehaviour': '/question/behaviour',
-        'qformat': '/question/format',
-        'plagiarism': '/plagiarism',
-        'tool': '/{admin}/tool',
-        'cachestore': '/cache/stores',
-        'cachelock': '/cache/locks',
-
-        'theme': '/theme',
-        'local': '/local'
-    }
-    _supportSubtypes = ['mod', 'editor', 'local', 'tool']
 
     @classmethod
     def extract(cls, f, plugin, M, override=False):
@@ -130,27 +62,32 @@ class PluginManager(object):
         if not cls.validateZipFile(f, plugin.name):
             raise Exception('Invalid zip file')
 
+        resolver = get_component_resolver(M)
+        extractIn = resolver.get_plugintype_directory(plugin.t)
+        if not extractIn:
+            raise Exception('Unable to resolve the plugin type directory')
+
         zp = zipfile.ZipFile(f)
         try:
             logging.info('Extracting plugin...')
             rootDir = os.path.commonprefix(zp.namelist())
-            extractIn = cls.getTypeDirectory(plugin.t, M)
             zp.extractall(extractIn)
             if plugin.name != rootDir.rstrip('/'):
-                orig = os.path.join(extractIn, rootDir).rstrip('/')
-                dest = os.path.join(extractIn, plugin.name).rstrip('/')
+                orig = extractIn / rootDir
+                dest = extractIn / plugin.name
 
                 # Merge directories
                 for src_dir, dirs, files in os.walk(orig):
-                    dst_dir = src_dir.replace(orig, dest)
-                    if not os.path.exists(dst_dir):
-                        os.mkdir(dst_dir)
+                    src_dir = Path(src_dir)
+                    dst_dir = dest / src_dir.relative_to(orig)
+                    if not dst_dir.exists():
+                        dst_dir.mkdir()
                     for file_ in files:
-                        src_file = os.path.join(src_dir, file_)
-                        dst_file = os.path.join(dst_dir, file_)
-                        if os.path.exists(dst_file):
-                            os.remove(dst_file)
-                        shutil.move(src_file, dst_dir)
+                        src_file = src_dir / file_
+                        dst_file = dst_dir / file_
+                        if dst_file.exists():
+                            dst_file.unlink()
+                        src_file.rename(dst_file)
 
                 shutil.rmtree(orig)
 
@@ -176,134 +113,16 @@ class PluginManager(object):
         return (t, name)
 
     @classmethod
-    def getSubsystems(cls):
-        """Return the list of subsytems and their relative directory"""
-        return cls._subSystems
-
-    @classmethod
-    def getSubsystemDirectory(cls, subsystem, M=None):
-        """Return the subsystem directory, absolute if M is passed"""
-        path = cls._subSystems.get(subsystem)
-        if not path:
-            raise ValueError('Unknown subsystem')
-
-        if M:
-            path = path.replace('{admin}', M.get('admin', 'admin'))
-            path = os.path.join(M.get('path'), path.strip('/'))
-
-        return path
-
-    @classmethod
-    def getSubsystemOrPluginFromPath(cls, path, M=None):
-        """Get a subsystem from a path. Path should be relative to dirroot or M should be passed.
-
-        This returns a tuple containing the name of the subsystem or plugin type, and the plugin name
-        if we could resolve one.
-        """
-
-        subtypes = {}
-        path = os.path.realpath(os.path.abspath(path))
-        if M:
-            path = '/' + path.replace(M.get('path'), '').strip('/')
-            admindir = M.get('admin', 'admin')
-            if path.startswith('/' + admindir):
-                path = re.sub(r'^/%s' % admindir, '/{admin}', path)
-            subtypes = cls.getSubtypes(M)
-        path = '/' + path.lstrip('/')
-
-        pluginOrSubsystem = None
-        pluginName = None
-        candidate = path
-        head = True
-        tail = None
-        while head and head != '/' and not pluginOrSubsystem:
-            # Check plugin types.
-            if not pluginOrSubsystem:
-                for k, v in cls._pluginTypesPath.items():
-                    if v == candidate:
-                        pluginOrSubsystem = k
-                        pluginName = tail
-                        break
-
-            # Check sub plugin types.
-            if not pluginOrSubsystem:
-                for k, v in subtypes.items():
-                    if v == candidate:
-                        pluginOrSubsystem = k
-                        pluginName = tail
-                        break
-
-            # Check subsystems.
-            for k, v in cls._subSystems.items():
-                if v == candidate:
-                    pluginOrSubsystem = k
-                    break
-
-            (head, tail) = os.path.split(candidate)
-            candidate = head
-
-        return (pluginOrSubsystem, pluginName)
-
-    @classmethod
-    def getSubtypes(cls, M):
-        """Get the sub plugins declared in an instance"""
-        regex = re.compile(r'\s*(?P<brackets>[\'"])(.*?)(?P=brackets)\s*=>\s*(?P=brackets)(.*?)(?P=brackets)')
-        subtypes = {}
-        for t in cls._supportSubtypes:
-            path = cls.getTypeDirectory(t, M)
-            dirs = os.listdir(path)
-            for d in dirs:
-                if not os.path.isdir(os.path.join(path, d)):
-                    continue
-                subpluginsfile = os.path.join(path, d, 'db', 'subplugins.php')
-                if not os.path.isfile(subpluginsfile):
-                    continue
-
-                searchOpen = False
-                f = open(subpluginsfile, 'r')
-                for line in f:
-                    if '$subplugins' in line:
-                        searchOpen = True
-
-                    if searchOpen:
-                        search = regex.findall(line)
-                        if search:
-                            for match in search:
-                                subtypes[match[1]] = '/' + match[2].replace('admin/', '{admin}/').lstrip('/')
-
-                    # Exit when we find a semi-colon.
-                    if searchOpen and ';' in line:
-                        break
-
-        return subtypes
-
-    @classmethod
-    def getTypeDirectory(cls, t, M=None):
-        """Returns the path to the plugin type directory. If M is passed, the full path is returned."""
-        path = cls._pluginTypesPath.get(t, False)
-        if not path:
-            if M:
-                subtypes = cls.getSubtypes(M)
-                path = subtypes.get(t, False)
-            if not path:
-                raise ValueError('Unknown plugin or subplugin type')
-
-        if M:
-            if t == 'theme':
-                themedir = M.get('themedir', None)
-                if themedir != None:
-                    return themedir
-
-            path = path.replace('{admin}', M.get('admin', 'admin'))
-            path = os.path.join(M.get('path'), path.strip('/'))
-
-        return path
-
-    @classmethod
     def hasPlugin(cls, plugin, M):
-        path = cls.getTypeDirectory(plugin.t, M)
-        target = os.path.join(path, plugin.name)
-        return os.path.isdir(target)
+        resolver = get_component_resolver(M)
+        target = resolver.get_component_directory(plugin.component)
+        return target is not None and target.exists()
+
+    @classmethod
+    def isPlugin(cls, plugin, M):
+        """Whether the plugin is a valid plugin, and not a subsystem."""
+        resolver = get_component_resolver(M)
+        return resolver.get_plugintype_directory(plugin.t) is not None
 
     @classmethod
     def validateZipFile(cls, f, name):
@@ -316,22 +135,28 @@ class PluginManager(object):
         return True
 
     @classmethod
-    def deleteDirectoryTree(cls, plugin, M):
-        directory = cls.getTypeDirectory(plugin.t, M)
-        fullpath = directory + '/' + plugin.name
-        if os.path.isdir(fullpath):
+    def deleteDirectoryTree(cls, plugin: 'PluginObject', M):
+        resolver = get_component_resolver(M)
+        fullpath = resolver.get_component_directory(plugin.component)
+
+        if not fullpath or fullpath.name != plugin.name:
+            raise ValueError('Unexpeced component.')
+
+        if fullpath.is_dir() and fullpath.exists():
             shutil.rmtree(fullpath)
 
 
 class PluginObject(object):
 
-    component = None
-    t = None
-    name = None
+    component: str
+    t: str
+    name: str
 
     def __init__(self, component):
-        self.component = component
-        (self.t, self.name) = PluginManager.getTypeAndName(component)
+        self.t, name = PluginManager.getTypeAndName(component)
+        assert type(name) is str, 'Unexpected component'
+        self.name = name
+        self.component = f'{self.t}_{self.name}'
         self.dlinfo = {}
 
     def getDownloadInfo(self, branch):
@@ -454,10 +279,7 @@ class PluginRepository(object):
                 return PluginDownloadInfo(info)
 
         # Contacting the remote repository
-        data = {
-            "branch": self.convert_branch(branch),
-            "plugin": plugin
-        }
+        data = {"branch": self.convert_branch(branch), "plugin": plugin}
 
         logging.info('Retrieving information for plugin %s and branch %s' % (data['plugin'], data['branch']))
         try:
