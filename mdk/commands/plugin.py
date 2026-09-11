@@ -240,6 +240,9 @@ class PluginCommand(Command):
     def uninstall(self, M, args):
 
         po = PluginObject(args.pluginname)
+        if not PluginManager.isPlugin(po, M):
+            logging.error('Invalid plugin name.')
+            return False
         if not PluginManager.hasPlugin(po, M):
             logging.error('The plugin does not exist on this system')
             return False
@@ -252,7 +255,7 @@ class PluginCommand(Command):
             return False
 
         if args.removefiles:
-            logging.info('Removing the plugin directory and files');
+            logging.info('Removing the plugin directory and files')
             PluginManager.deleteDirectoryTree(po, M)
 
         if args.upgrade:
