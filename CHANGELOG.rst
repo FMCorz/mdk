@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v2.1.9
+------
+
+- `path` command can list available components and their paths with `--list-components`
+- Added Bash and Fish completions for `path` and component names
+- `gt` supports navigating to component folders in Bash and uses `path` for resolution in Bash and Fish
+- Support for automatically starting stopped Docker containers with `docker.automaticContainerStart`
+- `docker up` requires a port to be specified for new instances
+- Fixed plugin path resolution for Moodle's `public/` folder and subplugins
+- Fixed `precheck` failing when the CI server drops connections between polls
+- Support for Moodle 6.0 development
+
 v2.1.8
 ------
 
