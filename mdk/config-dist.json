@@ -26,8 +26,8 @@
     // List of remotes to work with
     // The integration branch MUST end with integration.git
     "remotes": {
-        "stable": "git://git.moodle.org/moodle.git",
-        "integration": "git://git.moodle.org/integration.git",
+        "stable": "https://github.com/moodle/moodle.git",
+        "integration": "https://github.com/moodle/integration.git",
         "mine": "git@github.com:YourGitHub/moodle.git",
         "security": "git@git.in.moodle.com:integration/security.git"
     },
