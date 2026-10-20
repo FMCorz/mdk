@@ -900,12 +900,30 @@ class Moodle(object):
         if not self.isInstalled():
             raise Exception('The instance is not installed')
 
-        # Delete the content in the instance and test dataroots
-        for dataroot in (self.container.dataroot, self.container.behat_dataroot, self.container.phpunit_dataroot):
-            if dataroot and self.container.isdir(dataroot):
-                logging.debug('Deleting dataroot content (%s)' % (dataroot))
-                self.container.rmtree(dataroot)
-                self.container.mkdir(dataroot, 0o777)
+        containers = []
+
+        # Use the Docker container to delete dataroot contents, if we can.
+        if isinstance(self.container, DockerContainer):
+            containers.append(self.container)
+
+        # Use a hardcoded local container to delete expected local dataroot directories contents. This
+        # is to prevent deletion outside of the workplace folder, such as when the config.php dataroot
+        # points to a path inside a Docker instance.
+        from mdk.workplace import Workplace
+        containers.append(
+            HostContainer(
+                identifier=None,
+                path=Path(self.path),
+                dataroot=Path(Workplace().getPath(self.identifier, 'data')),  # We ignore config.php dataroot.
+            )
+        )
+
+        # Deleting dataroots in each container.
+        for container in containers:
+            for dataroot in (container.dataroot, container.behat_dataroot, container.phpunit_dataroot):
+                if dataroot and container.isdir(dataroot):
+                    logging.debug('Deleting dataroot content (%s)' % (dataroot))
+                    container.emptydir(dataroot)
 
         # Drop the database
         dbname = self.get('dbname')

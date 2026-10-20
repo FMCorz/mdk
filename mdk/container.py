@@ -19,6 +19,11 @@ class Container(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def emptydir(self, path: Path) -> None:
+        """Delete directory contents without removing the directory itself."""
+        pass
+
+    @abc.abstractmethod
     def exists(self, path: Path) -> bool:
         pass
 
@@ -92,6 +97,13 @@ class HostContainer(Container):
 
     def chmod(self, path: Path, mode: int) -> None:
         os.chmod(get_absolute_path(path, self.path), mode)
+
+    def emptydir(self, path: Path) -> None:
+        for child in get_absolute_path(path, self.path).iterdir():
+            if child.is_dir() and not child.is_symlink():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
 
     def exists(self, path: Path) -> bool:
         return (get_absolute_path(path, self.path)).exists()
@@ -168,6 +180,10 @@ class DockerContainer(Container):
     def chmod(self, path: Path, mode: int) -> None:
         path = get_absolute_path(path, self.path)
         self.exec(['chmod', f'{mode:o}', path.as_posix()])
+
+    def emptydir(self, path: Path) -> None:
+        path = get_absolute_path(path, self.path)
+        self.exec(['find', path.as_posix(), '-mindepth', '1', '-delete'])
 
     def exists(self, path: Path) -> bool:
         r, _, _ = self.exec(['test', '-e', (get_absolute_path(path, self.path)).as_posix()])
