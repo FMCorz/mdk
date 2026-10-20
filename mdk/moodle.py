@@ -900,12 +900,12 @@ class Moodle(object):
         if not self.isInstalled():
             raise Exception('The instance is not installed')
 
-        # Delete the content in moodledata
-        dataroot = Path(self.get('dataroot'))
-        if dataroot and self.container.isdir(dataroot):
-            logging.debug('Deleting dataroot content (%s)' % (dataroot))
-            self.container.rmtree(dataroot)
-            self.container.mkdir(dataroot, 0o777)
+        # Delete the content in the instance and test dataroots
+        for dataroot in (self.container.dataroot, self.container.behat_dataroot, self.container.phpunit_dataroot):
+            if dataroot and self.container.isdir(dataroot):
+                logging.debug('Deleting dataroot content (%s)' % (dataroot))
+                self.container.rmtree(dataroot)
+                self.container.mkdir(dataroot, 0o777)
 
         # Drop the database
         dbname = self.get('dbname')
