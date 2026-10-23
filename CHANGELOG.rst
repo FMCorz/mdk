@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v2.1.10
+-------
+
+- Switched the default Moodle stable and integration remotes to GitHub mirrors
+- `uninstall` clears Behat and PHPUnit data directories as well as the main data directory
+- Fixed `uninstall` data cleanup for Docker paths and mounted data directories
+
 v2.1.9
 ------
 
