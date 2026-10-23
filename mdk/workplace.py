@@ -475,6 +475,6 @@ class Workplace(object):
             else:
                 logging.debug('Fetching cached repository %s...', os.path.basename(cache))
             if not repo.fetch():
-                raise Exception('Could not fetch in repository %s' % (cache))
+                raise Exception('Could not fetch in repository %s. Run `mdk doctor --cached` to diagnose.' % cache)
 
         return True
