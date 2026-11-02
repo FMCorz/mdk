@@ -27,6 +27,7 @@ import logging
 import os
 from pathlib import Path
 import shutil
+import stat
 import zipfile
 from math import floor
 from tempfile import gettempdir
@@ -71,6 +72,11 @@ class PluginManager(object):
         try:
             logging.info('Extracting plugin...')
             rootDir = os.path.commonprefix(zp.namelist())
+            for member in zp.namelist():
+                if member.startswith('/') or '..' in Path(member).parts:
+                    raise Exception('Unsafe zip member')
+                if stat.S_ISLNK(zp.getinfo(member).external_attr >> 16):
+                    raise Exception('Unsafe zip member')
             zp.extractall(extractIn)
             if plugin.name != rootDir.rstrip('/'):
                 orig = extractIn / rootDir
